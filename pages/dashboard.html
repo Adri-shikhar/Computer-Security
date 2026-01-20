@@ -12,73 +12,136 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Custom Styles -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/nav-styles.css">
 </head>
 <body>
-    <!-- Navigation Menu -->
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #1a1a2e, #16213e);">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="index.html">
-                <i class="fas fa-shield-virus"></i> Security Lab
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html"><i class="fas fa-sign-in-alt"></i> Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="register.html"><i class="fas fa-user-plus"></i> Register</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="dashboard.html"><i class="fas fa-database"></i> Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="breach.html"><i class="fas fa-stopwatch"></i> Breach Time</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="hash-tools.html"><i class="fas fa-hashtag"></i> Hash Tools</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="security-testing.html"><i class="fas fa-shield-alt"></i> Security Testing</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="security-guide.html"><i class="fas fa-book"></i> Guide</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="actionsDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-cog"></i> Actions
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#" onclick="exportDatabase(); return false;"><i class="fas fa-download"></i> Export Data</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="clearData(); return false;"><i class="fas fa-trash"></i> Clear Data</a></li>
-                        </ul>
-                    </li>
-                </ul>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="migrationDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-route"></i> Migration & Strategy
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-                            <li><a class="dropdown-item" href="migration-strategies.html"><i class="fas fa-sitemap"></i> Migration Paths</a></li>
-                            <li><a class="dropdown-item" href="best-practices.html"><i class="fas fa-lightbulb"></i> Best Practices</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="actionsDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-cog"></i> Actions
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#" onclick="exportDatabase(); return false;"><i class="fas fa-download"></i> Export Data</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="clearData(); return false;"><i class="fas fa-trash"></i> Clear Data</a></li>
-                        </ul>
-                    </li>
-                </ul>
+    <!-- Unique Sidebar Navigation -->
+    <div class="sidebar-nav" id="sidebarNav">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <i class="fas fa-shield-virus fa-3x text-primary mb-2"></i>
+                <h5 class="text-white mb-0">Security Lab</h5>
+                <small class="text-muted">Password Security Suite</small>
             </div>
         </div>
-    </nav>
+        <div class="sidebar-content">
+            <div class="nav-section">
+                <div class="section-title">Quick Access</div>
+                <a href="../index.html" class="nav-item">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Login</span>
+                </a>
+                <a href="../pages/register.html" class="nav-item">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Register</span>
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="section-title">Features</div>
+                <a href="../pages/all-features.html" class="nav-item">
+                    <i class="fas fa-th-large"></i>
+                    <span>All Features</span>
+                    <span class="badge bg-success">Overview</span>
+                </a>
+                <a href="../pages/dashboard.html" class="nav-item active">
+                    <i class="fas fa-database"></i>
+                    <span>Dashboard</span>
+                    <span class="badge bg-info">Manage</span>
+                </a>
+                <a href="../pages/breach.html" class="nav-item">
+                    <i class="fas fa-stopwatch"></i>
+                    <span>Breach Time</span>
+                    <span class="badge bg-warning">Analysis</span>
+                </a>
+                <a href="../pages/hash-tools.html" class="nav-item">
+                    <i class="fas fa-hashtag"></i>
+                    <span>Hash Tools</span>
+                    <span class="badge bg-success">3 Tools</span>
+                </a>
+                <a href="../pages/security-testing.html" class="nav-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Security Testing</span>
+                    <span class="badge bg-danger">Lab</span>
+                </a>
+                <a href="../pages/security-guide.html" class="nav-item">
+                    <i class="fas fa-book"></i>
+                    <span>Security Guide</span>
+                    <span class="badge bg-primary">Learn</span>
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="section-title">Actions</div>
+                <a href="#" onclick="exportDatabase(); return false;" class="nav-item">
+                    <i class="fas fa-download"></i>
+                    <span>Export Data</span>
+                </a>
+                <a href="#" onclick="clearData(); return false;" class="nav-item text-danger">
+                    <i class="fas fa-trash"></i>
+                    <span>Clear Data</span>
+                </a>
+            </div>
+        </div>
+        <div class="sidebar-footer">
+            <div class="text-center text-muted small">
+                <i class="fas fa-lock me-1"></i> Secure & Educational
+            </div>
+        </div>
+    </div>
+
+    <button class="sidebar-toggle d-lg-none" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="top-bar">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="page-title">
+                    <h4 class="mb-0"><i class="fas fa-database me-2"></i>Dashboard</h4>
+                </div>
+                <div class="top-actions">
+                    <span class="badge bg-success me-2"><i class="fas fa-shield-check"></i> Secure</span>
+                    <span class="badge bg-primary"><i class="fas fa-graduation-cap"></i> Educational</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offcanvas Sidebar for Features -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="featuresMenu" aria-labelledby="featuresMenuLabel" style="background: linear-gradient(135deg, #1a1a2e, #16213e); width: 320px;">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <h5 class="offcanvas-title text-white" id="featuresMenuLabel">
+                <i class="fas fa-shield-virus"></i> Features Menu
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="list-group list-group-flush">
+                <a href="../pages/dashboard.html" class="list-group-item list-group-item-action bg-transparent text-white border-secondary active">
+                    <i class="fas fa-database me-2"></i> Dashboard
+                </a>
+                <a href="../pages/breach.html" class="list-group-item list-group-item-action bg-transparent text-white border-secondary">
+                    <i class="fas fa-stopwatch me-2"></i> Breach Time Calculator
+                </a>
+                <a href="../pages/hash-tools.html" class="list-group-item list-group-item-action bg-transparent text-white border-secondary">
+                    <i class="fas fa-hashtag me-2"></i> Hash Analysis Tools
+                </a>
+                <a href="../pages/security-testing.html" class="list-group-item list-group-item-action bg-transparent text-white border-secondary">
+                    <i class="fas fa-shield-alt me-2"></i> Security Testing Lab
+                </a>
+                <a href="../pages/security-guide.html" class="list-group-item list-group-item-action bg-transparent text-white border-secondary">
+                    <i class="fas fa-book me-2"></i> Security Guide
+                </a>
+                <div class="dropdown-divider bg-secondary"></div>
+                <a href="#" onclick="exportDatabase(); return false;" class="list-group-item list-group-item-action bg-transparent text-white border-secondary">
+                    <i class="fas fa-download me-2"></i> Export Data
+                </a>
+                <a href="#" onclick="clearData(); return false;" class="list-group-item list-group-item-action bg-transparent text-danger border-secondary">
+                    <i class="fas fa-trash me-2"></i> Clear All Data
+                </a>
+            </div>
+        </div>
+    </div>
 
     <div class="main-container">
         <h1 class="text-center text-white mb-4">
@@ -223,8 +286,8 @@
         // Disable tab navigation for multi-page setup
         window.MULTI_PAGE_MODE = true;
     </script>
-    <script src="api-client.js"></script>
-    <script src="script.js"></script>
+    <script src="../assets/js/api-client.js"></script>
+    <script src="../assets/js/script.js"></script>
 
     <script>
         // Load dashboard on page load - wait for backend check

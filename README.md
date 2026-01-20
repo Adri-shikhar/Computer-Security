@@ -16,7 +16,7 @@ A comprehensive full-stack cybersecurity education platform demonstrating the cr
 
 This **full-stack web application** serves as an interactive security research platform featuring:
 
-- 🔐 **Frontend**: Multi-page HTML/CSS/JavaScript interface
+- 🔐 **Frontend**: Multi-page HTML/CSS/JavaScript interface with persistent navigation
 - ⚙️ **Backend**: Python Flask API with SQLite database
 - 🔄 **Transparent Migration**: Automatic upgrade from MD5 → Argon2id
 - 🛡️ **Rate Limiting**: Protection against brute force attacks
@@ -25,6 +25,38 @@ This **full-stack web application** serves as an interactive security research p
 - 🔬 **Educational**: Compare MD5, SHA-1, BCrypt, and Argon2id algorithms
 
 **Hybrid Architecture:** Works with or without backend - frontend falls back to localStorage when backend is unavailable.
+
+**GitHub Pages Ready:** Optimized structure for static deployment with `index.html` at root.
+
+---
+
+## 📁 Project Structure
+
+```
+Computer-Security/
+├── index.html              # Main entry point (GitHub Pages compatible)
+├── pages/                  # Application pages
+│   ├── register.html       # User registration
+│   ├── dashboard.html      # User dashboard
+│   ├── breach.html         # Password breach calculator
+│   ├── hash-tools.html     # Hash generation tools
+│   ├── security-testing.html # Security test suite
+│   ├── security-guide.html # Security best practices
+│   └── all-features.html   # Features overview
+├── assets/
+│   ├── css/
+│   │   ├── style.css       # Main styles (38KB glassmorphism design)
+│   │   └── nav-styles.css  # Persistent sidebar navigation
+│   └── js/
+│       ├── script.js       # Core functionality (11 async functions)
+│       └── api-client.js   # Backend API integration
+├── backend/                # Flask backend
+│   ├── app.py             # Main Flask application
+│   ├── models.py          # Database models
+│   └── requirements.txt   # Python dependencies
+├── docs/                  # Documentation
+└── scripts/               # Utility scripts
+```
 
 ---
 

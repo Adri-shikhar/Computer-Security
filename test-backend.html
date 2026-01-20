@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Connection Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 600;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeeba;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin: 10px 0;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .info {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        .info h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .test-item {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .test-item h4 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Backend Connection Test</h1>
+        
+        <div id="mainStatus" class="status pending">
+            ⏳ Testing backend connection...
+        </div>
+
+        <button onclick="runAllTests()">🔄 Run All Tests</button>
+        <button onclick="testBackend()">Test Backend API</button>
+        <button onclick="testRegistration()">Test User Registration</button>
+        <button onclick="testLogin()">Test User Login</button>
+
+        <div class="info">
+            <h3>📡 Server Information</h3>
+            <p><strong>Backend:</strong> <a href="http://127.0.0.1:5000/api/test" target="_blank">http://127.0.0.1:5000</a></p>
+            <p><strong>Frontend:</strong> <a href="http://localhost:8000" target="_blank">http://localhost:8000</a></p>
+            <p><strong>App Entry:</strong> <a href="http://localhost:8000/index.html" target="_blank">index.html</a></p>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:5000/api';
+
+        async function testBackend() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="test-item"><h4>Testing Backend...</h4></div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/test`);
+                const data = await response.json();
+                
+                resultsDiv.innerHTML = `
+                    <div class="test-item">
+                        <h4>✅ Backend API Test - SUCCESS</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+                updateMainStatus('✅ Backend is running correctly!', 'success');
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="test-item">
+                        <h4>❌ Backend API Test - FAILED</h4>
+                        <p style="color: #721c24;">${error.message}</p>
+                        <p><strong>Make sure:</strong></p>
+                        <ul>
+                            <li>Flask backend is running on port 5000</li>
+                            <li>Run: <code>cd backend && python app.py</code></li>
+                            <li>Or use: <code>START_APP.bat</code></li>
+                        </ul>
+                    </div>
+                `;
+                updateMainStatus('❌ Backend is not responding', 'error');
+            }
+        }
+
+        async function testRegistration() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="test-item"><h4>Testing Registration...</h4></div>';
+
+            const testUser = {
+                username: `test_${Date.now()}`,
+                password: 'TestPass123!',
+                algorithm: 'argon2'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testUser)
+                });
+                const data = await response.json();
+                
+                resultsDiv.innerHTML = `
+                    <div class="test-item">
+                        <h4>✅ User Registration - SUCCESS</h4>
+                        <p><strong>Created User:</strong> ${testUser.username}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+                updateMainStatus('✅ Registration working!', 'success');
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="test-item">
+                        <h4>❌ User Registration - FAILED</h4>
+                        <p style="color: #721c24;">${error.message}</p>
+                    </div>
+                `;
+                updateMainStatus('❌ Registration failed', 'error');
+            }
+        }
+
+        async function testLogin() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="test-item"><h4>Testing Login...</h4></div>';
+
+            // First create a test user
+            const testUser = {
+                username: `logintest_${Date.now()}`,
+                password: 'TestPass123!',
+                algorithm: 'argon2'
+            };
+
+            try {
+                // Register user
+                await fetch(`${API_BASE_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testUser)
+                });
+
+                // Try to login
+                const loginResponse = await fetch(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: testUser.username,
+                        password: testUser.password
+                    })
+                });
+                const loginData = await loginResponse.json();
+                
+                resultsDiv.innerHTML = `
+                    <div class="test-item">
+                        <h4>✅ User Login - SUCCESS</h4>
+                        <p><strong>Logged in as:</strong> ${testUser.username}</p>
+                        <pre>${JSON.stringify(loginData, null, 2)}</pre>
+                    </div>
+                `;
+                updateMainStatus('✅ Login working!', 'success');
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="test-item">
+                        <h4>❌ User Login - FAILED</h4>
+                        <p style="color: #721c24;">${error.message}</p>
+                    </div>
+                `;
+                updateMainStatus('❌ Login failed', 'error');
+            }
+        }
+
+        async function runAllTests() {
+            updateMainStatus('⏳ Running all tests...', 'pending');
+            
+            await testBackend();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testRegistration();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testLogin();
+        }
+
+        function updateMainStatus(message, type) {
+            const statusDiv = document.getElementById('mainStatus');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            setTimeout(testBackend, 500);
+        });
+    </script>
+</body>
+</html>
