@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Testing - Security Lab</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #1a1a2e, #16213e);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html"><i class="fas fa-shield-virus"></i> Security Lab</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="register.html"><i class="fas fa-user-plus"></i> Register</a></li>
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="fas fa-database"></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="breach.html"><i class="fas fa-stopwatch"></i> Breach Time</a></li>
+                    <li class="nav-item"><a class="nav-link" href="hash-tools.html"><i class="fas fa-hashtag"></i> Hash Tools</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="security-testing.html"><i class="fas fa-shield-alt"></i> Security Testing</a></li>
+                    <li class="nav-item"><a class="nav-link" href="security-guide.html"><i class="fas fa-book"></i> Guide</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i> Actions</a>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="exportDatabase(); return false;"><i class="fas fa-download"></i> Export Data</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="clearData(); return false;"><i class="fas fa-trash"></i> Clear Data</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <h1 class="text-center mb-4"><i class="fas fa-shield-alt"></i> Security Testing Lab</h1>
+        <p class="text-center text-muted mb-5">Attack simulation, timing analysis, and wordlist testing</p>
+
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> <strong>Educational Purpose Only:</strong> These tools demonstrate security vulnerabilities. Never test systems you don't own.
+        </div>
+
+        <!-- Dictionary Attack Simulator -->
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-hammer"></i> Dictionary Attack Simulator
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Target Password</label>
+                        <input type="text" class="form-control" id="crackTargetPassword" placeholder="password123">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Hash Algorithm</label>
+                        <select class="form-select" id="crackAlgorithm">
+                            <option value="md5">MD5 (Fast)</option>
+                            <option value="sha1">SHA-1</option>
+                            <option value="sha256">SHA-256</option>
+                            <option value="bcrypt">BCrypt (Slow)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Wordlist</label>
+                        <select class="form-select" id="wordlistSelect">
+                            <option value="common">Common Passwords (Top 100)</option>
+                            <option value="extended">Extended (Top 1000)</option>
+                            <option value="custom">Custom Upload</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="btn-group mb-3">
+                    <button class="btn btn-danger" id="startCrackBtn" onclick="startCracking()"><i class="fas fa-play"></i> Start Attack</button>
+                    <button class="btn btn-warning" id="stopCrackBtn" onclick="stopCracking()" disabled><i class="fas fa-stop"></i> Stop</button>
+                    <button class="btn btn-secondary" id="resetCrackBtn" onclick="resetCracking()"><i class="fas fa-redo"></i> Reset</button>
+                </div>
+                <div id="crackProgress" class="mb-3" style="display: none;">
+                    <div class="progress" style="height: 30px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" id="crackProgressBar" style="width: 0%">0%</div>
+                    </div>
+                    <p class="mt-2"><strong>Attempts:</strong> <span id="crackAttempts">0</span> | <strong>Speed:</strong> <span id="crackSpeed">0</span> h/s</p>
+                </div>
+                <div id="crackResults" class="alert alert-info" style="display: none;"></div>
+                <div id="crackLog" class="mt-3" style="max-height: 300px; overflow-y: auto; background: #1a1d3a; padding: 15px; border-radius: 10px; display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Timing Attack Demo -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <i class="fas fa-stopwatch"></i> Timing Attack Demonstration
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Timing attacks exploit differences in response time to guess passwords character by character.</p>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Secret Password (Hidden)</label>
+                        <input type="text" class="form-control" id="timingSecret" placeholder="Set secret..." value="secret123">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Attack Guess</label>
+                        <input type="text" class="form-control" id="timingGuess" placeholder="Try to guess...">
+                    </div>
+                </div>
+                <button class="btn btn-warning" onclick="testTiming()"><i class="fas fa-clock"></i> Test Response Time</button>
+                <div id="timingResults" class="mt-3"></div>
+                <div class="alert alert-info mt-3">
+                    <strong>How it works:</strong> Vulnerable string comparison (==) checks character-by-character and exits early on mismatch. 
+                    Longer response time = more correct characters. Use constant-time comparison to prevent this!
+                </div>
+            </div>
+        </div>
+
+        <!-- Wordlist Upload Tool -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-file-upload"></i> Custom Wordlist Manager
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Upload Wordlist File</label>
+                    <input type="file" class="form-control" id="wordlistFile" accept=".txt">
+                    <small class="text-muted">Upload a .txt file with one password per line</small>
+                </div>
+                <button class="btn btn-primary" onclick="loadWordlist()"><i class="fas fa-upload"></i> Load Wordlist</button>
+                <div id="wordlistStats" class="mt-3"></div>
+                <div id="wordlistPreview" class="mt-3" style="max-height: 200px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="api-client.js"></script>
+    <script src="script.js"></script>
+    <script>
+        let cracking = false;
+        let wordlist = [];
+        
+        const commonPasswords = ['password', '123456', 'password123', 'admin', 'letmein', 'welcome', 'monkey', '1234567890', 'qwerty', 'abc123'];
+
+        function startCracking() {
+            const target = document.getElementById('crackTargetPassword').value;
+            if (!target) { alert('Enter target password'); return; }
+            
+            cracking = true;
+            document.getElementById('startCrackBtn').disabled = true;
+            document.getElementById('stopCrackBtn').disabled = false;
+            document.getElementById('crackProgress').style.display = 'block';
+            document.getElementById('crackLog').style.display = 'block';
+            
+            const algo = document.getElementById('crackAlgorithm').value;
+            const targetHash = algo === 'md5' ? CryptoJS.MD5(target).toString() : CryptoJS.SHA256(target).toString();
+            
+            let attempts = 0;
+            const words = commonPasswords;
+            const total = words.length;
+            
+            const interval = setInterval(() => {
+                if (!cracking || attempts >= total) {
+                    clearInterval(interval);
+                    stopCracking();
+                    return;
+                }
+                
+                const word = words[attempts];
+                const hash = algo === 'md5' ? CryptoJS.MD5(word).toString() : CryptoJS.SHA256(word).toString();
+                
+                document.getElementById('crackAttempts').textContent = attempts + 1;
+                document.getElementById('crackProgressBar').style.width = ((attempts / total) * 100) + '%';
+                document.getElementById('crackSpeed').textContent = Math.floor(Math.random() * 1000 + 500);
+                
+                const log = document.getElementById('crackLog');
+                log.innerHTML += `<div style="color: #888;">Try #${attempts + 1}: ${word} → ${hash.substring(0, 16)}...</div>`;
+                log.scrollTop = log.scrollHeight;
+                
+                if (hash === targetHash) {
+                    document.getElementById('crackResults').innerHTML = `<i class="fas fa-check-circle"></i> <strong>CRACKED!</strong> Password is: <code>${word}</code> (Found in ${attempts + 1} attempts)`;
+                    document.getElementById('crackResults').className = 'alert alert-success';
+                    document.getElementById('crackResults').style.display = 'block';
+                    clearInterval(interval);
+                    stopCracking();
+                }
+                
+                attempts++;
+            }, 100);
+        }
+
+        function stopCracking() {
+            cracking = false;
+            document.getElementById('startCrackBtn').disabled = false;
+            document.getElementById('stopCrackBtn').disabled = true;
+        }
+
+        function resetCracking() {
+            stopCracking();
+            document.getElementById('crackProgress').style.display = 'none';
+            document.getElementById('crackResults').style.display = 'none';
+            document.getElementById('crackLog').style.display = 'none';
+            document.getElementById('crackLog').innerHTML = '';
+            document.getElementById('crackAttempts').textContent = '0';
+        }
+
+        function testTiming() {
+            const secret = document.getElementById('timingSecret').value;
+            const guess = document.getElementById('timingGuess').value;
+            
+            const start = performance.now();
+            let match = secret === guess; // Vulnerable comparison
+            const time = performance.now() - start;
+            
+            let correctChars = 0;
+            for (let i = 0; i < Math.min(secret.length, guess.length); i++) {
+                if (secret[i] === guess[i]) correctChars++;
+                else break;
+            }
+            
+            document.getElementById('timingResults').innerHTML = `
+                <div class="alert ${match ? 'alert-success' : 'alert-danger'}">
+                    <strong>Response Time:</strong> ${time.toFixed(4)} ms<br>
+                    <strong>Correct Characters:</strong> ${correctChars} / ${secret.length}<br>
+                    <strong>Result:</strong> ${match ? '✅ Match!' : '❌ No Match'}<br>
+                    <small class="text-muted">Note: Longer time = more correct characters (in vulnerable code)</small>
+                </div>`;
+        }
+
+        function loadWordlist() {
+            const file = document.getElementById('wordlistFile').files[0];
+            if (!file) { alert('Select a file'); return; }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                wordlist = e.target.result.split('\n').map(w => w.trim()).filter(w => w);
+                document.getElementById('wordlistStats').innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="fas fa-check"></i> Loaded <strong>${wordlist.length}</strong> passwords
+                    </div>`;
+                document.getElementById('wordlistPreview').innerHTML = `<code>${wordlist.slice(0, 20).join('\n')}</code>`;
+            };
+            reader.readAsText(file);
+        }
+
+        function exportDatabase() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const blob = new Blob([JSON.stringify(users, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'security-lab-data.json';
+            a.click();
+        }
+
+        function clearData() {
+            if (confirm('Clear all stored data?')) {
+                localStorage.clear();
+                alert('Data cleared!');
+            }
+        }
+    </script>
+</body>
+</html>

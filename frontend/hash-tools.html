@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash Analysis Tools - Security Lab</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #1a1a2e, #16213e);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html"><i class="fas fa-shield-virus"></i> Security Lab</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="register.html"><i class="fas fa-user-plus"></i> Register</a></li>
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="fas fa-database"></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="breach.html"><i class="fas fa-stopwatch"></i> Breach Time</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="hash-tools.html"><i class="fas fa-hashtag"></i> Hash Tools</a></li>
+                    <li class="nav-item"><a class="nav-link" href="security-testing.html"><i class="fas fa-shield-alt"></i> Security Testing</a></li>
+                    <li class="nav-item"><a class="nav-link" href="security-guide.html"><i class="fas fa-book"></i> Guide</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i> Actions</a>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="exportDatabase(); return false;"><i class="fas fa-download"></i> Export Data</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="clearData(); return false;"><i class="fas fa-trash"></i> Clear Data</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <h1 class="text-center mb-4"><i class="fas fa-hashtag"></i> Hash Analysis Tools</h1>
+        <p class="text-center text-muted mb-5">Comprehensive hash testing, comparison, and entropy analysis</p>
+
+        <!-- Hash Comparison Tool -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-balance-scale"></i> Hash Algorithm Comparison
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Enter Password</label>
+                        <input type="text" class="form-control" id="comparisonPassword" placeholder="Type a password...">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Select Algorithms</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="checkMD5" checked>
+                            <label class="form-check-label" for="checkMD5">MD5 (Insecure)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="checkSHA1" checked>
+                            <label class="form-check-label" for="checkSHA1">SHA-1 (Deprecated)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="checkSHA256" checked>
+                            <label class="form-check-label" for="checkSHA256">SHA-256 (Good)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="checkBcrypt" checked>
+                            <label class="form-check-label" for="checkBcrypt">BCrypt (Secure)</label>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="compareHashes()"><i class="fas fa-play"></i> Compare Hashes</button>
+                <div id="comparisonResults" class="mt-4"></div>
+            </div>
+        </div>
+
+        <!-- Hash Decoder Tool -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-search"></i> Hash Type Identifier
+            </div>
+            <div class="card-body">
+                <label class="form-label">Paste Hash String</label>
+                <textarea class="form-control mb-3" id="hashInput" rows="3" placeholder="Paste any hash here to identify its type..."></textarea>
+                <button class="btn btn-success" onclick="identifyHash()"><i class="fas fa-search"></i> Identify Hash Type</button>
+                <div id="identificationResults" class="mt-4"></div>
+            </div>
+        </div>
+
+        <!-- Entropy Analyzer -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <i class="fas fa-chart-bar"></i> Password Entropy Analyzer
+            </div>
+            <div class="card-body">
+                <label class="form-label">Enter Password to Analyze</label>
+                <input type="text" class="form-control mb-3" id="entropyPassword" placeholder="Type a password...">
+                <button class="btn btn-warning" onclick="analyzeEntropy()"><i class="fas fa-calculator"></i> Calculate Entropy</button>
+                <div id="entropyResults" class="mt-4"></div>
+                <div id="entropyChart" style="height: 300px; display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="api-client.js"></script>
+    <script src="script.js"></script>
+    <script>
+        function compareHashes() {
+            const password = document.getElementById('comparisonPassword').value;
+            if (!password) {
+                alert('Please enter a password');
+                return;
+            }
+
+            let html = '<div class="table-responsive"><table class="table table-striped">';
+            html += '<thead class="table-dark"><tr><th>Algorithm</th><th>Hash Output</th><th>Length</th><th>Security</th></tr></thead><tbody>';
+
+            if (document.getElementById('checkMD5').checked) {
+                const md5 = CryptoJS.MD5(password).toString();
+                html += `<tr><td><span class="badge bg-danger">MD5</span></td><td><code>${md5}</code></td><td>32 chars</td><td>❌ Insecure</td></tr>`;
+            }
+            if (document.getElementById('checkSHA1').checked) {
+                const sha1 = CryptoJS.SHA1(password).toString();
+                html += `<tr><td><span class="badge bg-warning">SHA-1</span></td><td><code>${sha1}</code></td><td>40 chars</td><td>⚠️ Deprecated</td></tr>`;
+            }
+            if (document.getElementById('checkSHA256').checked) {
+                const sha256 = CryptoJS.SHA256(password).toString();
+                html += `<tr><td><span class="badge bg-info">SHA-256</span></td><td><code>${sha256}</code></td><td>64 chars</td><td>✅ Good</td></tr>`;
+            }
+            if (document.getElementById('checkBcrypt').checked) {
+                html += `<tr><td><span class="badge bg-success">BCrypt</span></td><td><code>$2b$10$...</code></td><td>60 chars</td><td>✅ Secure</td></tr>`;
+            }
+
+            html += '</tbody></table></div>';
+            document.getElementById('comparisonResults').innerHTML = html;
+        }
+
+        function identifyHash() {
+            const hash = document.getElementById('hashInput').value.trim();
+            if (!hash) {
+                alert('Please enter a hash');
+                return;
+            }
+
+            const len = hash.length;
+            let type = 'Unknown';
+            let info = '';
+
+            if (len === 32 && /^[a-f0-9]+$/i.test(hash)) {
+                type = 'MD5';
+                info = '<span class="badge bg-danger">Insecure</span> - Fast, vulnerable to collisions';
+            } else if (len === 40 && /^[a-f0-9]+$/i.test(hash)) {
+                type = 'SHA-1';
+                info = '<span class="badge bg-warning">Deprecated</span> - Known vulnerabilities';
+            } else if (len === 64 && /^[a-f0-9]+$/i.test(hash)) {
+                type = 'SHA-256';
+                info = '<span class="badge bg-info">Good</span> - Suitable for integrity checks';
+            } else if (hash.startsWith('$2') && len === 60) {
+                type = 'BCrypt';
+                info = '<span class="badge bg-success">Secure</span> - Designed for passwords';
+            } else if (hash.startsWith('$argon2')) {
+                type = 'Argon2';
+                info = '<span class="badge bg-success">Most Secure</span> - Memory-hard algorithm';
+            }
+
+            document.getElementById('identificationResults').innerHTML = `
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle"></i> Detection Result</h5>
+                    <p><strong>Hash Type:</strong> ${type}<br>
+                    <strong>Length:</strong> ${len} characters<br>
+                    <strong>Assessment:</strong> ${info}</p>
+                </div>`;
+        }
+
+        function analyzeEntropy() {
+            const password = document.getElementById('entropyPassword').value;
+            if (!password) {
+                alert('Please enter a password');
+                return;
+            }
+
+            let charset = 0;
+            if (/[a-z]/.test(password)) charset += 26;
+            if (/[A-Z]/.test(password)) charset += 26;
+            if (/[0-9]/.test(password)) charset += 10;
+            if (/[^a-zA-Z0-9]/.test(password)) charset += 32;
+
+            const entropy = Math.log2(Math.pow(charset, password.length));
+            const strength = entropy < 28 ? 'Very Weak' : entropy < 36 ? 'Weak' : entropy < 60 ? 'Medium' : entropy < 128 ? 'Strong' : 'Very Strong';
+            const color = entropy < 28 ? 'danger' : entropy < 36 ? 'warning' : entropy < 60 ? 'info' : 'success';
+
+            document.getElementById('entropyResults').innerHTML = `
+                <div class="alert alert-${color}">
+                    <h5><i class="fas fa-chart-line"></i> Entropy Analysis</h5>
+                    <p><strong>Password Length:</strong> ${password.length} characters<br>
+                    <strong>Character Set Size:</strong> ${charset}<br>
+                    <strong>Entropy:</strong> ${entropy.toFixed(2)} bits<br>
+                    <strong>Strength:</strong> ${strength}</p>
+                    <div class="progress" style="height: 30px;">
+                        <div class="progress-bar bg-${color}" style="width: ${Math.min(100, entropy/1.28)}%">${entropy.toFixed(1)} bits</div>
+                    </div>
+                </div>`;
+        }
+
+        function exportDatabase() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const blob = new Blob([JSON.stringify(users, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'security-lab-data.json';
+            a.click();
+        }
+
+        function clearData() {
+            if (confirm('Clear all stored data?')) {
+                localStorage.clear();
+                alert('Data cleared!');
+            }
+        }
+    </script>
+</body>
+</html>

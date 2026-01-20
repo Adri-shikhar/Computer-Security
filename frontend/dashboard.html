@@ -38,26 +38,25 @@
                     <li class="nav-item">
                         <a class="nav-link" href="breach.html"><i class="fas fa-stopwatch"></i> Breach Time</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="analysisDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-microscope"></i> Analysis Tools
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-                            <li><a class="dropdown-item" href="hash-comparison.html"><i class="fas fa-balance-scale"></i> Hash Comparison</a></li>
-                            <li><a class="dropdown-item" href="hash-decoder.html"><i class="fas fa-search"></i> Hash Decoder</a></li>
-                            <li><a class="dropdown-item" href="entropy-visualizer.html"><i class="fas fa-chart-bar"></i> Entropy Analyzer</a></li>
-                        </ul>
+                    <li class="nav-item">
+                        <a class="nav-link" href="hash-tools.html"><i class="fas fa-hashtag"></i> Hash Tools</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="security-testing.html"><i class="fas fa-shield-alt"></i> Security Testing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="security-guide.html"><i class="fas fa-book"></i> Guide</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="demosDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-shield-virus"></i> Security Demos
+                        <a class="nav-link dropdown-toggle" href="#" id="actionsDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog"></i> Actions
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-                            <li><a class="dropdown-item" href="crack-simulator.html"><i class="fas fa-hammer"></i> Cracking Simulator</a></li>
-                            <li><a class="dropdown-item" href="timing-attack.html"><i class="fas fa-stopwatch"></i> Timing Attack</a></li>
-                            <li><a class="dropdown-item" href="wordlist-tool.html"><i class="fas fa-file-upload"></i> Wordlist Upload</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="exportDatabase(); return false;"><i class="fas fa-download"></i> Export Data</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="clearData(); return false;"><i class="fas fa-trash"></i> Clear Data</a></li>
                         </ul>
                     </li>
+                </ul>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="migrationDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-route"></i> Migration & Strategy
