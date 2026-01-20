@@ -12,7 +12,7 @@ Features:
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-from models import db, User, LoginAttempt
+from models import db, User, LoginAttempt, PasswordHistory
 from datetime import datetime, timedelta
 import hashlib
 import secrets
@@ -38,6 +38,9 @@ db.init_app(app)
 # Global Configuration: Switch between security stages
 SECURITY_STAGE = os.getenv('SECURITY_STAGE', 'modern')  # 'broken' or 'modern'
 
+# Pepper - Server-side secret (defense in depth)
+HASH_PEPPER = os.getenv('HASH_PEPPER', 'default-pepper-CHANGE-IN-PRODUCTION-' + secrets.token_hex(16))
+
 # Argon2 Configuration (Professional Settings)
 ph = PasswordHasher(
     time_cost=3,        # Number of iterations
@@ -48,6 +51,11 @@ ph = PasswordHasher(
 )
 
 # Rate limiting configuration
+MAX_LOGIN_ATTEMPTS = 5
+LOCKOUT_DURATION = timedelta(minutes=15)
+
+# Password history settings
+MAX_PASSWORD_HISTORY = 5  # Remember last 5 passwords
 MAX_LOGIN_ATTEMPTS = 5
 LOCKOUT_DURATION = timedelta(minutes=15)
 
@@ -82,6 +90,114 @@ def verify_argon2_hash(password, hash_string):
         return True
     except VerifyMismatchError:
         return False
+
+
+def generate_pbkdf2_hash(password, salt=None, iterations=600000):
+    """
+    PBKDF2-SHA256 hashing (NIST approved, FIPS 140-2 compliant)
+    ✅ SECURE - Still widely used (iOS, Android)
+    """
+    if salt is None:
+        salt = secrets.token_hex(16)
+    
+    # Apply pepper
+    peppered = password + HASH_PEPPER
+    
+    # PBKDF2 with SHA-256
+    hash_bytes = hashlib.pbkdf2_hmac('sha256', peppered.encode('utf-8'), salt.encode('utf-8'), iterations)
+    hash_hex = hash_bytes.hex()
+    
+    # Format: pbkdf2:sha256:iterations:salt:hash
+    return f"pbkdf2:sha256:{iterations}:{salt}:{hash_hex}", salt
+
+
+def verify_pbkdf2_hash(password, stored_hash):
+    """Verify password against PBKDF2 hash"""
+    try:
+        parts = stored_hash.split(':')
+        if len(parts) != 5 or parts[0] != 'pbkdf2':
+            return False
+        
+        algorithm = parts[1]  # should be 'sha256'
+        iterations = int(parts[2])
+        salt = parts[3]
+        stored_hash_hex = parts[4]
+        
+        # Apply pepper
+        peppered = password + HASH_PEPPER
+        
+        # Recompute hash
+        hash_bytes = hashlib.pbkdf2_hmac(algorithm, peppered.encode('utf-8'), salt.encode('utf-8'), iterations)
+        computed_hash = hash_bytes.hex()
+        
+        # Constant-time comparison
+        return secrets.compare_digest(computed_hash, stored_hash_hex)
+    except Exception:
+        return False
+
+
+def apply_pepper(password):
+    """Apply server-side pepper to password"""
+    return password + HASH_PEPPER
+
+
+def check_password_history(user_id, new_password, algorithm):
+    """
+    Check if password was used before (prevents reuse)
+    Returns: (is_reused: bool, message: str)
+    """
+    user = User.query.get(user_id)
+    if not user:
+        return False, "User not found"
+    
+    # Check current password
+    if verify_password(new_password, user.password_hash, user.algorithm):
+        return True, "Cannot reuse current password"
+    
+    # Check password history
+    history = PasswordHistory.query.filter_by(user_id=user_id).order_by(PasswordHistory.created_at.desc()).limit(MAX_PASSWORD_HISTORY).all()
+    
+    for entry in history:
+        if verify_password(new_password, entry.password_hash, entry.algorithm):
+            return True, f"Cannot reuse password from history (last {MAX_PASSWORD_HISTORY} passwords)"
+    
+    return False, "Password is acceptable"
+
+
+def verify_password(password, hash_value, algorithm):
+    """Universal password verification across all algorithms"""
+    peppered = password + HASH_PEPPER if algorithm in ['argon2', 'pbkdf2'] else password
+    
+    if algorithm == 'md5':
+        parts = hash_value.split(':', 1)
+        if len(parts) == 2:
+            salt, hash_part = parts
+            return generate_md5_hash(password, salt) == hash_value
+        else:
+            return generate_md5_hash(password) == hash_value
+    elif algorithm == 'argon2':
+        return verify_argon2_hash(peppered, hash_value)
+    elif algorithm == 'pbkdf2':
+        return verify_pbkdf2_hash(password, hash_value)
+    return False
+
+
+def save_to_password_history(user_id, password_hash, algorithm):
+    """Save current password to history before changing"""
+    history_entry = PasswordHistory(
+        user_id=user_id,
+        password_hash=password_hash,
+        algorithm=algorithm
+    )
+    db.session.add(history_entry)
+    
+    # Keep only last MAX_PASSWORD_HISTORY entries
+    all_history = PasswordHistory.query.filter_by(user_id=user_id).order_by(PasswordHistory.created_at.desc()).all()
+    if len(all_history) > MAX_PASSWORD_HISTORY:
+        for old_entry in all_history[MAX_PASSWORD_HISTORY:]:
+            db.session.delete(old_entry)
+    
+    db.session.commit()
 
 
 def benchmark_hash_performance():
@@ -175,11 +291,15 @@ def register():
             salt = secrets.token_hex(16)
             hash_value = generate_md5_hash(password, salt)
     elif algorithm == 'argon2':
-        # Stage 2: Modern, secure hashing
-        hash_value = generate_argon2_hash(password)
+        # Stage 2: Modern, secure hashing with pepper
+        peppered = apply_pepper(password)
+        hash_value = generate_argon2_hash(peppered)
         salt = 'EMBEDDED'  # Argon2 embeds salt in hash
+    elif algorithm == 'pbkdf2':
+        # PBKDF2-SHA256 with pepper (NIST approved)
+        hash_value, salt = generate_pbkdf2_hash(password)
     else:
-        return jsonify({'success': False, 'message': 'Invalid algorithm'}), 400
+        return jsonify({'success': False, 'message': 'Invalid algorithm. Use: md5, argon2, pbkdf2'}), 400
     
     # Create user
     user = User(
@@ -465,11 +585,224 @@ def health():
     }), 200
 
 
+@app.route('/api/analyze-hash', methods=['POST'])
+def analyze_hash():
+    """Analyze and identify hash format"""
+    data = request.json
+    hash_value = data.get('hash', '').strip()
+    
+    if not hash_value:
+        return jsonify({'success': False, 'message': 'Hash required'}), 400
+    
+    analysis = {
+        'hash': hash_value,
+        'length': len(hash_value),
+        'identified_algorithm': None,
+        'details': {}
+    }
+    
+    # MD5: 32 hex characters
+    if len(hash_value) == 32 and all(c in '0123456789abcdefABCDEF' for c in hash_value):
+        analysis['identified_algorithm'] = 'MD5'
+        analysis['details'] = {
+            'format': 'Hex',
+            'output_size': '128 bits',
+            'security': '⚠️ BROKEN - Do not use',
+            'collision_resistant': 'No',
+            'preimage_resistant': 'Partially (weakened)'
+        }
+    
+    # SHA-1: 40 hex characters
+    elif len(hash_value) == 40 and all(c in '0123456789abcdefABCDEF' for c in hash_value):
+        analysis['identified_algorithm'] = 'SHA-1'
+        analysis['details'] = {
+            'format': 'Hex',
+            'output_size': '160 bits',
+            'security': '⚠️ DEPRECATED - Not for passwords',
+            'collision_resistant': 'No (since 2017)',
+            'preimage_resistant': 'Yes (for now)'
+        }
+    
+    # BCrypt: starts with $2a$, $2b$, or $2y$
+    elif hash_value.startswith(('$2a$', '$2b$', '$2y$')):
+        parts = hash_value.split('$')
+        if len(parts) >= 4:
+            version = parts[1]
+            cost = parts[2]
+            analysis['identified_algorithm'] = 'BCrypt'
+            analysis['details'] = {
+                'format': 'Modular Crypt Format',
+                'version': version,
+                'cost_factor': cost,
+                'iterations': f'2^{cost} = {2**int(cost):,}',
+                'security': '✅ SECURE (if cost ≥ 10)',
+                'salt_embedded': 'Yes',
+                'recommended_cost': '10-12'
+            }
+    
+    # Argon2: starts with $argon2
+    elif hash_value.startswith('$argon2'):
+        parts = hash_value.split('$')
+        if len(parts) >= 5:
+            variant = parts[1]  # argon2i, argon2d, or argon2id
+            version = parts[2]
+            params = dict(item.split('=') for item in parts[3].split(','))
+            
+            analysis['identified_algorithm'] = 'Argon2'
+            analysis['details'] = {
+                'format': 'PHC String Format',
+                'variant': variant.upper(),
+                'version': version,
+                'memory_cost': f"{params.get('m', 'N/A')} KB",
+                'time_cost': f"{params.get('t', 'N/A')} iterations",
+                'parallelism': f"{params.get('p', 'N/A')} threads",
+                'security': '✅ MOST SECURE - State of the art',
+                'salt_embedded': 'Yes',
+                'gpu_resistant': 'Yes (memory-hard)'
+            }
+    
+    # PBKDF2: custom format pbkdf2:algorithm:iterations:salt:hash
+    elif hash_value.startswith('pbkdf2:'):
+        parts = hash_value.split(':')
+        if len(parts) == 5:
+            algorithm = parts[1]
+            iterations = parts[2]
+            analysis['identified_algorithm'] = 'PBKDF2'
+            analysis['details'] = {
+                'format': 'Custom Format',
+                'hash_function': algorithm.upper(),
+                'iterations': f'{iterations:,}',
+                'security': '✅ SECURE (if iterations ≥ 600,000)',
+                'salt_embedded': 'Yes',
+                'nist_approved': 'Yes (FIPS 140-2)',
+                'recommended_iterations': '600,000+'
+            }
+    
+    else:
+        analysis['identified_algorithm'] = 'Unknown'
+        analysis['details'] = {
+            'message': 'Could not identify hash format',
+            'suggestions': [
+                'MD5: 32 hex characters',
+                'SHA-1: 40 hex characters',
+                'BCrypt: Starts with $2a$, $2b$, $2y$',
+                'Argon2: Starts with $argon2',
+                'PBKDF2: Starts with pbkdf2:'
+            ]
+        }
+    
+    return jsonify({
+        'success': True,
+        'analysis': analysis
+    }), 200
+
+
+@app.route('/api/compare-hashes', methods=['POST'])
+def compare_hashes():
+    """Generate and compare same password across all algorithms"""
+    data = request.json
+    password = data.get('password', '')
+    
+    if not password:
+        return jsonify({'success': False, 'message': 'Password required'}), 400
+    
+    comparison = {}
+    
+    # MD5
+    start = time.time()
+    md5_hash = generate_md5_hash(password)
+    comparison['md5'] = {
+        'hash': md5_hash,
+        'length': len(md5_hash),
+        'time_ms': round((time.time() - start) * 1000, 3),
+        'salt': 'None',
+        'security': '⚠️ BROKEN'
+    }
+    
+    # Argon2
+    start = time.time()
+    peppered = apply_pepper(password)
+    argon2_hash = generate_argon2_hash(peppered)
+    comparison['argon2'] = {
+        'hash': argon2_hash,
+        'length': len(argon2_hash),
+        'time_ms': round((time.time() - start) * 1000, 3),
+        'salt': 'Embedded',
+        'security': '✅ MOST SECURE'
+    }
+    
+    # PBKDF2
+    start = time.time()
+    pbkdf2_hash, pbkdf2_salt = generate_pbkdf2_hash(password)
+    comparison['pbkdf2'] = {
+        'hash': pbkdf2_hash,
+        'length': len(pbkdf2_hash),
+        'time_ms': round((time.time() - start) * 1000, 3),
+        'salt': pbkdf2_salt,
+        'security': '✅ SECURE'
+    }
+    
+    return jsonify({
+        'success': True,
+        'password': password,
+        'comparison': comparison
+    }), 200
+
+
+@app.route('/api/crack-simulation', methods=['POST'])
+def crack_simulation():
+    """Simulate hash cracking with wordlist"""
+    data = request.json
+    target_hash = data.get('hash', '')
+    algorithm = data.get('algorithm', 'md5')
+    wordlist = data.get('wordlist', ['password', '123456', 'admin', 'welcome'])
+    
+    if not target_hash:
+        return jsonify({'success': False, 'message': 'Hash required'}), 400
+    
+    start_time = time.time()
+    attempts = 0
+    found = False
+    cracked_password = None
+    
+    for word in wordlist:
+        attempts += 1
+        
+        # Generate hash based on algorithm
+        if algorithm == 'md5':
+            test_hash = generate_md5_hash(word)
+        elif algorithm == 'argon2':
+            peppered = apply_pepper(word)
+            test_hash = generate_argon2_hash(peppered)
+        elif algorithm == 'pbkdf2':
+            test_hash, _ = generate_pbkdf2_hash(word)
+        else:
+            continue
+        
+        if test_hash == target_hash:
+            found = True
+            cracked_password = word
+            break
+    
+    elapsed_time = time.time() - start_time
+    
+    return jsonify({
+        'success': True,
+        'found': found,
+        'cracked_password': cracked_password,
+        'attempts': attempts,
+        'time_seconds': round(elapsed_time, 3),
+        'rate_per_second': round(attempts / elapsed_time if elapsed_time > 0 else 0, 2)
+    }), 200
+
+
 # Initialize database tables
 with app.app_context():
     db.create_all()
     print("✅ Database initialized")
     print(f"🔒 Security Stage: {SECURITY_STAGE}")
+    print(f"🔐 Pepper Enabled: {HASH_PEPPER[:20]}...")
+    print(f"📜 Password History: Last {MAX_PASSWORD_HISTORY} passwords")
     print(f"🚀 Server starting on http://localhost:5000")
 
 

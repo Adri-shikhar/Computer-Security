@@ -27,7 +27,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(512), nullable=False)
-    algorithm = db.Column(db.String(20), nullable=False)  # md5, sha1, bcrypt, argon2
+    algorithm = db.Column(db.String(20), nullable=False)  # md5, sha1, bcrypt, argon2, pbkdf2
     salt = db.Column(db.String(512))  # NONE, EMBEDDED, or salt value
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime, nullable=True)
@@ -86,3 +86,24 @@ class LoginAttempt(db.Model):
             'ip_address': self.ip_address,
             'timestamp': self.timestamp.isoformat()
         }
+
+
+class PasswordHistory(db.Model):
+    """
+    Password History model for tracking previous passwords
+    Prevents password reuse for security compliance (NIST, PCI-DSS)
+    """
+    __tablename__ = 'password_history'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    password_hash = db.Column(db.String(512), nullable=False)
+    algorithm = db.Column(db.String(20), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationship
+    user = db.relationship('User', backref=db.backref('password_history', lazy='dynamic', order_by='PasswordHistory.created_at.desc()'))
+    
+    def __repr__(self):
+        return f'<PasswordHistory User#{self.user_id} at {self.created_at}>'
+

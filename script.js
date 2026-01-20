@@ -159,6 +159,28 @@ async function generateHash(password, algorithm, salt = null) {
             hideSpinner();
             break;
             
+        case 'pbkdf2':
+            // PBKDF2-SHA256 (NIST approved, FIPS 140-2 compliant)
+            showSpinner(`Computing PBKDF2-SHA256 hash (600,000 iterations)...`);
+            const iterations = 600000; // OWASP 2023 recommendation
+            const pbkdf2Salt = generateSalt();
+            
+            hash = await new Promise((resolve) => {
+                setTimeout(() => {
+                    const pbkdf2Hash = CryptoJS.PBKDF2(password, pbkdf2Salt, {
+                        keySize: 256/32,
+                        iterations: iterations,
+                        hasher: CryptoJS.algo.SHA256
+                    }).toString();
+                    // Format: pbkdf2:sha256:iterations:salt:hash
+                    const formatted = `pbkdf2:sha256:${iterations}:${pbkdf2Salt}:${pbkdf2Hash}`;
+                    resolve(formatted);
+                }, 10);
+            });
+            usedSalt = pbkdf2Salt;
+            hideSpinner();
+            break;
+            
         case 'argon2':
             // Argon2id with configurable memory
             showSpinner(`Computing Argon2id hash (${currentConfig.argon2Memory}MB memory)...`);

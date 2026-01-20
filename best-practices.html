@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Best Practices - Security Lab</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #1a1a2e, #16213e);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shield-virus"></i> Security Lab
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="fas fa-sign-in-alt"></i> Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="register.html"><i class="fas fa-user-plus"></i> Register</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html"><i class="fas fa-database"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="breach.html"><i class="fas fa-stopwatch"></i> Breach Time</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="analysisDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-microscope"></i> Analysis Tools
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                            <li><a class="dropdown-item" href="hash-comparison.html"><i class="fas fa-balance-scale"></i> Hash Comparison</a></li>
+                            <li><a class="dropdown-item" href="hash-decoder.html"><i class="fas fa-search"></i> Hash Decoder</a></li>
+                            <li><a class="dropdown-item" href="entropy-visualizer.html"><i class="fas fa-chart-bar"></i> Entropy Analyzer</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="demosDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-shield-virus"></i> Security Demos
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                            <li><a class="dropdown-item" href="crack-simulator.html"><i class="fas fa-hammer"></i> Cracking Simulator</a></li>
+                            <li><a class="dropdown-item" href="timing-attack.html"><i class="fas fa-stopwatch"></i> Timing Attack</a></li>
+                            <li><a class="dropdown-item" href="wordlist-tool.html"><i class="fas fa-file-upload"></i> Wordlist Upload</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle active" href="#" id="migrationDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-route"></i> Migration & Strategy
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                            <li><a class="dropdown-item" href="migration-strategies.html"><i class="fas fa-sitemap"></i> Migration Paths</a></li>
+                            <li><a class="dropdown-item active" href="best-practices.html"><i class="fas fa-lightbulb"></i> Best Practices</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="actionsDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog"></i> Actions
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="exportDatabase(); return false;"><i class="fas fa-download"></i> Export Data</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="clearData(); return false;"><i class="fas fa-trash"></i> Clear Data</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="text-center mb-5">
+            <h1><i class="fas fa-lightbulb"></i> Security Best Practices</h1>
+            <p class="lead">Industry standards and recommendations for password security</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-success">
+                <h4 class="mb-0"><i class="fas fa-shield-alt"></i> Essential Security Guidelines</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="text-success"><i class="fas fa-check-circle"></i> Do's</h5>
+                        <ul class="list-group list-group-flush mb-3">
+                            <li class="list-group-item bg-transparent text-white border-success">
+                                <i class="fas fa-shield-alt text-success"></i> Use Argon2id or PBKDF2-SHA256 for password hashing
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-success">
+                                <i class="fas fa-random text-success"></i> Generate cryptographically secure random salts (16+ bytes)
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-success">
+                                <i class="fas fa-lock text-success"></i> Implement rate limiting on authentication endpoints
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-success">
+                                <i class="fas fa-clock text-success"></i> Use constant-time comparison for hash verification
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-success">
+                                <i class="fas fa-layer-group text-success"></i> Add pepper (server-side secret) for defense-in-depth
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-success">
+                                <i class="fas fa-history text-success"></i> Prevent password reuse with history tracking
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-success">
+                                <i class="fas fa-key text-success"></i> Enforce strong password requirements (12+ chars, complexity)
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-success">
+                                <i class="fas fa-sync text-success"></i> Regularly review and update hashing parameters
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="text-danger"><i class="fas fa-times-circle"></i> Don'ts</h5>
+                        <ul class="list-group list-group-flush mb-3">
+                            <li class="list-group-item bg-transparent text-white border-danger">
+                                <i class="fas fa-ban text-danger"></i> Never use MD5 or SHA-1 for password hashing
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-danger">
+                                <i class="fas fa-ban text-danger"></i> Don't implement your own cryptographic algorithms
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-danger">
+                                <i class="fas fa-ban text-danger"></i> Avoid storing passwords in plain text or reversible encryption
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-danger">
+                                <i class="fas fa-ban text-danger"></i> Don't use the same salt for all users
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-danger">
+                                <i class="fas fa-ban text-danger"></i> Never log or display password hashes
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-danger">
+                                <i class="fas fa-ban text-danger"></i> Don't use weak iteration counts (PBKDF2 needs 600k+)
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-danger">
+                                <i class="fas fa-ban text-danger"></i> Avoid string comparison for hash verification (timing attacks)
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-danger">
+                                <i class="fas fa-ban text-danger"></i> Don't send passwords over unencrypted connections
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 border border-primary rounded">
+                    <h5 class="text-primary"><i class="fas fa-book"></i> Recommended References</h5>
+                    <ul class="text-white-50">
+                        <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html" target="_blank" class="text-info">OWASP Password Storage Cheat Sheet</a></li>
+                        <li><a href="https://pages.nist.gov/800-63-3/sp800-63b.html" target="_blank" class="text-info">NIST Digital Identity Guidelines</a></li>
+                        <li><a href="https://www.rfc-editor.org/rfc/rfc9106.html" target="_blank" class="text-info">RFC 9106: Argon2 Memory-Hard Function</a></li>
+                        <li><a href="https://www.rfc-editor.org/rfc/rfc8018.html" target="_blank" class="text-info">RFC 8018: PKCS #5 PBKDF2 Specification</a></li>
+                    </ul>
+                </div>
+
+                <div class="mt-4 p-3 bg-dark rounded">
+                    <h5 class="text-warning"><i class="fas fa-graduation-cap"></i> Key Takeaways</h5>
+                    <ol class="text-white-50">
+                        <li><strong>Use Modern Algorithms:</strong> Argon2id is the gold standard, PBKDF2 is acceptable</li>
+                        <li><strong>Always Salt:</strong> Unique, random salt per password prevents rainbow table attacks</li>
+                        <li><strong>Add Pepper:</strong> Server-side secret provides additional security layer</li>
+                        <li><strong>Constant-Time Operations:</strong> Prevents timing attacks during verification</li>
+                        <li><strong>Track Password History:</strong> Prevents users from reusing old passwords</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function exportDatabase() {
+            const users = JSON.parse(localStorage.getItem('secureAuthUsers') || '[]');
+            const dataStr = JSON.stringify(users, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const exportFileDefaultName = 'security-lab-data.json';
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+        
+        function clearData() {
+            if (confirm('Are you sure you want to clear all data? This cannot be undone!')) {
+                localStorage.removeItem('secureAuthUsers');
+                alert('All data has been cleared!');
+            }
+        }
+    </script>
+</body>
+</html>
