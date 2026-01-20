@@ -69,8 +69,8 @@ function saveAllUsers(users) {
 }
 
 // Add a new user to the database
-function addUser(username, algorithm, hash, salt) {
-    const users = getAllUsers();
+async function addUser(username, algorithm, hash, salt) {
+    const users = await getAllUsers();
     
     if (users.find(u => u.username === username)) {
         return { success: false, message: 'Username already exists!' };
@@ -90,14 +90,14 @@ function addUser(username, algorithm, hash, salt) {
 }
 
 // Find a user by username
-function findUser(username) {
-    const users = getAllUsers();
+async function findUser(username) {
+    const users = await getAllUsers();
     return users.find(u => u.username === username);
 }
 
 // Update user (for legacy migration)
-function updateUser(username, newData) {
-    const users = getAllUsers();
+async function updateUser(username, newData) {
+    const users = await getAllUsers();
     const index = users.findIndex(u => u.username === username);
     
     if (index !== -1) {
@@ -303,7 +303,7 @@ async function attemptLegacyMigration(user, password) {
         const { hash, salt } = await generateHash(password, 'argon2');
         
         // Update user record
-        updateUser(user.username, {
+        await updateUser(user.username, {
             algorithm: 'argon2',
             hash: hash,
             salt: salt,
@@ -347,8 +347,8 @@ function showMigrationToast(username) {
 /**
  * EXPORT DATABASE FOR HASHCAT
  */
-function exportDatabaseForHashcat() {
-    const users = getAllUsers();
+async function exportDatabaseForHashcat() {
+    const users = await getAllUsers();
     
     if (users.length === 0) {
         alert('No users in database to export!');
@@ -413,6 +413,35 @@ function analyzePasswordStrength(password) {
         totalCombinations: totalCombinations,
         hasLower, hasUpper, hasDigit, hasSymbol
     };
+}
+
+function generatePasswordRecommendation(weakPassword) {
+    // If password is already strong, don't show recommendation
+    const analysis = analyzePasswordStrength(weakPassword);
+    if (analysis.length >= 12 && analysis.hasLower && analysis.hasUpper && analysis.hasDigit && analysis.hasSymbol) {
+        return null;
+    }
+    
+    let recommendation = weakPassword;
+    
+    // Add uppercase if missing
+    if (!analysis.hasUpper && analysis.hasLower) {
+        recommendation = recommendation.charAt(0).toUpperCase() + recommendation.slice(1);
+    } else if (!analysis.hasUpper && !analysis.hasLower) {
+        recommendation = 'P' + recommendation;
+    }
+    
+    // Add special characters and numbers
+    const specialSuffixes = ['@2024!', '#Secure!', '$tR0ng!', '@Pass!', '#2026$', '!Sec@'];
+    const randomSuffix = specialSuffixes[Math.floor(Math.random() * specialSuffixes.length)];
+    recommendation += randomSuffix;
+    
+    // Ensure minimum length
+    while (recommendation.length < 12) {
+        recommendation += Math.floor(Math.random() * 10);
+    }
+    
+    return recommendation;
 }
 
 function calculateBreachTime(password, algorithm) {
@@ -836,6 +865,52 @@ if (regPassword) {
     });
 }
 
+// Password visibility toggle
+const togglePasswordBtn = document.getElementById('togglePassword');
+const togglePasswordIcon = document.getElementById('togglePasswordIcon');
+if (togglePasswordBtn && regPassword) {
+    togglePasswordBtn.addEventListener('click', () => {
+        const type = regPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+        regPassword.setAttribute('type', type);
+        
+        if (togglePasswordIcon) {
+            togglePasswordIcon.className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+        }
+    });
+}
+
+// Copy recommendation button
+const copyRecommendationBtn = document.getElementById('copyRecommendation');
+if (copyRecommendationBtn) {
+    copyRecommendationBtn.addEventListener('click', () => {
+        const recommendedPassword = document.getElementById('recommendedPassword');
+        if (recommendedPassword) {
+            const textToCopy = recommendedPassword.textContent;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalHTML = copyRecommendationBtn.innerHTML;
+                copyRecommendationBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                copyRecommendationBtn.classList.add('btn-success');
+                copyRecommendationBtn.classList.remove('btn-primary');
+                
+                // Also fill the password field
+                if (regPassword) {
+                    regPassword.value = textToCopy;
+                    regPassword.dispatchEvent(new Event('input'));
+                }
+                
+                setTimeout(() => {
+                    copyRecommendationBtn.innerHTML = originalHTML;
+                    copyRecommendationBtn.classList.remove('btn-success');
+                    copyRecommendationBtn.classList.add('btn-primary');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy to clipboard');
+            });
+        }
+    });
+}
+
 // Algorithm change - update breach time (only if element exists)
 const regAlgorithmChange = document.getElementById('regAlgorithm');
 if (regAlgorithmChange) {
@@ -887,7 +962,7 @@ if (registerForm) {
                     return;
                 }
                 
-                result = addUser(username, algorithm, hash, salt);
+                result = await addUser(username, algorithm, hash, salt);
                 if (result.success) {
                     showMessage('registerMessage', `✓ ${result.message} (LocalStorage)`, 'success');
                 } else {
@@ -976,7 +1051,7 @@ if (loginForm) {
             }
             
             // Fallback to localStorage
-            const user = findUser(username);
+            const user = await findUser(username);
             
             if (!user) {
                 showMessage('loginMessage', '✗ User not found!', 'danger');

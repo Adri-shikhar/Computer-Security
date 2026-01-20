@@ -215,8 +215,8 @@
         }
 
         // Update statistics
-        function updateStats() {
-            const users = getAllUsers();
+        async function updateStats() {
+            const users = await getAllUsers();
             document.getElementById('totalUsers').textContent = users.length;
             
             const md5Users = users.filter(u => u.algorithm === 'md5');
@@ -231,9 +231,9 @@
 
         // Override loadDashboard to also update stats
         const originalLoadDashboard = loadDashboard;
-        loadDashboard = function() {
-            originalLoadDashboard();
-            updateStats();
+        loadDashboard = async function() {
+            await originalLoadDashboard();
+            await updateStats();
         };
     </script>
 </body>
