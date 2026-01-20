@@ -12,205 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Custom Styles -->
-    <link rel="stylesheet" href="assets/css/style.css">
-    <style>
-        /* Unique Sidebar Navigation */
-        .sidebar-nav {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 280px;
-            height: 100vh;
-            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-            padding: 20px 0;
-            overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.3);
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar-nav::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .sidebar-nav::-webkit-scrollbar-thumb {
-            background: rgba(139, 92, 246, 0.5);
-            border-radius: 3px;
-        }
-
-        .sidebar-header {
-            padding: 0 20px 20px;
-            border-bottom: 2px solid rgba(139, 92, 246, 0.3);
-            margin-bottom: 20px;
-        }
-
-        .logo-container {
-            text-align: center;
-        }
-
-        .sidebar-content {
-            padding: 0 10px;
-        }
-
-        .nav-section {
-            margin-bottom: 25px;
-        }
-
-        .section-title {
-            color: #8b5cf6;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 8px 15px;
-            margin-bottom: 5px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 10px;
-            margin: 3px 0;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .nav-item:hover {
-            background: rgba(139, 92, 246, 0.2);
-            transform: translateX(5px);
-            color: #fff;
-        }
-
-        .nav-item.active {
-            background: linear-gradient(135deg, #8b5cf6, #6366f1);
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
-        }
-
-        .nav-item i {
-            width: 24px;
-            margin-right: 12px;
-            font-size: 1.1rem;
-        }
-
-        .nav-item span:first-of-type {
-            flex: 1;
-        }
-
-        .nav-item .badge {
-            font-size: 0.65rem;
-            padding: 3px 8px;
-        }
-
-        .sidebar-footer {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 15px;
-            background: rgba(0,0,0,0.3);
-            border-top: 1px solid rgba(139, 92, 246, 0.3);
-        }
-
-        .top-bar {
-            position: fixed;
-            top: 0;
-            left: 280px;
-            right: 0;
-            height: 70px;
-            background: rgba(26, 26, 46, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 2px solid rgba(139, 92, 246, 0.3);
-            z-index: 999;
-            display: flex;
-            align-items: center;
-            padding: 0 30px;
-        }
-
-        .page-title h4 {
-            color: #fff;
-            font-weight: 600;
-        }
-
-        .top-actions .badge {
-            padding: 8px 12px;
-            font-size: 0.8rem;
-        }
-
-        .sidebar-toggle {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1001;
-            background: linear-gradient(135deg, #8b5cf6, #6366f1);
-            border: none;
-            color: white;
-            width: 45px;
-            height: 45px;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
-            display: none;
-        }
-
-        /* Adjust main container */
-        body {
-            padding-left: 280px;
-            padding-top: 70px;
-        }
-
-        .main-container {
-            max-width: 100%;
-            padding: 30px;
-        }
-
-        /* Mobile Responsive */
-        @media (max-width: 991px) {
-            body {
-                padding-left: 0;
-                padding-top: 0;
-            }
-
-            .sidebar-nav {
-                transform: translateX(-100%);
-            }
-
-            .sidebar-nav.active {
-                transform: translateX(0);
-            }
-
-            .top-bar {
-                left: 0;
-            }
-
-            .sidebar-toggle {
-                display: block;
-            }
-
-            .main-container {
-                padding: 80px 15px 20px;
-            }
-        }
-
-        /* Feature Cards Enhancement */
-        .feature-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
-            border-color: rgba(139, 92, 246, 0.6);
-        }
-    </style>
+    <link rel="stylesheet" href="shared/css/style.css">
+    <link rel="stylesheet" href="shared/css/nav-styles.css">
 </head>
 <body>
     <!-- Loading Spinner Overlay -->
@@ -241,7 +44,7 @@
                     <i class="fas fa-sign-in-alt"></i>
                     <span>Login</span>
                 </a>
-                <a href="pages/register.html" class="nav-item">
+                <a href="features/auth/register.html" class="nav-item">
                     <i class="fas fa-user-plus"></i>
                     <span>Register</span>
                 </a>
@@ -250,35 +53,40 @@
             <!-- Main Features -->
             <div class="nav-section">
                 <div class="section-title">Features</div>
-                <a href="pages/all-features.html" class="nav-item">
+                <a href="features/index.html" class="nav-item">
                     <i class="fas fa-th-large"></i>
                     <span>All Features</span>
                     <span class="badge bg-success">Overview</span>
                 </a>
-                <a href="pages/dashboard.html" class="nav-item">
+                <a href="features/dashboard/dashboard.html" class="nav-item">
                     <i class="fas fa-database"></i>
                     <span>Dashboard</span>
                     <span class="badge bg-info">Manage</span>
                 </a>
-                <a href="pages/breach.html" class="nav-item">
+                <a href="features/breach-analysis/breach.html" class="nav-item">
                     <i class="fas fa-stopwatch"></i>
                     <span>Breach Time</span>
                     <span class="badge bg-warning">Analysis</span>
                 </a>
-                <a href="pages/hash-tools.html" class="nav-item">
+                <a href="features/hash-tools/hash-tools.html" class="nav-item">
                     <i class="fas fa-hashtag"></i>
                     <span>Hash Tools</span>
                     <span class="badge bg-success">3 Tools</span>
                 </a>
-                <a href="pages/security-testing.html" class="nav-item">
+                <a href="features/security-testing/security-testing.html" class="nav-item">
                     <i class="fas fa-shield-alt"></i>
                     <span>Security Testing</span>
                     <span class="badge bg-danger">Lab</span>
                 </a>
-                <a href="pages/security-guide.html" class="nav-item">
+                <a href="features/guides/security-guide.html" class="nav-item">
                     <i class="fas fa-book"></i>
                     <span>Security Guide</span>
                     <span class="badge bg-primary">Learn</span>
+                </a>
+                <a href="tools/index.html" class="nav-item">
+                    <i class="fas fa-tools"></i>
+                    <span>Tools & Diagnostics</span>
+                    <span class="badge bg-warning text-dark">Dev</span>
                 </a>
             </div>
 
@@ -444,8 +252,8 @@
         // Disable tab navigation for multi-page setup
         window.MULTI_PAGE_MODE = true;
     </script>
-    <script src="assets/js/api-client.js"></script>
-    <script src="assets/js/script.js"></script>
+    <script src="shared/js/api-client.js"></script>
+    <script src="shared/js/script.js"></script>
 
     <script>
         // Helper functions for navigation links

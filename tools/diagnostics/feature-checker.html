@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Feature Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00f3ff;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        .summary-card h2 {
+            font-size: 2.5em;
+            margin: 10px 0;
+        }
+        .summary-card.success h2 { color: #00ff88; }
+        .summary-card.error h2 { color: #ff4757; }
+        .summary-card.warning h2 { color: #ffa502; }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .test-section h2 {
+            color: #00f3ff;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0, 243, 255, 0.3);
+        }
+        .test-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border-left: 4px solid transparent;
+            transition: all 0.3s;
+        }
+        .test-item.success {
+            border-left-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+        .test-item.error {
+            border-left-color: #ff4757;
+            background: rgba(255, 71, 87, 0.1);
+        }
+        .test-item.warning {
+            border-left-color: #ffa502;
+            background: rgba(255, 165, 2, 0.1);
+        }
+        .test-item.testing {
+            border-left-color: #3742fa;
+            background: rgba(55, 66, 250, 0.1);
+        }
+        .status-icon {
+            font-size: 1.5em;
+            margin-right: 15px;
+            min-width: 30px;
+        }
+        .test-content {
+            flex: 1;
+        }
+        .test-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        .test-details {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        .test-url {
+            color: #00f3ff;
+            text-decoration: none;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+        .test-url:hover {
+            text-decoration: underline;
+        }
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 0.9em;
+        }
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .controls button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 1em;
+            font-weight: 600;
+        }
+        .controls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+        .expand-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+        .details {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .details.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Complete Feature & System Checker</h1>
+        
+        <div class="summary" id="summary">
+            <div class="summary-card success">
+                <div>✅ Passed</div>
+                <h2 id="passedCount">0</h2>
+            </div>
+            <div class="summary-card error">
+                <div>❌ Failed</div>
+                <h2 id="failedCount">0</h2>
+            </div>
+            <div class="summary-card warning">
+                <div>⚠️ Warnings</div>
+                <h2 id="warningCount">0</h2>
+            </div>
+            <div class="summary-card">
+                <div>📊 Total Tests</div>
+                <h2 id="totalCount">0</h2>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button onclick="runAllTests()">🚀 Run All Tests</button>
+            <button onclick="testPages()">📄 Test Pages Only</button>
+            <button onclick="testAssets()">🎨 Test Assets Only</button>
+            <button onclick="testBackendAPI()">🔌 Test Backend Only</button>
+            <button onclick="location.reload()">🔄 Reset</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        let testResults = {
+            passed: 0,
+            failed: 0,
+            warnings: 0,
+            total: 0
+        };
+
+        const pages = [
+            { name: 'Home/Login', url: '/index.html', requiredScripts: ['script.js', 'api-client.js'] },
+            { name: 'Register', url: '/features/auth/register.html', requiredScripts: ['script.js', 'api-client.js'] },
+            { name: 'Dashboard', url: '/features/dashboard/dashboard.html', requiredScripts: ['script.js', 'api-client.js'] },
+            { name: 'Breach Time Calculator', url: '/features/breach-analysis/breach.html', requiredScripts: ['script.js', 'api-client.js'] },
+            { name: 'Hash Tools', url: '/features/hash-tools/hash-tools.html', requiredScripts: ['script.js', 'api-client.js'] },
+            { name: 'Security Testing', url: '/features/security-testing/security-testing.html', requiredScripts: ['script.js', 'api-client.js'] },
+            { name: 'Security Guide', url: '/features/guides/security-guide.html', requiredScripts: ['script.js', 'api-client.js'] },
+            { name: 'All Features Overview', url: '/features/all-features.html', requiredScripts: ['script.js'] }
+        ];
+
+        const assets = [
+            { name: 'Main Stylesheet', url: '/shared/css/style.css', type: 'css' },
+            { name: 'Navigation Styles', url: '/shared/css/nav-styles.css', type: 'css' },
+            { name: 'Main Script', url: '/shared/js/script.js', type: 'js' },
+            { name: 'API Client', url: '/shared/js/api-client.js', type: 'js' }
+        ];
+
+        const backendEndpoints = [
+            { name: 'Test Endpoint', url: 'http://127.0.0.1:5000/api/test', method: 'GET' },
+            { name: 'Health Check', url: 'http://127.0.0.1:5000/api/health', method: 'GET' },
+            { name: 'Get All Users', url: 'http://127.0.0.1:5000/api/users', method: 'GET' }
+        ];
+
+        function updateSummary() {
+            document.getElementById('passedCount').textContent = testResults.passed;
+            document.getElementById('failedCount').textContent = testResults.failed;
+            document.getElementById('warningCount').textContent = testResults.warnings;
+            document.getElementById('totalCount').textContent = testResults.total;
+        }
+
+        function addTestResult(sectionId, name, status, details = '', url = '', action = null) {
+            testResults.total++;
+            if (status === 'success') testResults.passed++;
+            else if (status === 'error') testResults.failed++;
+            else if (status === 'warning') testResults.warnings++;
+
+            updateSummary();
+
+            const section = document.getElementById(sectionId);
+            const item = document.createElement('div');
+            item.className = `test-item ${status}`;
+            
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                testing: '⏳'
+            };
+
+            let actionBtn = '';
+            if (action) {
+                actionBtn = `<button class="action-btn" onclick="${action}">Open</button>`;
+            } else if (url) {
+                actionBtn = `<button class="action-btn" onclick="window.open('${url}', '_blank')">Open</button>`;
+            }
+
+            let detailsHtml = '';
+            if (details) {
+                const detailId = 'detail-' + Date.now() + '-' + Math.random();
+                detailsHtml = `
+                    <button class="expand-btn" onclick="toggleDetails('${detailId}')">Show Details</button>
+                    <div class="details" id="${detailId}">
+                        <pre>${details}</pre>
+                    </div>
+                `;
+            }
+
+            item.innerHTML = `
+                <div class="status-icon">${icons[status]}</div>
+                <div class="test-content">
+                    <div class="test-name">${name}</div>
+                    ${url ? `<a href="${url}" target="_blank" class="test-url">${url}</a>` : ''}
+                    ${detailsHtml}
+                </div>
+                ${actionBtn}
+            `;
+            
+            section.appendChild(item);
+        }
+
+        function toggleDetails(id) {
+            const element = document.getElementById(id);
+            element.classList.toggle('show');
+        }
+
+        function createSection(title, id) {
+            const section = document.createElement('div');
+            section.className = 'test-section';
+            section.innerHTML = `<h2>${title}</h2><div id="${id}"></div>`;
+            document.getElementById('results').appendChild(section);
+        }
+
+        async function testPages() {
+            createSection('📄 Page Loading Tests', 'pageTests');
+
+            for (const page of pages) {
+                try {
+                    const response = await fetch(`http://localhost:8000${page.url}`);
+                    const html = await response.text();
+                    
+                    if (response.ok) {
+                        // Check for required scripts
+                        let missingScripts = [];
+                        let scriptIssues = [];
+                        
+                        for (const script of page.requiredScripts) {
+                            // Check for both old and new paths
+                            const hasOldPath = html.includes(`src="${script}"`);
+                            const hasNewPath = html.includes(`src="../../shared/js/${script}"`) || html.includes(`src="../../shared/js/${script}"`);
+                            
+                            if (hasOldPath && !hasNewPath) {
+                                scriptIssues.push(`${script} uses old path (not ../assets/js/)`);
+                            } else if (!hasOldPath && !hasNewPath) {
+                                missingScripts.push(script);
+                            }
+                        }
+
+                        if (missingScripts.length > 0) {
+                            addTestResult('pageTests', page.name, 'error', 
+                                `Missing scripts: ${missingScripts.join(', ')}`, 
+                                `http://localhost:8000${page.url}`);
+                        } else if (scriptIssues.length > 0) {
+                            addTestResult('pageTests', page.name, 'warning', 
+                                scriptIssues.join('\n'), 
+                                `http://localhost:8000${page.url}`);
+                        } else {
+                            addTestResult('pageTests', page.name, 'success', 
+                                `All scripts loaded correctly`, 
+                                `http://localhost:8000${page.url}`);
+                        }
+                    } else {
+                        addTestResult('pageTests', page.name, 'error', 
+                            `HTTP ${response.status}: ${response.statusText}`, 
+                            `http://localhost:8000${page.url}`);
+                    }
+                } catch (error) {
+                    addTestResult('pageTests', page.name, 'error', 
+                        `Failed to load: ${error.message}`, 
+                        `http://localhost:8000${page.url}`);
+                }
+            }
+        }
+
+        async function testAssets() {
+            createSection('🎨 Asset Loading Tests', 'assetTests');
+
+            for (const asset of assets) {
+                try {
+                    const response = await fetch(`http://localhost:8000${asset.url}`);
+                    
+                    if (response.ok) {
+                        const content = await response.text();
+                        const size = new Blob([content]).size;
+                        const sizeKB = (size / 1024).toFixed(2);
+                        
+                        addTestResult('assetTests', asset.name, 'success', 
+                            `Loaded successfully (${sizeKB} KB)`, 
+                            `http://localhost:8000${asset.url}`);
+                    } else {
+                        addTestResult('assetTests', asset.name, 'error', 
+                            `HTTP ${response.status}: ${response.statusText}`, 
+                            `http://localhost:8000${asset.url}`);
+                    }
+                } catch (error) {
+                    addTestResult('assetTests', asset.name, 'error', 
+                        `Failed to load: ${error.message}`, 
+                        `http://localhost:8000${asset.url}`);
+                }
+            }
+        }
+
+        async function testBackendAPI() {
+            createSection('🔌 Backend API Tests', 'backendTests');
+
+            for (const endpoint of backendEndpoints) {
+                try {
+                    const response = await fetch(endpoint.url, { method: endpoint.method });
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        addTestResult('backendTests', endpoint.name, 'success', 
+                            JSON.stringify(data, null, 2), 
+                            endpoint.url);
+                    } else {
+                        addTestResult('backendTests', endpoint.name, 'warning', 
+                            `HTTP ${response.status}: ${JSON.stringify(data, null, 2)}`, 
+                            endpoint.url);
+                    }
+                } catch (error) {
+                    addTestResult('backendTests', endpoint.name, 'error', 
+                        `Backend not responding: ${error.message}\n\nMake sure Flask backend is running:\ncd backend\npython app.py`, 
+                        endpoint.url);
+                }
+            }
+        }
+
+        async function testFrontendFunctions() {
+            createSection('⚙️ Frontend Function Tests', 'functionTests');
+
+            const functions = [
+                'getAllUsers',
+                'loadDashboard',
+                'renderUserTable',
+                'loginUser',
+                'registerUser',
+                'calculateBreachTime',
+                'exportDatabaseForHashcat',
+                'clearDatabase'
+            ];
+
+            // Load scripts first
+            try {
+                await new Promise((resolve, reject) => {
+                    const script1 = document.createElement('script');
+                    script1.src = '/assets/js/api-client.js';
+                    script1.onload = () => {
+                        const script2 = document.createElement('script');
+                        script2.src = '/assets/js/script.js';
+                        script2.onload = resolve;
+                        script2.onerror = reject;
+                        document.head.appendChild(script2);
+                    };
+                    script1.onerror = reject;
+                    document.head.appendChild(script1);
+                });
+
+                setTimeout(() => {
+                    functions.forEach(fn => {
+                        if (typeof window[fn] === 'function') {
+                            addTestResult('functionTests', `Function: ${fn}`, 'success', 
+                                'Function is available');
+                        } else {
+                            addTestResult('functionTests', `Function: ${fn}`, 'error', 
+                                'Function not found in global scope');
+                        }
+                    });
+
+                    // Test CryptoJS
+                    if (typeof CryptoJS !== 'undefined') {
+                        addTestResult('functionTests', 'CryptoJS Library', 'success', 
+                            'CryptoJS is loaded and available');
+                    } else {
+                        addTestResult('functionTests', 'CryptoJS Library', 'warning', 
+                            'CryptoJS not loaded (only needed on some pages)');
+                    }
+                }, 1000);
+
+            } catch (error) {
+                addTestResult('functionTests', 'Script Loading', 'error', 
+                    `Failed to load scripts: ${error.message}`);
+            }
+        }
+
+        async function testNavigation() {
+            createSection('🧭 Navigation Tests', 'navTests');
+
+            const testPage = await fetch('http://localhost:8000/pages/dashboard.html');
+            const html = await testPage.text();
+
+            const links = [
+                { name: 'Login Link', pattern: 'href="../../index.html"' },
+                { name: 'Register Link', pattern: 'href="../../features/register.html"' },
+                { name: 'Dashboard Link', pattern: 'href="../../features/dashboard.html"' },
+                { name: 'All Features Link', pattern: 'href="../../features/all-features.html"' },
+                { name: 'CSS Link (style.css)', pattern: 'href="../../shared/css/style.css"' },
+                { name: 'CSS Link (nav-styles.css)', pattern: 'href="../../shared/css/nav-styles.css"' }
+            ];
+
+            links.forEach(link => {
+                if (html.includes(link.pattern)) {
+                    addTestResult('navTests', link.name, 'success', 
+                        `Correctly uses relative path: ${link.pattern}`);
+                } else {
+                    addTestResult('navTests', link.name, 'error', 
+                        `Missing or incorrect path. Expected: ${link.pattern}`);
+                }
+            });
+        }
+
+        async function runAllTests() {
+            // Reset
+            document.getElementById('results').innerHTML = '';
+            testResults = { passed: 0, failed: 0, warnings: 0, total: 0 };
+            updateSummary();
+
+            // Run all tests
+            await testPages();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testAssets();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testBackendAPI();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testNavigation();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testFrontendFunctions();
+        }
+
+        // Show initial message
+        window.addEventListener('load', () => {
+            const results = document.getElementById('results');
+            results.innerHTML = `
+                <div class="test-section">
+                    <h2>👋 Welcome to the Feature Checker</h2>
+                    <p style="text-align: center; font-size: 1.2em; margin: 20px 0;">
+                        Click "Run All Tests" to check all pages, assets, backend, and functionality.
+                    </p>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>

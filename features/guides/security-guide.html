@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Guide - Security Lab</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../shared/css/style.css">
+    <link rel="stylesheet" href="../../shared/css/nav-styles.css">
+</head>
+<body>
+    <!-- Unique Sidebar Navigation -->
+    <div class="sidebar-nav" id="sidebarNav">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <i class="fas fa-shield-virus fa-3x text-primary mb-2"></i>
+                <h5 class="text-white mb-0">Security Lab</h5>
+                <small class="text-muted">Password Security Suite</small>
+            </div>
+        </div>
+        <div class="sidebar-content">
+            <div class="nav-section">
+                <div class="section-title">Quick Access</div>
+                <a href="../../index.html" class="nav-item">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Login</span>
+                </a>
+                <a href="../auth/register.html" class="nav-item">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Register</span>
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="section-title">Features</div>
+                <a href="../all-features.html" class="nav-item">
+                    <i class="fas fa-th-large"></i>
+                    <span>All Features</span>
+                    <span class="badge bg-success">Overview</span>
+                </a>
+                <a href="../dashboard/dashboard.html" class="nav-item">
+                    <i class="fas fa-database"></i>
+                    <span>Dashboard</span>
+                    <span class="badge bg-info">Manage</span>
+                </a>
+                <a href="../breach-analysis/breach.html" class="nav-item">
+                    <i class="fas fa-stopwatch"></i>
+                    <span>Breach Time</span>
+                    <span class="badge bg-warning">Analysis</span>
+                </a>
+                <a href="../hash-tools/hash-tools.html" class="nav-item">
+                    <i class="fas fa-hashtag"></i>
+                    <span>Hash Tools</span>
+                    <span class="badge bg-success">3 Tools</span>
+                </a>
+                <a href="../security-testing/security-testing.html" class="nav-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Security Testing</span>
+                    <span class="badge bg-danger">Lab</span>
+                </a>
+                <a href="../guides/security-guide.html" class="nav-item active">
+                    <i class="fas fa-book"></i>
+                    <span>Security Guide</span>
+                    <span class="badge bg-primary">Learn</span>
+                </a>
+                <a href="../../tools/index.html" class="nav-item">
+                    <i class="fas fa-tools"></i>
+                    <span>Tools & Diagnostics</span>
+                    <span class="badge bg-warning text-dark">Dev</span>
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="section-title">Actions</div>
+                <a href="#" onclick="exportDatabase(); return false;" class="nav-item">
+                    <i class="fas fa-download"></i>
+                    <span>Export Data</span>
+                </a>
+                <a href="#" onclick="clearData(); return false;" class="nav-item text-danger">
+                    <i class="fas fa-trash"></i>
+                    <span>Clear Data</span>
+                </a>
+            </div>
+        </div>
+        <div class="sidebar-footer">
+            <div class="text-center text-muted small">
+                <i class="fas fa-lock me-1"></i> Secure & Educational
+            </div>
+        </div>
+    </div>
+
+    <button class="sidebar-toggle d-lg-none" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="top-bar">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="page-title">
+                    <h4 class="mb-0"><i class="fas fa-book me-2"></i>Security Guide</h4>
+                </div>
+                <div class="top-actions">
+                    <span class="badge bg-success me-2"><i class="fas fa-shield-check"></i> Secure</span>
+                    <span class="badge bg-primary"><i class="fas fa-graduation-cap"></i> Educational</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <h1 class="text-center mb-4"><i class="fas fa-book"></i> Security Guide</h1>
+        <p class="text-center text-muted mb-5">Best practices and migration strategies for password security</p>
+
+        <!-- Best Practices -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-check-circle"></i> Password Security Best Practices
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-shield-alt"></i> For Developers</h5>
+                        <ul>
+                            <li><strong>Use Modern Algorithms:</strong> Argon2, BCrypt, or scrypt</li>
+                            <li><strong>Never Store Plaintext:</strong> Always hash passwords</li>
+                            <li><strong>Add Salt:</strong> Unique per user to prevent rainbow tables</li>
+                            <li><strong>Pepper Optional:</strong> Server-side secret for extra security</li>
+                            <li><strong>Use HTTPS:</strong> Encrypt passwords in transit</li>
+                            <li><strong>Implement Rate Limiting:</strong> Prevent brute-force attacks</li>
+                            <li><strong>Multi-Factor Auth:</strong> Add additional verification layers</li>
+                            <li><strong>Password Complexity:</strong> Enforce minimum length (12+ chars)</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-user-shield"></i> For Users</h5>
+                        <ul>
+                            <li><strong>Length Over Complexity:</strong> 16+ character passphrases</li>
+                            <li><strong>Unique Passwords:</strong> Different for every account</li>
+                            <li><strong>Password Manager:</strong> Use 1Password, Bitwarden, etc.</li>
+                            <li><strong>Enable 2FA:</strong> Wherever available</li>
+                            <li><strong>Avoid Patterns:</strong> No "password123" or dictionary words</li>
+                            <li><strong>Regular Updates:</strong> Change if breach suspected</li>
+                            <li><strong>Check Breaches:</strong> Use HaveIBeenPwned</li>
+                            <li><strong>No Sharing:</strong> Never reuse or share passwords</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Algorithm Comparison -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-balance-scale"></i> Hash Algorithm Comparison
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Algorithm</th>
+                                <th>Type</th>
+                                <th>Speed</th>
+                                <th>Security</th>
+                                <th>Recommendation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>MD5</strong></td>
+                                <td>Fast Hash</td>
+                                <td>200B h/s</td>
+                                <td><span class="badge bg-danger">Broken</span></td>
+                                <td>❌ Never use for passwords</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SHA-1</strong></td>
+                                <td>Fast Hash</td>
+                                <td>100B h/s</td>
+                                <td><span class="badge bg-warning">Deprecated</span></td>
+                                <td>❌ Avoid for passwords</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SHA-256</strong></td>
+                                <td>Fast Hash</td>
+                                <td>50B h/s</td>
+                                <td><span class="badge bg-warning">Not Ideal</span></td>
+                                <td>⚠️ OK for integrity, not passwords</td>
+                            </tr>
+                            <tr>
+                                <td><strong>BCrypt</strong></td>
+                                <td>Slow Hash</td>
+                                <td>20K h/s</td>
+                                <td><span class="badge bg-success">Secure</span></td>
+                                <td>✅ Good for passwords</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Argon2</strong></td>
+                                <td>Memory-Hard</td>
+                                <td>1K h/s</td>
+                                <td><span class="badge bg-success">Most Secure</span></td>
+                                <td>✅ Best choice (2015 winner)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Migration Strategies -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <i class="fas fa-random"></i> Hash Migration Strategies
+            </div>
+            <div class="card-body">
+                <h5 class="mb-3">How to Migrate from Weak to Strong Hashing</h5>
+                
+                <div class="accordion" id="migrationAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#method1">
+                                Method 1: Immediate Re-Hash on Login
+                            </button>
+                        </h2>
+                        <div id="method1" class="accordion-collapse collapse show" data-bs-parent="#migrationAccordion">
+                            <div class="accordion-body">
+                                <p><strong>Best for:</strong> Active user bases with regular logins</p>
+                                <ol>
+                                    <li>Keep old MD5/SHA hashes in database</li>
+                                    <li>Add new column for BCrypt/Argon2 hash</li>
+                                    <li>On login, verify old hash first</li>
+                                    <li>If valid, hash password with new algorithm</li>
+                                    <li>Update database with new hash, remove old</li>
+                                    <li>Gradually migrate users over time</li>
+                                </ol>
+                                <div class="alert alert-success">✅ Zero downtime, transparent to users</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#method2">
+                                Method 2: Forced Password Reset
+                            </button>
+                        </h2>
+                        <div id="method2" class="accordion-collapse collapse" data-bs-parent="#migrationAccordion">
+                            <div class="accordion-body">
+                                <p><strong>Best for:</strong> Security-critical systems or after breach</p>
+                                <ol>
+                                    <li>Schedule maintenance window</li>
+                                    <li>Force all users to reset passwords</li>
+                                    <li>Hash new passwords with strong algorithm</li>
+                                    <li>Delete old weak hashes</li>
+                                </ol>
+                                <div class="alert alert-warning">⚠️ User friction, but immediate security</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#method3">
+                                Method 3: Hybrid Hashing (Temporary)
+                            </button>
+                        </h2>
+                        <div id="method3" class="accordion-collapse collapse" data-bs-parent="#migrationAccordion">
+                            <div class="accordion-body">
+                                <p><strong>Best for:</strong> Quick security improvement before full migration</p>
+                                <ol>
+                                    <li>Keep existing weak hashes (MD5/SHA)</li>
+                                    <li>Wrap them with BCrypt: <code>bcrypt(md5_hash)</code></li>
+                                    <li>Provides immediate security boost</li>
+                                    <li>Migrate to pure BCrypt/Argon2 on next login</li>
+                                </ol>
+                                <div class="alert alert-info">ℹ️ Temporary solution, plan proper migration</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Examples -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-code"></i> Implementation Examples
+            </div>
+            <div class="card-body">
+                <h6>Python Example (BCrypt):</h6>
+                <pre style="background: #1a1d3a; color: #00f3ff; padding: 15px; border-radius: 8px; overflow-x: auto;"><code>import bcrypt
+
+# Hash password
+password = b"super_secret_password"
+salt = bcrypt.gensalt(rounds=12)  # Higher = slower
+hashed = bcrypt.hashpw(password, salt)
+
+# Verify password
+if bcrypt.checkpw(password, hashed):
+    print("Password match!")
+</code></pre>
+
+                <h6 class="mt-4">Node.js Example (Argon2):</h6>
+                <pre style="background: #1a1d3a; color: #00ff88; padding: 15px; border-radius: 8px; overflow-x: auto;"><code>const argon2 = require('argon2');
+
+// Hash password
+const hash = await argon2.hash('super_secret_password', {
+    type: argon2.argon2id,
+    memoryCost: 65536,  // 64 MB
+    timeCost: 3,
+    parallelism: 4
+});
+
+// Verify password
+if (await argon2.verify(hash, 'super_secret_password')) {
+    console.log('Password match!');
+}
+</code></pre>
+            </div>
+        </div>
+
+        <!-- Resources -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <i class="fas fa-link"></i> Additional Resources
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li><a href="https://owasp.org/www-project-password-storage-cheat-sheet/" target="_blank">OWASP Password Storage Cheat Sheet</a></li>
+                    <li><a href="https://haveibeenpwned.com/" target="_blank">Have I Been Pwned - Check Breach Database</a></li>
+                    <li><a href="https://github.com/P-H-C/phc-winner-argon2" target="_blank">Argon2 Official Implementation</a></li>
+                    <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html" target="_blank">OWASP Authentication Cheat Sheet</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../shared/js/api-client.js"></script>
+    <script src="../../shared/js/script.js"></script>
+    <script>
+        function exportDatabase() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const blob = new Blob([JSON.stringify(users, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'security-lab-data.json';
+            a.click();
+        }
+
+        function clearData() {
+            if (confirm('Clear all stored data?')) {
+                localStorage.clear();
+                alert('Data cleared!');
+            }
+        }
+    </script>
+</body>
+</html>
