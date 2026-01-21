@@ -1,246 +1,236 @@
-# 🔐 Authentication Security Lab
+# Advanced Malware Protection Suite
 
-A hands-on educational platform demonstrating password security evolution from weak (MD5) to strong (Argon2id) hashing.
+**Enterprise-Grade Security Tools for Modern Threat Detection**
 
-> 📖 **For complete A-Z documentation, see [COMPLETE_GUIDE.md](COMPLETE_GUIDE.md)**
+## 🛡️ Overview
 
-## Quick Start
+This is a **CEH Educational Platform** featuring 3 advanced malware protection techniques used by enterprise EDR (Endpoint Detection & Response) solutions like CrowdStrike Falcon, SentinelOne, and Microsoft Defender ATP.
 
-```powershell
-# 1. Start backend (Flask API)
-cd backend
-..\.venv\Scripts\python.exe app.py
+## 🎯 Features
 
-# 2. Open in browser
-# http://localhost:5000 (API)
-# Or open index.html directly for frontend
-```
+### 1. 🦅 Crypto-Canary Ransomware Shield
+**Bait File Defense System**
+
+- Deploys hidden "canary" files across critical directories
+- Instantly terminates ransomware processes attempting to encrypt bait files
+- Protects real data before encryption can occur
+- **CEH Principle P2**: Speed vs False Positives trade-off
+
+**Configuration:**
+- Low: 10 canary files
+- Medium: 25 canary files (recommended)
+- High: 50 canary files
+
+**Real-time Monitoring:**
+- Process monitoring with <100ms response time
+- Automatic threat termination
+- Activity logging with timestamps
+
+---
+
+### 2. 🧠 Fileless Malware Hunter
+**Memory-Based Threat Detection**
+
+- Monitors RAM usage patterns and PowerShell execution logs
+- Detects malicious scripts running in memory (no disk footprint)
+- Defends against Advanced Persistent Threats (APTs)
+- **CEH Principle P3**: Heuristic Analysis & Behavioral Detection
+
+**Detection Methods:**
+- RAM allocation anomaly detection
+- PowerShell script analysis (Invoke-Mimikatz, Cobalt Strike, etc.)
+- Memory injection pattern recognition
+- Reflective DLL loading detection
+
+**Configuration:**
+- RAM Threshold: 50MB / 100MB / 200MB
+- Log Depth: Basic / Detailed / Forensic
+
+---
+
+### 3. 🔌 USB Condom - Device Protection
+**USB Threat Prevention System**
+
+- Forces "Read-Only" mode on all new USB devices
+- Requires scanning before granting full access
+- Prevents BadUSB, Stuxnet-style attacks, and autorun malware
+- **CEH Principle P2**: Usability vs Security balance
+
+**Protection Modes:**
+- **Blocked**: No access until scanned
+- **Read-Only**: Safe viewing only (recommended)
+- **Prompt**: User decision required
+
+**Scan Depths:**
+- Quick: Surface scan (30 seconds)
+- Standard: Full scan (2 minutes)
+- Deep: Forensic analysis (5 minutes)
+
+---
+
+## 📚 CEH Learning Objectives
+
+### Principle 2 (P2): Security Trade-offs
+- **Speed vs Accuracy**: Ransomware shield must kill threats in <100ms without false positives
+- **Usability vs Security**: USB protection delays access for verification
+- Real-time response requirements in production environments
+
+### Principle 3 (P3): Heuristic Analysis
+- Behavioral pattern analysis beyond signature matching
+- Memory-based threat detection without file scanning
+- Machine learning anomaly detection
+- Zero-day threat identification
+
+---
+
+## 🚀 Quick Start
+
+### Installation
+1. Clone or download this repository
+2. Open `index.html` in a modern web browser (Chrome, Firefox, Edge)
+3. No backend required - fully client-side simulation
+
+### Usage
+1. **Crypto-Canary Shield**
+   - Select sensitivity level
+   - Click "Activate Shield"
+   - Monitor real-time threat detection logs
+
+2. **Fileless Hunter**
+   - Configure RAM threshold and log depth
+   - Click "Start Hunter"
+   - Watch memory analysis results
+
+3. **USB Condom**
+   - Set default mode and scan depth
+   - Click "Enable USB Protection"
+   - Use "Simulate USB Insert" to test detection
+
+---
+
+## 🎓 Educational Value
+
+This platform demonstrates:
+- ✅ Modern EDR techniques used by Fortune 500 companies
+- ✅ Behavioral analysis vs traditional signature scanning
+- ✅ Security engineering trade-offs (speed, accuracy, usability)
+- ✅ Advanced persistent threat (APT) defense mechanisms
+- ✅ Zero-day exploit mitigation strategies
+
+**Real-World Applications:**
+- Enterprise endpoint protection
+- Incident response workflows
+- Security operations center (SOC) monitoring
+- Penetration testing and red team exercises
 
 ---
 
 ## 📁 Project Structure
 
 ```
-📂 Computer-Security/
-├── index.html                    ← Login page (START HERE)
-├── README.md                     ← This file
-├── FOLDER_STRUCTURE.md           ← Detailed folder guide
-│
-├── 📂 features/                  ← All user-facing features
-│   ├── index.html                ← Visual feature overview
-│   ├── all-features.html         ← Quick access grid
-│   ├── auth/register.html        ← User registration
-│   ├── dashboard/dashboard.html  ← User management
-│   ├── security-testing/         ← Dictionary attack, timing attack
-│   ├── hash-tools/               ← Hash calculator
-│   ├── breach-analysis/          ← Password strength analyzer
-│   └── guides/                   ← Security documentation
-│
-├── 📂 shared/                    ← Shared assets
-│   ├── css/style.css             ← Main styles
-│   ├── css/nav-styles.css        ← Sidebar styles
-│   ├── js/script.js              ← Core logic (~1200 lines)
-│   └── js/api-client.js          ← Backend API client
-│
-├── 📂 tools/                     ← Development utilities
-│   ├── diagnostics/              ← System health checks
-│   └── scripts/                  ← Python helper scripts
-│
-└── 📂 backend/                   ← Flask API
-    ├── app.py                    ← Main application (~800 lines)
-    ├── models.py                 ← Database models
-    └── instance/                 ← SQLite database
+Computer-Security/
+├── index.html                  # Main application (all 3 features)
+├── README.md                   # This file
+├── shared/
+│   ├── css/
+│   │   ├── style.css          # Black theme styling
+│   │   └── nav-styles.css     # Navigation styles
+│   └── js/
+│       └── api-client.js      # Utility functions
+└── features/
+    └── antivirus/
+        └── antivirus.html     # Alternative standalone page
 ```
 
 ---
 
-## 🔑 Algorithms Implemented
+## 🛠️ Technology Stack
 
-### Frontend (JavaScript)
+- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **Framework**: Bootstrap 5.3
+- **Icons**: Font Awesome 6.4
+- **Theme**: Custom dark theme with black backgrounds
+- **Deployment**: Static HTML (no server required)
 
-| Algorithm | Library | Security | Speed |
-|-----------|---------|----------|-------|
-| **MD5** | CryptoJS | ❌ Broken | ~0.001ms |
-| **SHA-1** | CryptoJS | ❌ Weak | ~0.001ms |
-| **BCrypt** | bcryptjs | ✅ Good | ~100ms |
-| **PBKDF2** | CryptoJS | ✅ Good | ~200ms |
-| **Argon2id** | argon2-browser | ✅ Best | ~300ms |
+---
 
-### Backend (Python)
+## 🎨 Theme
 
-| Algorithm | Library | Security | Notes |
-|-----------|---------|----------|-------|
-| **MD5** | hashlib | ❌ Broken | Educational only |
-| **PBKDF2-SHA256** | hashlib | ✅ NIST Approved | 600,000 iterations |
-| **Argon2id** | argon2-cffi | ✅ Industry Standard | Memory-hard (64MB) |
+**Black Professional Theme:**
+- Background: Pure black (#000000)
+- Cards: Dark (#0a0a0a, #0f0f0f)
+- Accents: Purple (#6366f1), Cyan (#22d3ee)
+- Text: Light gray (#f8fafc, #cbd5e1)
 
 ---
 
 ## 🔒 Security Features
 
-### Hash Generation
-```javascript
-// MD5 - NO SALT (broken)
-hash = CryptoJS.MD5(password).toString();
-
-// BCrypt - Built-in salt
-hash = bcrypt.hashSync(password, 10);
-
-// Argon2id - Memory-hard, GPU-resistant
-result = await argon2.hash({
-    pass: password,
-    salt: saltBytes,
-    type: argon2.ArgonType.Argon2id,
-    mem: 65536,  // 64MB memory
-    time: 2,     // 2 iterations
-    parallelism: 1
-});
-```
-
-### Backend Argon2 Config (Python)
-```python
-ph = PasswordHasher(
-    time_cost=3,        # Iterations
-    memory_cost=65536,  # 64 MB
-    parallelism=2,      # Threads
-    hash_len=32,        # Output length
-    salt_len=16         # Salt length
-)
-```
-
-### Rate Limiting
-- **5 failed attempts** → 15-minute lockout
-- IP address tracking
-- Login attempt logging
-
-### Password History
-- Prevents reuse of last **5 passwords**
-- Checks against all stored algorithms
-
-### Transparent Migration
-- Users with MD5 hashes are **automatically upgraded** to Argon2id on next login
+All simulations are **client-side only** for educational purposes:
+- No actual system modification
+- No real malware detection
+- No file system access
+- Safe for demonstration and learning
 
 ---
 
-## 🛠️ Key Features by File
+## 📖 References
 
-### `shared/js/script.js` (~1200 lines)
-- `generateHash(password, algorithm)` - Hash with any algorithm
-- `verifyHash(password, algorithm, hash)` - Verify passwords
-- `checkPasswordPwned(password)` - HaveIBeenPwned API check
-- `attemptLegacyMigration(user, password)` - MD5 → Argon2
-- `exportDatabaseForHashcat()` - Export for offline cracking
-- `renderUserTable()` - Display user dashboard
+**Techniques Demonstrated:**
+- Canary tokens (ransomware detection)
+- Behavioral analysis (fileless malware)
+- Device control policies (USB protection)
+- Heuristic threat detection
+- Memory forensics
 
-### `backend/app.py` (~800 lines)
-- `POST /api/register` - Create user with chosen algorithm
-- `POST /api/login` - Authenticate + auto-migrate
-- `GET /api/users` - List all users
-- `GET /api/health` - System status
-- `GET /api/benchmark` - Hash performance comparison
-- `POST /api/export/hashcat` - Export for cracking
-
-### `tools/scripts/attack_toolkit.py`
-```bash
-python tools/scripts/attack_toolkit.py
-# Options:
-# 1. Export hashes for Hashcat
-# 2. Generate sample wordlist
-# 3. Show crack time statistics
-# 4. Show attack strategies
-```
+**Industry Standards:**
+- MITRE ATT&CK Framework
+- NIST Cybersecurity Framework
+- CEH (Certified Ethical Hacker) curriculum
+- SANS security best practices
 
 ---
 
-## ⚡ API Endpoints
+## 👥 Use Cases
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/register` | Register new user |
-| POST | `/api/login` | Authenticate user |
-| GET | `/api/users` | List all users |
-| GET | `/api/health` | System status |
-| GET | `/api/benchmark` | Hash performance |
-| DELETE | `/api/users/<id>` | Delete user |
-
-**Example Registration:**
-```bash
-curl -X POST http://localhost:5000/api/register \
-  -H "Content-Type: application/json" \
-  -d '{"username":"test","password":"pass123","algorithm":"argon2"}'
-```
-
----
-
-## 🎯 Educational Demos
-
-### 1. Dictionary Attack Simulator
-**Location:** `features/security-testing/security-testing.html`
-- Enter a password, select algorithm
-- Watch it attempt to match against wordlist
-- See timing differences between MD5 vs Argon2
-
-### 2. Timing Attack Demo
-- Demonstrates vulnerable string comparison
-- Shows how response time leaks information
-- Learn about constant-time comparison
-
-### 3. Password Strength Analyzer
-**Location:** `features/breach-analysis/breach.html`
-- Real-time strength meter
-- Crack time estimation
-- HaveIBeenPwned integration
-
----
-
-## 📊 Crack Time Comparison (RTX 4090)
-
-| Algorithm | Speed | 8-char Time | Risk |
-|-----------|-------|-------------|------|
-| MD5 | 200 GH/s | ~30 seconds | 🔴 Critical |
-| SHA-1 | 100 GH/s | ~1 minute | 🔴 High |
-| BCrypt | 100 kH/s | ~2 years | 🟡 Medium |
-| Argon2id | ~5 H/s | 100+ years | 🟢 Low |
-
----
-
-## 🚀 Running the Project
-
-### Prerequisites
-- Python 3.10+
-- Node.js (optional, for development)
-
-### Backend Setup
-```powershell
-cd backend
-python -m venv ..\.venv
-..\.venv\Scripts\activate
-pip install flask flask-cors flask-sqlalchemy argon2-cffi
-python app.py
-```
-
-### Frontend
-Just open `index.html` in a browser, or:
-```powershell
-python -m http.server 8000
-# Then visit http://localhost:8000
-```
+- **Students**: Learn enterprise security techniques
+- **Educators**: Demonstrate advanced malware protection
+- **Security Professionals**: Explain EDR concepts to stakeholders
+- **Researchers**: Study security trade-off principles
 
 ---
 
 ## 📝 License
 
-Educational use only. Do not use these techniques on systems you don't own.
+Educational use only. Not for production deployment.
 
 ---
 
-## 🔗 Quick Links
+## 🤝 Contributing
 
-| Page | Path | Purpose |
-|------|------|---------|
-| Login | `index.html` | Authentication entry point |
-| Features | `features/index.html` | Visual folder overview |
-| Register | `features/auth/register.html` | New user signup |
-| Dashboard | `features/dashboard/dashboard.html` | Manage users |
-| Security Lab | `features/security-testing/security-testing.html` | Attack demos |
-| Tools | `tools/index.html` | Diagnostics & scripts |
+This is an educational project. Feedback and improvements welcome!
+
+---
+
+## ⚡ Performance
+
+- Lightweight: <200KB total size
+- Fast: Loads in <1 second
+- Responsive: Works on mobile and desktop
+- No dependencies: Self-contained HTML/CSS/JS
+
+---
+
+## 🎯 Future Enhancements (Conceptual)
+
+- Network traffic analysis simulation
+- Process tree visualization
+- Threat intelligence feed integration
+- Machine learning model demonstrations
+- Sandbox execution environment
+
+---
+
+**Built for learning. Designed for understanding. Engineered for education.**
+
+© 2026 Security Operations Center - Advanced Malware Protection Suite

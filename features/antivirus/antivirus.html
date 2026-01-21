@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Malware Protection - Security Operations Center</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --accent: #0891b2;
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-sidebar: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --border-subtle: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-secondary);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Left Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border-subtle);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-subtle);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .sidebar-header h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-header h4 a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .sidebar-header p {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .nav-section { padding: 1rem 0; }
+
+        .nav-section-title {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-secondary);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.1) 0%, transparent 100%);
+            color: var(--primary);
+            border-left-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item i { width: 20px; text-align: center; }
+
+        .sub-nav {
+            background: var(--bg-secondary);
+            border-left: 2px solid var(--border-subtle);
+            margin-left: 2.5rem;
+            margin-right: 1rem;
+            border-radius: 0 8px 8px 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .sub-nav.show { display: block; }
+
+        .sub-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .sub-nav-item:hover {
+            color: var(--primary);
+            background: var(--bg-primary);
+        }
+
+        .nav-toggle {
+            margin-left: auto;
+            font-size: 0.7rem;
+            transition: transform 0.2s ease;
+        }
+
+        .nav-toggle.open { transform: rotate(180deg); }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            background: var(--bg-primary);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .page-title h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .content-area { padding: 2rem; }
+
+        /* Tool Sections */
+        .tool-section {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .tool-header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tool-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .status-badge {
+            padding: 0.375rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-badge.inactive { background: #f1f5f9; color: var(--text-muted); }
+        .status-badge.active { background: #d1fae5; color: var(--success); }
+
+        .tool-body { padding: 2rem; }
+
+        .tool-description {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tool-description h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .tool-description p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .principle-box {
+            border-left: 4px solid;
+            padding: 1rem 1.25rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .principle-box.p2 { border-color: var(--warning); background: #fffbeb; }
+        .principle-box.p3 { border-color: var(--accent); background: #ecfeff; }
+
+        .principle-box strong {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .principle-box p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .control-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .control-group select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+        }
+
+        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; }
+        .btn-warning { background: linear-gradient(135deg, var(--warning) 0%, #b45309 100%); color: white; }
+        .btn-info { background: linear-gradient(135deg, var(--accent) 0%, #0e7490 100%); color: white; }
+
+        .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+        .stats-panel {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .stats-panel h5 {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .stat-item:last-child { border-bottom: none; }
+
+        .stat-label { font-size: 0.875rem; color: var(--text-muted); }
+
+        .stat-value { font-size: 1rem; font-weight: 700; }
+
+        .stat-value.warning { color: var(--warning); }
+        .stat-value.success { color: var(--success); }
+        .stat-value.danger { color: var(--danger); }
+        .stat-value.info { color: var(--accent); }
+
+        .log-panel {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .log-panel .log-entry { padding: 0.25rem 0; }
+        .log-panel .text-success { color: #4ade80; }
+        .log-panel .text-danger { color: #f87171; }
+        .log-panel .text-warning { color: #fbbf24; }
+        .log-panel .text-info { color: #38bdf8; }
+        .log-panel .text-muted { color: #94a3b8; }
+
+        /* Mobile Toggle */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1100;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .mobile-toggle { display: flex; align-items: center; justify-content: center; }
+            .tool-header { flex-direction: column; gap: 1rem; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Toggle -->
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Left Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><a href="../../index.html"><i class="fas fa-shield-halved"></i> SOC Platform</a></h4>
+            <p>Security Operations Center</p>
+        </div>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">Main Navigation</div>
+            <a href="../../index.html" class="nav-item">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a href="../../backend/dashboard.html" class="nav-item">
+                <i class="fas fa-database"></i> Backend Dashboard
+            </a>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">Security Tools</div>
+            
+            <!-- Hash Tools with Sub-features -->
+            <a href="#" class="nav-item" onclick="toggleSubNav('hashSub', event)">
+                <i class="fas fa-hashtag"></i> Hash Tools
+                <i class="fas fa-chevron-down nav-toggle" id="hashToggle"></i>
+            </a>
+            <div class="sub-nav" id="hashSub">
+                <a href="../hash-tools/hash-tools.html" class="sub-nav-item">
+                    <i class="fas fa-balance-scale"></i> Algorithm Comparison
+                </a>
+                <a href="../hash-tools/hash-tools.html" class="sub-nav-item">
+                    <i class="fas fa-search"></i> Hash Identifier
+                </a>
+                <a href="../hash-tools/hash-tools.html" class="sub-nav-item">
+                    <i class="fas fa-chart-bar"></i> Entropy Analyzer
+                </a>
+                <a href="../hash-tools/hash-tools.html" class="sub-nav-item">
+                    <i class="fas fa-sync-alt"></i> Rotation Detector
+                </a>
+            </div>
+
+            <!-- Antivirus with Sub-features -->
+            <a href="#" class="nav-item active" onclick="toggleSubNav('avSub', event)">
+                <i class="fas fa-shield-virus"></i> Antivirus
+                <i class="fas fa-chevron-down nav-toggle open" id="avToggle"></i>
+            </a>
+            <div class="sub-nav show" id="avSub">
+                <a href="#canary" class="sub-nav-item">
+                    <i class="fas fa-crow"></i> Crypto-Canary Shield
+                </a>
+                <a href="#fileless" class="sub-nav-item">
+                    <i class="fas fa-memory"></i> Fileless Hunter
+                </a>
+                <a href="#usb" class="sub-nav-item">
+                    <i class="fas fa-usb"></i> USB Condom
+                </a>
+            </div>
+
+            <!-- Firewall with Sub-features -->
+            <a href="#" class="nav-item" onclick="toggleSubNav('fwSub', event)">
+                <i class="fas fa-fire"></i> Firewall
+                <i class="fas fa-chevron-down nav-toggle" id="fwToggle"></i>
+            </a>
+            <div class="sub-nav" id="fwSub">
+                <a href="../firewall/firewall.html" class="sub-nav-item">
+                    <i class="fas fa-search"></i> Port Scanner
+                </a>
+                <a href="../firewall/firewall.html" class="sub-nav-item">
+                    <i class="fas fa-chart-line"></i> Traffic Monitor
+                </a>
+                <a href="../firewall/firewall.html" class="sub-nav-item">
+                    <i class="fas fa-shield-alt"></i> Firewall Rules
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="page-title">
+                <i class="fas fa-shield-virus" style="font-size: 1.5rem; color: var(--warning);"></i>
+                <h2>Advanced Malware Protection</h2>
+            </div>
+            <span style="background: #d1fae5; color: #059669; padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600;">
+                <i class="fas fa-shield-check"></i> Protected
+            </span>
+        </div>
+
+        <div class="content-area">
+            <!-- Tool 1: Crypto-Canary Shield -->
+            <section class="tool-section" id="canary">
+                <div class="tool-header">
+                    <h2><i class="fas fa-crow" style="color: var(--warning);"></i> Crypto-Canary Ransomware Shield</h2>
+                    <span class="status-badge inactive" id="canaryStatus">INACTIVE</span>
+                </div>
+                <div class="tool-body">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="tool-description">
+                                <h4>🛡️ Bait File Defense System</h4>
+                                <p>Deploys hidden "canary" files across critical directories. If ransomware attempts to encrypt these bait files, the malicious process is instantly terminated before it can damage your real data.</p>
+                            </div>
+
+                            <div class="principle-box p2">
+                                <strong><i class="fas fa-balance-scale"></i> CEH Principle P2: Speed vs False Positives</strong>
+                                <p>Must terminate threats in &lt;100ms to prevent encryption, but cannot block legitimate backup software or auto-save features.</p>
+                            </div>
+
+                            <div class="control-row">
+                                <div class="control-group">
+                                    <label><i class="fas fa-sliders"></i> Protection Sensitivity</label>
+                                    <select id="canarySensitivity">
+                                        <option value="low">Low - 10 canary files</option>
+                                        <option value="medium" selected>Medium - 25 canary files</option>
+                                        <option value="high">High - 50 canary files</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-warning" onclick="toggleCanaryShield()">
+                                <i class="fas fa-play"></i> <span id="canaryBtnText">Activate Shield</span>
+                            </button>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="stats-panel">
+                                <h5><i class="fas fa-chart-line"></i> Statistics</h5>
+                                <div class="stat-item">
+                                    <span class="stat-label">Bait Files</span>
+                                    <span class="stat-value warning" id="baitFilesCount">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Processes Monitored</span>
+                                    <span class="stat-value info" id="processesMonitored">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Threats Blocked</span>
+                                    <span class="stat-value danger" id="threatsBlocked">0</span>
+                                </div>
+                                <div class="log-panel" id="canaryLog">
+                                    <div class="text-muted">Waiting for activation...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tool 2: Fileless Malware Hunter -->
+            <section class="tool-section" id="fileless">
+                <div class="tool-header">
+                    <h2><i class="fas fa-memory" style="color: var(--accent);"></i> Fileless Malware Hunter</h2>
+                    <span class="status-badge inactive" id="filelessStatus">INACTIVE</span>
+                </div>
+                <div class="tool-body">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="tool-description">
+                                <h4>🧠 Memory-Based Threat Detection</h4>
+                                <p>Monitors RAM usage patterns and PowerShell execution logs to detect malicious scripts running in memory without touching the hard drive. Defends against advanced persistent threats (APTs).</p>
+                            </div>
+
+                            <div class="principle-box p3">
+                                <strong><i class="fas fa-brain"></i> CEH Principle P3: Heuristic Analysis</strong>
+                                <p>Requires analyzing behavior patterns, not just scanning files. Uses pattern matching to identify suspicious script execution and memory injection.</p>
+                            </div>
+
+                            <div class="control-row">
+                                <div class="control-group">
+                                    <label><i class="fas fa-microchip"></i> RAM Threshold</label>
+                                    <select id="ramThreshold">
+                                        <option value="50">50 MB - Light</option>
+                                        <option value="100" selected>100 MB - Standard</option>
+                                        <option value="200">200 MB - Aggressive</option>
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label><i class="fas fa-terminal"></i> PowerShell Log Depth</label>
+                                    <select id="psLogDepth">
+                                        <option value="basic">Basic</option>
+                                        <option value="detailed" selected>Detailed</option>
+                                        <option value="forensic">Forensic</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-primary" onclick="toggleFilelessHunter()">
+                                <i class="fas fa-play"></i> <span id="filelessBtnText">Start Hunter</span>
+                            </button>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="stats-panel">
+                                <h5><i class="fas fa-microchip"></i> Memory Analysis</h5>
+                                <div class="stat-item">
+                                    <span class="stat-label">Suspicious Processes</span>
+                                    <span class="stat-value warning" id="suspiciousProcesses">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">PowerShell Scripts</span>
+                                    <span class="stat-value info" id="psScriptsDetected">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Memory Injections</span>
+                                    <span class="stat-value danger" id="memoryInjections">0</span>
+                                </div>
+                                <div class="log-panel" id="filelessLog">
+                                    <div class="text-muted">Hunter inactive...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tool 3: USB Condom -->
+            <section class="tool-section" id="usb">
+                <div class="tool-header">
+                    <h2><i class="fas fa-usb" style="color: var(--success);"></i> USB Condom - Device Protection</h2>
+                    <span class="status-badge inactive" id="usbStatus">INACTIVE</span>
+                </div>
+                <div class="tool-body">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="tool-description">
+                                <h4>🔌 USB Threat Prevention</h4>
+                                <p>Forces "Read-Only" mode on all new USB devices until they pass rigorous isolated scanning or receive admin approval. Prevents BadUSB, Stuxnet-style attacks, and autorun malware.</p>
+                            </div>
+
+                            <div class="principle-box p2">
+                                <strong><i class="fas fa-balance-scale"></i> CEH Principle P2: Usability vs Security</strong>
+                                <p>Users want instant USB access, but security requires verification delays. Balance convenience with protection through configurable scan depths.</p>
+                            </div>
+
+                            <div class="control-row">
+                                <div class="control-group">
+                                    <label><i class="fas fa-shield-alt"></i> Default USB Mode</label>
+                                    <select id="usbDefaultMode">
+                                        <option value="blocked">Blocked - No access</option>
+                                        <option value="readonly" selected>Read-Only</option>
+                                        <option value="prompt">Prompt User</option>
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label><i class="fas fa-search"></i> Scan Depth</label>
+                                    <select id="usbScanDepth">
+                                        <option value="quick">Quick (30s)</option>
+                                        <option value="standard" selected>Standard (2 min)</option>
+                                        <option value="deep">Deep (5 min)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-warning" onclick="toggleUSBProtection()">
+                                <i class="fas fa-play"></i> <span id="usbBtnText">Enable Protection</span>
+                            </button>
+                            <button class="btn btn-info" onclick="simulateUSBInsert()" style="margin-left: 0.5rem;">
+                                <i class="fas fa-usb"></i> Simulate USB Insert
+                            </button>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="stats-panel">
+                                <h5><i class="fas fa-shield-alt"></i> USB Monitor</h5>
+                                <div class="stat-item">
+                                    <span class="stat-label">Devices Detected</span>
+                                    <span class="stat-value info" id="usbDevicesDetected">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Blocked Attempts</span>
+                                    <span class="stat-value danger" id="usbBlockedAttempts">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Approved Devices</span>
+                                    <span class="stat-value success" id="usbApprovedDevices">0</span>
+                                </div>
+                                <div class="log-panel" id="usbLog">
+                                    <div class="text-muted">USB protection disabled...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle sidebar for mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+
+        // Toggle sub-navigation
+        function toggleSubNav(id, event) {
+            event.preventDefault();
+            const subNav = document.getElementById(id);
+            const allSubNavs = document.querySelectorAll('.sub-nav');
+            const toggle = event.currentTarget.querySelector('.nav-toggle');
+            
+            allSubNavs.forEach(nav => {
+                if (nav.id !== id) {
+                    nav.classList.remove('show');
+                    nav.previousElementSibling.querySelector('.nav-toggle')?.classList.remove('open');
+                }
+            });
+            
+            subNav.classList.toggle('show');
+            toggle?.classList.toggle('open');
+        }
+
+        // State Management
+        let canaryShieldActive = false;
+        let filelessHunterActive = false;
+        let usbProtectionActive = false;
+        let canaryInterval, filelessInterval;
+        
+        let stats = {
+            baitFiles: 0, processesMonitored: 0, threatsBlocked: 0,
+            suspiciousProcesses: 0, psScripts: 0, memoryInjections: 0,
+            usbDevices: 0, usbBlocked: 0, usbApproved: 0
+        };
+
+        // === CRYPTO-CANARY SHIELD ===
+        function toggleCanaryShield() {
+            const btn = document.getElementById('canaryBtnText');
+            const status = document.getElementById('canaryStatus');
+            
+            if (!canaryShieldActive) {
+                canaryShieldActive = true;
+                status.textContent = 'ACTIVE';
+                status.className = 'status-badge active';
+                btn.innerHTML = '<i class="fas fa-stop"></i> Deactivate';
+                
+                const sensitivity = document.getElementById('canarySensitivity').value;
+                stats.baitFiles = sensitivity === 'high' ? 50 : sensitivity === 'medium' ? 25 : 10;
+                updateCanaryStats();
+                
+                addCanaryLog(`🛡️ Shield ACTIVATED - Deploying ${stats.baitFiles} bait files...`, 'success');
+                setTimeout(() => addCanaryLog('✅ Bait files deployed to Documents, Desktop, Downloads', 'success'), 1000);
+                
+                canaryInterval = setInterval(monitorCanary, 2000);
+            } else {
+                canaryShieldActive = false;
+                status.textContent = 'INACTIVE';
+                status.className = 'status-badge inactive';
+                btn.innerHTML = '<i class="fas fa-play"></i> Activate Shield';
+                clearInterval(canaryInterval);
+                addCanaryLog('🔴 Shield DEACTIVATED', 'danger');
+                stats.baitFiles = 0;
+                updateCanaryStats();
+            }
+        }
+
+        function monitorCanary() {
+            stats.processesMonitored++;
+            updateCanaryStats();
+            if (Math.random() < 0.05) {
+                const threats = ['ransomware.exe', 'cryptolocker.exe', 'wannacry.exe', 'lockbit.exe'];
+                const threat = threats[Math.floor(Math.random() * threats.length)];
+                stats.threatsBlocked++;
+                updateCanaryStats();
+                addCanaryLog(`🚨 THREAT: ${threat} detected!`, 'danger');
+                setTimeout(() => addCanaryLog(`⚔️ Process TERMINATED: ${threat}`, 'warning'), 500);
+            }
+        }
+
+        function updateCanaryStats() {
+            document.getElementById('baitFilesCount').textContent = stats.baitFiles;
+            document.getElementById('processesMonitored').textContent = stats.processesMonitored;
+            document.getElementById('threatsBlocked').textContent = stats.threatsBlocked;
+        }
+
+        function addCanaryLog(msg, type) {
+            const log = document.getElementById('canaryLog');
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML = `<div class="log-entry text-${type}">[${time}] ${msg}</div>` + log.innerHTML;
+            while (log.children.length > 15) log.removeChild(log.lastChild);
+        }
+
+        // === FILELESS MALWARE HUNTER ===
+        function toggleFilelessHunter() {
+            const btn = document.getElementById('filelessBtnText');
+            const status = document.getElementById('filelessStatus');
+            
+            if (!filelessHunterActive) {
+                filelessHunterActive = true;
+                status.textContent = 'SCANNING';
+                status.className = 'status-badge active';
+                btn.innerHTML = '<i class="fas fa-stop"></i> Stop Hunter';
+                
+                addFilelessLog('🔍 Hunter initiated...', 'info');
+                addFilelessLog('📊 Analyzing RAM patterns...', 'info');
+                
+                filelessInterval = setInterval(scanMemory, 3000);
+            } else {
+                filelessHunterActive = false;
+                status.textContent = 'INACTIVE';
+                status.className = 'status-badge inactive';
+                btn.innerHTML = '<i class="fas fa-play"></i> Start Hunter';
+                clearInterval(filelessInterval);
+                addFilelessLog('🔴 Hunter STOPPED', 'danger');
+            }
+        }
+
+        function scanMemory() {
+            const threshold = document.getElementById('ramThreshold').value;
+            const depth = document.getElementById('psLogDepth').value;
+            
+            if (Math.random() < 0.1) {
+                const scripts = ['Invoke-Mimikatz', 'PowerShell Empire', 'Cobalt Strike', 'Base64 Payload'];
+                const script = scripts[Math.floor(Math.random() * scripts.length)];
+                stats.suspiciousProcesses++;
+                stats.psScripts++;
+                if (depth !== 'basic') stats.memoryInjections++;
+                updateFilelessStats();
+                addFilelessLog(`⚠️ Suspicious: ${script}`, 'warning');
+                if (depth === 'forensic') addFilelessLog('🔬 Memory injection detected', 'danger');
+            } else {
+                addFilelessLog(`✅ Clean - ${threshold}MB threshold`, 'success');
+            }
+        }
+
+        function updateFilelessStats() {
+            document.getElementById('suspiciousProcesses').textContent = stats.suspiciousProcesses;
+            document.getElementById('psScriptsDetected').textContent = stats.psScripts;
+            document.getElementById('memoryInjections').textContent = stats.memoryInjections;
+        }
+
+        function addFilelessLog(msg, type) {
+            const log = document.getElementById('filelessLog');
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML = `<div class="log-entry text-${type}">[${time}] ${msg}</div>` + log.innerHTML;
+            while (log.children.length > 15) log.removeChild(log.lastChild);
+        }
+
+        // === USB CONDOM ===
+        function toggleUSBProtection() {
+            const btn = document.getElementById('usbBtnText');
+            const status = document.getElementById('usbStatus');
+            
+            if (!usbProtectionActive) {
+                usbProtectionActive = true;
+                status.textContent = 'PROTECTED';
+                status.className = 'status-badge active';
+                btn.innerHTML = '<i class="fas fa-stop"></i> Disable';
+                const mode = document.getElementById('usbDefaultMode').value;
+                addUSBLog(`🔒 Protection ENABLED - ${mode.toUpperCase()} mode`, 'success');
+            } else {
+                usbProtectionActive = false;
+                status.textContent = 'INACTIVE';
+                status.className = 'status-badge inactive';
+                btn.innerHTML = '<i class="fas fa-play"></i> Enable Protection';
+                addUSBLog('🔴 Protection DISABLED', 'danger');
+            }
+        }
+
+        function simulateUSBInsert() {
+            if (!usbProtectionActive) { alert('⚠️ Enable USB Protection first!'); return; }
+            
+            stats.usbDevices++;
+            const devices = ['SanDisk 32GB', 'Kingston USB', 'Generic USB 3.0', 'Unknown Device'];
+            const device = devices[Math.floor(Math.random() * devices.length)];
+            const depth = document.getElementById('usbScanDepth').value;
+            const scanTime = depth === 'deep' ? 5000 : depth === 'standard' ? 2000 : 1000;
+            
+            addUSBLog(`🔌 Device detected: ${device}`, 'info');
+            addUSBLog(`🔍 Scanning (${depth})...`, 'warning');
+            
+            setTimeout(() => {
+                if (Math.random() < 0.3) {
+                    stats.usbBlocked++;
+                    addUSBLog('🚨 THREAT FOUND! Device BLOCKED', 'danger');
+                } else {
+                    stats.usbApproved++;
+                    addUSBLog('✅ Device SAFE - Access granted', 'success');
+                }
+                updateUSBStats();
+            }, scanTime);
+            updateUSBStats();
+        }
+
+        function updateUSBStats() {
+            document.getElementById('usbDevicesDetected').textContent = stats.usbDevices;
+            document.getElementById('usbBlockedAttempts').textContent = stats.usbBlocked;
+            document.getElementById('usbApprovedDevices').textContent = stats.usbApproved;
+        }
+
+        function addUSBLog(msg, type) {
+            const log = document.getElementById('usbLog');
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML = `<div class="log-entry text-${type}">[${time}] ${msg}</div>` + log.innerHTML;
+            while (log.children.length > 15) log.removeChild(log.lastChild);
+        }
+    </script>
+</body>
+</html>

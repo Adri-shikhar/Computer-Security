@@ -736,10 +736,10 @@ async function renderUserTable() {
             `<br><small class="text-muted">Salted</small>`;
             
         return `
-        <tr class="${user.upgraded ? 'table-success' : ''}">
-            <td>${index + 1}</td>
-            <td><strong>${user.username}</strong>${user.upgraded ? ' <span class="badge bg-success">UPGRADED</span>' : ''}</td>
-            <td>${getAlgorithmName(user.algorithm)}</td>
+        <tr class="${user.upgraded ? 'table-success' : ''}" style="color: white;">
+            <td style="color: white;"><strong>${index + 1}</strong></td>
+            <td style="color: white;"><strong>${user.username}</strong>${user.upgraded ? ' <span class="badge bg-success">UPGRADED</span>' : ''}</td>
+            <td style="color: white;"><strong>${getAlgorithmName(user.algorithm)}</strong></td>
             <td>${getSecurityBadge(user.algorithm, user.upgraded)}</td>
             <td>
                 <div class="hash-display" title="${user.hash}">
@@ -748,9 +748,17 @@ async function renderUserTable() {
                 <small class="text-muted">Length: ${user.hash.length} chars${saltInfo}</small>
             </td>
             <td>
-                <button class="btn btn-sm btn-outline-primary" onclick="copyHash('${user.hash.replace(/'/g, "\\'")}')" title="Copy hash to clipboard">
-                    <i class="fas fa-copy"></i>
-                </button>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn btn-outline-primary" onclick="copyHash('${user.hash.replace(/'/g, "\\'")}')" title="Copy hash">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="btn btn-outline-success" onclick="openEditModal(${user.id}, '${user.username}', '${user.algorithm}')" title="Edit user">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="confirmDeleteUser(${user.id}, '${user.username}')" title="Delete user">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </td>
         </tr>
     `;
