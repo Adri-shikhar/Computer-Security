@@ -50,11 +50,10 @@ async function registerUserAPI(username, password, algorithm) {
     });
 }
 
+// NOTE: Login endpoint not implemented in backend - for future use
 async function loginUserAPI(username, password) {
-    return await apiRequest('/login', 'POST', {
-        username: username,
-        password: password
-    });
+    console.warn('⚠️ Login API not implemented in backend yet');
+    return { success: false, message: 'Login not implemented' };
 }
 
 async function getAllUsersAPI() {
@@ -76,12 +75,15 @@ async function getAllUsersAPI() {
     }
 }
 
+// NOTE: Individual user delete not implemented - use /users/clear for all users
 async function deleteUserAPI(userId) {
-    return await apiRequest(`/users/${userId}`, 'DELETE');
+    console.warn('⚠️ Individual user delete not implemented. Use clearAllDataAPI() instead.');
+    return { success: false, message: 'Individual delete not implemented' };
 }
 
 async function clearAllDataAPI() {
-    return await apiRequest('/clear-all', 'POST');
+    // Use the correct backend endpoint
+    return await apiRequest('/users/clear', 'DELETE');
 }
 
 /**
@@ -92,35 +94,26 @@ async function getStatsAPI() {
     return await apiRequest('/stats', 'GET');
 }
 
+// NOTE: Benchmark endpoint not implemented - for future use
 async function getBenchmarkAPI() {
-    return await apiRequest('/benchmark', 'GET');
+    console.warn('⚠️ Benchmark API not implemented in backend yet');
+    return { success: false, message: 'Benchmark not implemented' };
 }
 
+// NOTE: Config endpoint not implemented - for future use
 async function getConfigAPI() {
-    return await apiRequest('/config', 'GET');
+    console.warn('⚠️ Config API not implemented in backend yet');
+    return { success: false, message: 'Config not implemented' };
 }
 
 /**
  * Export Functions
+ * NOTE: Export hashcat endpoint not implemented - for future use
  */
 
 async function exportHashcatAPI() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/export/hashcat`);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'hashes.txt';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        return { success: true, message: 'Hashes exported successfully' };
-    } catch (error) {
-        console.error('Export error:', error);
-        return { success: false, message: error.message };
-    }
+    console.warn('⚠️ Export hashcat API not implemented in backend yet');
+    return { success: false, message: 'Export not implemented' };
 }
 
 /**

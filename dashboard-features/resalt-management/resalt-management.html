@@ -3,393 +3,724 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Re-salt Management - Dashboard Feature</title>
+    <title>Salt & Hash Management - SOC Platform</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../../shared/css/style.css">
     <link rel="stylesheet" href="../../shared/css/nav-styles.css">
+    <link rel="stylesheet" href="../../shared/css/ux-enhancements.css">
+    <link rel="stylesheet" href="../password-generator/password-generator.css">
     <style>
-        body { background: #f8fafc; }
-        .feature-container {
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-        .feature-header {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
-        }
-        .feature-header h1 {
-            margin: 0 0 0.5rem 0;
-            font-size: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        .control-card {
+        .action-card {
             background: white;
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 1.5rem;
-        }
-        .info-box {
-            background: #eff6ff;
-            border-left: 4px solid #3b82f6;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-        }
-        .warning-box {
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-        }
-        .btn-resalt {
-            background: #f59e0b;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
+            margin-bottom: 1rem;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
             cursor: pointer;
-            transition: all 0.2s;
         }
-        .btn-resalt:hover {
-            background: #d97706;
+        .action-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
             transform: translateY(-2px);
         }
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
+        .action-card.selected {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        .action-icon.salt { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .action-icon.bit { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+        .action-icon.algo { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .action-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .action-desc {
             font-size: 0.875rem;
-            font-weight: 600;
+            color: #64748b;
         }
-        .status-active {
-            background: #d1fae5;
-            color: #065f46;
+        .config-panel {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border: 1px solid #e2e8f0;
         }
-        .status-inactive {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
-        }
-        .data-table th {
-            background: #f9fafb;
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 2px solid #e5e7eb;
-            font-weight: 600;
-        }
-        .data-table td {
-            padding: 0.75rem;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .data-table tr:hover {
-            background: #f9fafb;
-        }
-        .btn-action {
-            padding: 0.375rem 0.75rem;
-            border-radius: 6px;
-            border: none;
-            font-size: 0.8rem;
+        .algo-option {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .btn-action:hover {
-            transform: scale(1.05);
+        .algo-option:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .algo-option.selected {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+        .algo-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+        .algo-md5 { background: #fee2e2; color: #dc2626; }
+        .algo-sha1 { background: #fed7aa; color: #ea580c; }
+        .algo-sha256 { background: #dbeafe; color: #2563eb; }
+        .algo-sha512 { background: #e9d5ff; color: #7c3aed; }
+        .algo-bcrypt { background: #d1fae5; color: #059669; }
+        .algo-argon2id { background: #bbf7d0; color: #16a34a; }
+        .user-row {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        .user-row:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .user-row.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            margin-right: 1rem;
+        }
+        .preview-box {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .preview-step {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 1rem;
+            font-size: 0.875rem;
+        }
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        .stats-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .stats-label {
+            font-size: 0.875rem;
+            color: #64748b;
         }
     </style>
 </head>
 <body>
-    <div class="feature-container">
-        <!-- Header -->
-        <div class="feature-header">
-            <h1>
-                <i class="fas fa-shield-alt"></i>
-                Password Re-Salt Management
-            </h1>
-            <p>Upgrade weak MD5 passwords to secure SHA-256 with salts for enhanced security</p>
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><a href="../../index.html"><i class="fas fa-shield-halved"></i> SOC Platform</a></h4>
+            <p>Security Operations Center</p>
         </div>
 
-        <!-- Back Navigation -->
-        <div style="margin-bottom: 1.5rem;">
-            <a href="../../backend/dashboard.html" style="color: #2563eb; text-decoration: none; font-weight: 600;">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
+        <nav class="nav-section">
+            <div class="nav-section-title">MAIN NAVIGATION</div>
+            <a href="../../index.html" class="nav-item">
+                <i class="fas fa-user-plus"></i> Registration
             </a>
+            <a href="../../backend/dashboard.html" class="nav-item">
+                <i class="fas fa-database"></i> Backend Dashboard
+            </a>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">SECURITY TOOLS</div>
+            
+            <a href="#" class="nav-item" onclick="toggleSubNav('hashSub', event)">
+                <i class="fas fa-hashtag"></i> Hash Tools
+                <i class="fas fa-chevron-down nav-toggle" id="hashToggle"></i>
+            </a>
+            <div class="sub-nav" id="hashSub">
+                <a href="../../features/hash-tools/multi-hash-generator.html" class="sub-nav-item">
+                    <i class="fas fa-hashtag"></i> Multi-Hash Generator
+                </a>
+                <a href="../../features/hash-tools/hash-comparison.html" class="sub-nav-item">
+                    <i class="fas fa-balance-scale"></i> Hash Comparison
+                </a>
+                <a href="../../features/hash-tools/entropy-analyzer/entropy-analyzer.html" class="sub-nav-item">
+                    <i class="fas fa-chart-line"></i> Entropy Analyzer
+                </a>
+            </div>
+
+            <a href="../breach-checker/breach-checker.html" class="nav-item">
+                <i class="fas fa-exclamation-triangle"></i> Breach Checker
+            </a>
+
+            <a href="../password-generator/password-generator.html" class="nav-item">
+                <i class="fas fa-key"></i> Password Generator
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="page-title">
+                <i class="fas fa-shield-alt" style="font-size: 1.5rem; color: var(--success);"></i>
+                <h2>Salt & Hash Management</h2>
+            </div>
+            <span class="status-badge success animate-pulse">
+                <i class="fas fa-lock"></i> Security Center
+            </span>
         </div>
 
-        <!-- Info Box -->
-        <div class="info-box">
-            <h5 style="margin: 0 0 0.5rem 0; color: #1e40af;">
-                <i class="fas fa-info-circle"></i> What is Re-salting?
-            </h5>
-            <p style="margin: 0; color: #1e3a8a; font-size: 0.875rem;">
-                Re-salting adds a random salt to existing password hashes, converting weak MD5 hashes to secure SHA-256 with salt. 
-                This protects against rainbow table attacks while preserving user passwords. The user doesn't need to change their password.
-            </p>
-        </div>
-
-        <!-- Auto-Resalt Control Panel -->
-        <div class="control-card">
-            <h3 style="margin-bottom: 1rem;">
-                <i class="fas fa-cogs"></i> Auto-Resalt Configuration
-            </h3>
-            <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-bottom: 1rem;">
-                <div style="flex: 1; min-width: 250px;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #0f172a;">
-                        Resalt Interval:
-                    </label>
-                    <select id="resaltInterval" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #e2e8f0;">
-                        <option value="60">1 minute</option>
-                        <option value="300" selected>5 minutes</option>
-                        <option value="600">10 minutes</option>
-                        <option value="1800">30 minutes</option>
-                        <option value="3600">1 hour</option>
-                    </select>
+        <div class="content-area">
+            <!-- Info Box -->
+            <div class="info-box animate-fadeInUp">
+                <div class="info-box-title">
+                    <i class="fas fa-info-circle"></i> Hash Migration & Salt Management
                 </div>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button class="btn-resalt" onclick="toggleAutoResalt(true)" id="btnEnableResalt">
-                        <i class="fas fa-play"></i> Enable Auto-Resalt
-                    </button>
-                    <button class="btn-resalt" onclick="toggleAutoResalt(false)" id="btnDisableResalt" style="background: #dc2626; display: none;">
-                        <i class="fas fa-stop"></i> Disable
-                    </button>
-                    <button class="btn-resalt" onclick="manualResalt()" style="background: #2563eb;">
-                        <i class="fas fa-sync"></i> Resalt Now
-                    </button>
+                <div class="info-box-content">
+                    Upgrade password security by adding salt, changing salt bit length, or migrating to stronger hash algorithms. 
+                    Select users and configure the migration settings below.
                 </div>
             </div>
-            <div id="resaltStatus" style="padding: 1rem; background: #f9fafb; border-radius: 8px; font-size: 0.875rem; display: none;"></div>
-        </div>
 
-        <!-- Warning Box -->
-        <div class="warning-box">
-            <h5 style="margin: 0 0 0.5rem 0; color: #92400e;">
-                <i class="fas fa-exclamation-triangle"></i> Important Notes
-            </h5>
-            <ul style="margin: 0; padding-left: 1.5rem; color: #78350f; font-size: 0.875rem;">
-                <li>Re-salting adds salt to existing password hashes</li>
-                <li>User passwords remain unchanged - only hash security is upgraded</li>
-                <li>Auto-resalt periodically regenerates salts to enhance security</li>
-            </ul>
-        </div>
-
-        <!-- Users Table -->
-        <div class="control-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="margin: 0;">
-                    <i class="fas fa-users"></i> Users Eligible for Re-salting
-                </h3>
-                <button class="btn-resalt" onclick="loadResaltUsers()" style="background: #2563eb;">
-                    <i class="fas fa-sync"></i> Refresh
-                </button>
+            <!-- Statistics -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stats-card card-animate animate-fadeInUp delay-100">
+                        <div class="stats-value text-primary count-animate" id="totalUsers">0</div>
+                        <div class="stats-label">Total Users</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card card-animate animate-fadeInUp delay-200">
+                        <div class="stats-value text-danger count-animate" id="md5Count">0</div>
+                        <div class="stats-label">MD5 (Weak)</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card card-animate animate-fadeInUp delay-300">
+                        <div class="stats-value text-warning count-animate" id="sha1Count">0</div>
+                        <div class="stats-label">SHA-1 (Deprecated)</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card card-animate animate-fadeInUp delay-400">
+                        <div class="stats-value text-success count-animate" id="secureCount">0</div>
+                        <div class="stats-label">Secure (SHA-256+)</div>
+                    </div>
+                </div>
             </div>
-            <div style="overflow-x: auto; max-height: 600px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
-                <table class="data-table">
-                    <thead style="position: sticky; top: 0; background: #f9fafb; z-index: 10;">
-                        <tr>
-                            <th>Status</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Algorithm</th>
-                            <th>Salt Length</th>
-                            <th>Security Score</th>
-                            <th>Breach Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="resaltTableBody">
-                        <tr>
-                            <td colspan="8" style="text-align: center; padding: 2rem; color: #64748b;">
-                                Click "Refresh" to load users
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+
+            <!-- Action Selection -->
+            <div class="tool-card">
+                <div class="tool-card-header">
+                    <i class="fas fa-cogs"></i>
+                    <h3>Choose Action</h3>
+                </div>
+                <div class="tool-card-body">
+                    <div class="row">
+                        <!-- Action 1: Add Salt -->
+                        <div class="col-md-4">
+                            <div class="action-card" id="action-salt" onclick="selectAction('salt')">
+                                <div class="action-icon salt">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                                <div class="action-title">1. Add Salt</div>
+                                <div class="action-desc">Add random salt to existing hashes for enhanced security</div>
+                            </div>
+                        </div>
+                        <!-- Action 2: Salt Bit Length -->
+                        <div class="col-md-4">
+                            <div class="action-card" id="action-bit" onclick="selectAction('bit')">
+                                <div class="action-icon bit">
+                                    <i class="fas fa-ruler"></i>
+                                </div>
+                                <div class="action-title">2. Salt Bit Length</div>
+                                <div class="action-desc">Configure salt size: 64, 128, 256, or 512 bits</div>
+                            </div>
+                        </div>
+                        <!-- Action 3: Change Algorithm -->
+                        <div class="col-md-4">
+                            <div class="action-card" id="action-algo" onclick="selectAction('algo')">
+                                <div class="action-icon algo">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </div>
+                                <div class="action-title">3. Change Algorithm</div>
+                                <div class="action-desc">Migrate to stronger hash: SHA-256, SHA-512, bcrypt, Argon2id</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuration Panel -->
+                    <div class="config-panel" id="configPanel" style="display: none;">
+                        <!-- Salt Configuration -->
+                        <div id="saltConfig" style="display: none;">
+                            <h5 class="mb-3"><i class="fas fa-key me-2"></i>Salt Configuration</h5>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="enableSalt" checked>
+                                <label class="form-check-label" for="enableSalt">
+                                    <strong>Enable Salt</strong> - Add random salt to hashes
+                                </label>
+                            </div>
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Salt adds random data to passwords before hashing, making each hash unique even for identical passwords.
+                            </div>
+                        </div>
+
+                        <!-- Bit Length Configuration -->
+                        <div id="bitConfig" style="display: none;">
+                            <h5 class="mb-3"><i class="fas fa-ruler me-2"></i>Salt Bit Length</h5>
+                            <label class="form-label">Select Salt Size:</label>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="algo-option" onclick="selectBit(8)">
+                                        <input type="radio" name="bitLength" value="8" class="form-check-input me-2">
+                                        <div>
+                                            <strong>8 bytes</strong>
+                                            <div class="text-muted" style="font-size: 0.8rem;">64-bit</div>
+                                        </div>
+                                        <span class="algo-badge algo-sha1">Basic</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="algo-option" onclick="selectBit(16)">
+                                        <input type="radio" name="bitLength" value="16" class="form-check-input me-2">
+                                        <div>
+                                            <strong>16 bytes</strong>
+                                            <div class="text-muted" style="font-size: 0.8rem;">128-bit</div>
+                                        </div>
+                                        <span class="algo-badge algo-sha256">Good</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="algo-option selected" onclick="selectBit(32)">
+                                        <input type="radio" name="bitLength" value="32" class="form-check-input me-2" checked>
+                                        <div>
+                                            <strong>32 bytes</strong>
+                                            <div class="text-muted" style="font-size: 0.8rem;">256-bit</div>
+                                        </div>
+                                        <span class="algo-badge algo-bcrypt">Recommended</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="algo-option" onclick="selectBit(64)">
+                                        <input type="radio" name="bitLength" value="64" class="form-check-input me-2">
+                                        <div>
+                                            <strong>64 bytes</strong>
+                                            <div class="text-muted" style="font-size: 0.8rem;">512-bit</div>
+                                        </div>
+                                        <span class="algo-badge algo-argon2id">Maximum</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Algorithm Configuration -->
+                        <div id="algoConfig" style="display: none;">
+                            <h5 class="mb-3"><i class="fas fa-exchange-alt me-2"></i>Target Hash Algorithm</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="algo-option" onclick="selectAlgo('sha1')">
+                                        <input type="radio" name="algorithm" value="sha1" class="form-check-input me-2">
+                                        <div>
+                                            <strong>SHA-1</strong>
+                                            <div class="text-muted" style="font-size: 0.8rem;">160-bit output</div>
+                                        </div>
+                                        <span class="algo-badge algo-sha1">Deprecated</span>
+                                    </div>
+                                    <div class="algo-option selected" onclick="selectAlgo('sha256')">
+                                        <input type="radio" name="algorithm" value="sha256" class="form-check-input me-2" checked>
+                                        <div>
+                                            <strong>SHA-256</strong>
+                                            <div class="text-muted" style="font-size: 0.8rem;">256-bit output</div>
+                                        </div>
+                                        <span class="algo-badge algo-sha256">Recommended</span>
+                                    </div>
+                                    <div class="algo-option" onclick="selectAlgo('sha512')">
+                                        <input type="radio" name="algorithm" value="sha512" class="form-check-input me-2">
+                                        <div>
+                                            <strong>SHA-512</strong>
+                                            <div class="text-muted" style="font-size: 0.8rem;">512-bit output</div>
+                                        </div>
+                                        <span class="algo-badge algo-sha512">Very Strong</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="algo-option" onclick="selectAlgo('bcrypt')">
+                                        <input type="radio" name="algorithm" value="bcrypt" class="form-check-input me-2">
+                                        <div>
+                                            <strong>bcrypt</strong>
+                                            <div class="text-muted" style="font-size: 0.8rem;">Adaptive, slow by design</div>
+                                        </div>
+                                        <span class="algo-badge algo-bcrypt">Password Hashing</span>
+                                    </div>
+                                    <div class="algo-option" onclick="selectAlgo('argon2id')">
+                                        <input type="radio" name="algorithm" value="argon2id" class="form-check-input me-2">
+                                        <div>
+                                            <strong>Argon2id</strong>
+                                            <div class="text-muted" style="font-size: 0.8rem;">Memory-hard, most secure</div>
+                                        </div>
+                                        <span class="algo-badge algo-argon2id">Maximum Security</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Migration Preview -->
+                    <div class="preview-box" id="previewBox" style="display: none;">
+                        <h5 class="mb-3"><i class="fas fa-project-diagram me-2"></i>Migration Preview</h5>
+                        <div class="preview-step">
+                            <div class="step-number">1</div>
+                            <div>
+                                <strong>Get Current Hash</strong>
+                                <div class="text-muted" style="font-size: 0.875rem;">Extract MD5 hash from user record</div>
+                            </div>
+                        </div>
+                        <div class="preview-step" id="previewSalt">
+                            <div class="step-number">2</div>
+                            <div>
+                                <strong>Generate Salt</strong>
+                                <div class="text-muted" style="font-size: 0.875rem;">Create <span id="previewSaltBits">256</span>-bit random salt</div>
+                            </div>
+                        </div>
+                        <div class="preview-step">
+                            <div class="step-number">3</div>
+                            <div>
+                                <strong>Combine & Hash</strong>
+                                <div class="text-muted" style="font-size: 0.875rem;">MD5 + Salt → <span id="previewAlgo">SHA-256</span></div>
+                            </div>
+                        </div>
+                        <div class="preview-step">
+                            <div class="step-number">4</div>
+                            <div>
+                                <strong>Update Database</strong>
+                                <div class="text-muted" style="font-size: 0.875rem;">Store new hash and salt securely</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Selection -->
+            <div class="tool-card">
+                <div class="tool-card-header">
+                    <i class="fas fa-users"></i>
+                    <h3>Select Users</h3>
+                </div>
+                <div class="tool-card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm" onclick="selectAllMD5()">
+                                <i class="fas fa-check-double me-1"></i>Select All MD5
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="selectAll()">
+                                <i class="fas fa-check-square me-1"></i>Select All
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="clearSelection()">
+                                <i class="fas fa-times me-1"></i>Clear
+                            </button>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="loadUsers()">
+                            <i class="fas fa-sync-alt me-1"></i>Refresh
+                        </button>
+                    </div>
+
+                    <div id="userList" style="max-height: 400px; overflow-y: auto;">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-spinner fa-spin me-2"></i>Loading users...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Execute Button -->
+            <div class="tool-card">
+                <div class="tool-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong><span id="selectedCount">0</span> users selected</strong>
+                            <div class="text-muted" style="font-size: 0.875rem;">
+                                Action: <span id="selectedAction">None selected</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-success btn-lg" onclick="executeMigration()" id="executeBtn" disabled>
+                            <i class="fas fa-rocket me-2"></i>Execute Migration
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
 
+    <script src="../../shared/js/ux-helper.js"></script>
     <script>
-        const API_BASE = 'http://localhost:5000/api';
+        // Navigation toggle function
+        function toggleSubNav(id, event) {
+            if (event) event.preventDefault();
+            const subNav = document.getElementById(id);
+            if (subNav) {
+                subNav.classList.toggle('show');
+                const toggle = event.target.closest('.nav-item').querySelector('.nav-toggle');
+                if (toggle) toggle.classList.toggle('open');
+            }
+        }
+        
+        const API_BASE = 'http://127.0.0.1:5000/api';
+        let selectedUsers = new Set();
+        let allUsers = [];
+        let currentAction = null;
+        let currentBitLength = 32;
+        let currentAlgorithm = 'sha256';
 
-        // Check resalt status on load
+        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            checkResaltStatus();
-            loadResaltUsers();
+            loadUsers();
         });
 
-        async function checkResaltStatus() {
+        async function loadUsers() {
             try {
-                const response = await fetch(API_BASE + '/resalt/status');
+                const response = await fetch(`${API_BASE}/hash-migration/users`);
                 const data = await response.json();
-                
-                const statusDiv = document.getElementById('resaltStatus');
-                const btnEnable = document.getElementById('btnEnableResalt');
-                const btnDisable = document.getElementById('btnDisableResalt');
-                
-                if (data.enabled) {
-                    btnEnable.style.display = 'none';
-                    btnDisable.style.display = 'inline-block';
-                    statusDiv.style.display = 'block';
-                    statusDiv.innerHTML = `
-                        <span class="status-badge status-active">
-                            <i class="fas fa-check-circle"></i> Auto-Resalt ACTIVE
-                        </span>
-                        <span style="margin-left: 1rem; color: #64748b;">
-                            Interval: ${data.interval} seconds | Next resalt in: ${data.next_resalt || 'calculating...'}
-                        </span>
-                    `;
-                } else {
-                    btnEnable.style.display = 'inline-block';
-                    btnDisable.style.display = 'none';
-                    statusDiv.style.display = 'block';
-                    statusDiv.innerHTML = `
-                        <span class="status-badge status-inactive">
-                            <i class="fas fa-times-circle"></i> Auto-Resalt INACTIVE
-                        </span>
-                    `;
+
+                if (data.success) {
+                    allUsers = data.users;
+                    displayUsers(data.users);
+                    updateStatistics(data.users);
                 }
             } catch (error) {
-                console.error('Error checking resalt status:', error);
+                console.error('Error loading users:', error);
+                document.getElementById('userList').innerHTML = `
+                    <div class="text-center text-danger py-4">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Failed to connect to backend
+                    </div>
+                `;
             }
         }
 
-        async function toggleAutoResalt(enable) {
-            const interval = document.getElementById('resaltInterval').value;
+        function displayUsers(users) {
+            const userList = document.getElementById('userList');
+
+            if (users.length === 0) {
+                userList.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-inbox me-2"></i>No users found
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            users.forEach(user => {
+                const isSelected = selectedUsers.has(user.id);
+                const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                const algoClass = `algo-${user.algorithm.toLowerCase().replace('2', '')}`;
+                
+                html += `
+                    <div class="user-row ${isSelected ? 'selected' : ''}" id="user-${user.id}" onclick="toggleUser(${user.id})">
+                        <input type="checkbox" class="form-check-input me-3" ${isSelected ? 'checked' : ''}>
+                        <div class="user-avatar">${initials}</div>
+                        <div style="flex: 1;">
+                            <strong>${user.name}</strong>
+                            <div class="text-muted" style="font-size: 0.875rem;">${user.email}</div>
+                        </div>
+                        <span class="algo-badge ${algoClass}">${user.algorithm}</span>
+                    </div>
+                `;
+            });
+
+            userList.innerHTML = html;
+        }
+
+        function updateStatistics(users) {
+            const stats = { total: users.length, md5: 0, sha1: 0, secure: 0 };
+            users.forEach(user => {
+                const algo = user.algorithm.toUpperCase();
+                if (algo === 'MD5') stats.md5++;
+                else if (algo === 'SHA1' || algo === 'SHA-1') stats.sha1++;
+                else stats.secure++;
+            });
+            document.getElementById('totalUsers').textContent = stats.total;
+            document.getElementById('md5Count').textContent = stats.md5;
+            document.getElementById('sha1Count').textContent = stats.sha1;
+            document.getElementById('secureCount').textContent = stats.secure;
+        }
+
+        function selectAction(action) {
+            currentAction = action;
             
+            // Update UI
+            document.querySelectorAll('.action-card').forEach(card => card.classList.remove('selected'));
+            document.getElementById(`action-${action}`).classList.add('selected');
+            
+            // Show config panel
+            document.getElementById('configPanel').style.display = 'block';
+            document.getElementById('saltConfig').style.display = action === 'salt' ? 'block' : 'none';
+            document.getElementById('bitConfig').style.display = action === 'bit' ? 'block' : 'none';
+            document.getElementById('algoConfig').style.display = action === 'algo' ? 'block' : 'none';
+            
+            // Show preview
+            document.getElementById('previewBox').style.display = 'block';
+            
+            // Update action text
+            const actionTexts = {
+                'salt': 'Add Salt',
+                'bit': `Change Salt to ${currentBitLength * 8}-bit`,
+                'algo': `Migrate to ${currentAlgorithm.toUpperCase()}`
+            };
+            document.getElementById('selectedAction').textContent = actionTexts[action];
+            
+            updateExecuteButton();
+        }
+
+        function selectBit(bits) {
+            currentBitLength = bits;
+            document.querySelectorAll('#bitConfig .algo-option').forEach(opt => opt.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            document.getElementById('previewSaltBits').textContent = bits * 8;
+            document.getElementById('selectedAction').textContent = `Change Salt to ${bits * 8}-bit`;
+        }
+
+        function selectAlgo(algo) {
+            currentAlgorithm = algo;
+            document.querySelectorAll('#algoConfig .algo-option').forEach(opt => opt.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            document.getElementById('previewAlgo').textContent = algo.toUpperCase();
+            document.getElementById('selectedAction').textContent = `Migrate to ${algo.toUpperCase()}`;
+        }
+
+        function toggleUser(userId) {
+            if (selectedUsers.has(userId)) {
+                selectedUsers.delete(userId);
+            } else {
+                selectedUsers.add(userId);
+            }
+            displayUsers(allUsers);
+            updateExecuteButton();
+        }
+
+        function selectAllMD5() {
+            selectedUsers.clear();
+            allUsers.forEach(user => {
+                if (user.algorithm.toUpperCase() === 'MD5') {
+                    selectedUsers.add(user.id);
+                }
+            });
+            displayUsers(allUsers);
+            updateExecuteButton();
+        }
+
+        function selectAll() {
+            selectedUsers.clear();
+            allUsers.forEach(user => selectedUsers.add(user.id));
+            displayUsers(allUsers);
+            updateExecuteButton();
+        }
+
+        function clearSelection() {
+            selectedUsers.clear();
+            displayUsers(allUsers);
+            updateExecuteButton();
+        }
+
+        function updateExecuteButton() {
+            const btn = document.getElementById('executeBtn');
+            const count = selectedUsers.size;
+            document.getElementById('selectedCount').textContent = count;
+            btn.disabled = count === 0 || !currentAction;
+        }
+
+        async function executeMigration() {
+            if (selectedUsers.size === 0 || !currentAction) {
+                alert('Please select users and an action');
+                return;
+            }
+
+            const actionNames = { 'salt': 'Add Salt', 'bit': 'Change Salt Length', 'algo': 'Migrate Algorithm' };
+            if (!confirm(`Execute "${actionNames[currentAction]}" on ${selectedUsers.size} users?`)) return;
+
             try {
-                const response = await fetch(API_BASE + '/resalt/toggle', {
+                const response = await fetch(`${API_BASE}/hash-migration/batch-convert`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ enabled: enable, interval: parseInt(interval) })
+                    body: JSON.stringify({
+                        userIds: Array.from(selectedUsers),
+                        targetAlgorithm: currentAlgorithm,
+                        saltLength: currentBitLength
+                    })
                 });
-                
-                const data = await response.json();
-                if (data.success) {
-                    alert(data.message);
-                    checkResaltStatus();
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
 
-        async function manualResalt() {
-            if (!confirm('Manually trigger re-salting for all eligible users?')) return;
-            
-            try {
-                const response = await fetch(API_BASE + '/resalt/manual', {
-                    method: 'POST'
-                });
-                
                 const data = await response.json();
+
                 if (data.success) {
-                    alert(`✅ Re-salt completed!\n${data.resalted_count} users re-salted.`);
-                    loadResaltUsers();
+                    alert(`✅ Success! ${data.converted.length} users migrated.`);
+                    selectedUsers.clear();
+                    currentAction = null;
+                    await loadUsers();
+                    document.querySelectorAll('.action-card').forEach(card => card.classList.remove('selected'));
+                    document.getElementById('configPanel').style.display = 'none';
+                    document.getElementById('previewBox').style.display = 'none';
+                    updateExecuteButton();
                 } else {
-                    alert('Error: ' + data.message);
+                    alert('❌ Error: ' + data.message);
                 }
             } catch (error) {
-                alert('Error: ' + error.message);
+                alert('❌ Error: ' + error.message);
             }
         }
-
-        async function loadResaltUsers() {
-            const tbody = document.getElementById('resaltTableBody');
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
-            
-            try {
-                const response = await fetch(API_BASE + '/resalt/users');
-                const data = await response.json();
-                
-                if (!data.success || !data.users || data.users.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #64748b;">No users eligible for re-salting</td></tr>';
-                    return;
-                }
-                
-                let html = '';
-                data.users.forEach(user => {
-                    const canResalt = user.algorithm === 'MD5' || user.resalt_count === 0;
-                    const status = canResalt ? 'Eligible' : 'Re-salted';
-                    const statusColor = canResalt ? '#dc2626' : '#10b981';
-                    
-                    html += `
-                        <tr>
-                            <td>
-                                <span class="status-badge" style="background: ${canResalt ? '#fee2e2' : '#d1fae5'}; color: ${statusColor};">
-                                    ${status}
-                                </span>
-                            </td>
-                            <td>${user.name}</td>
-                            <td>${user.email}</td>
-                            <td>${user.algorithm}</td>
-                            <td>${user.salt ? user.salt.substring(0, 16) + '...' : 'None'}</td>
-                            <td>
-                                <span style="font-weight: 700; color: ${user.security_score > 70 ? '#10b981' : '#dc2626'};">
-                                    ${user.security_score}/100
-                                </span>
-                            </td>
-                            <td>
-                                <span style="color: ${user.breach_status === 'BREACHED' ? '#dc2626' : '#10b981'}; font-weight: 600;">
-                                    ${user.breach_status || 'SAFE'}
-                                </span>
-                            </td>
-                            <td>
-                                ${canResalt ? `
-                                    <button class="btn-action" style="background: #f59e0b; color: white;" onclick="resaltUser(${user.id})">
-                                        <i class="fas fa-shield-alt"></i> Re-salt
-                                    </button>
-                                ` : `
-                                    <span style="color: #10b981; font-size: 0.8rem;">
-                                        <i class="fas fa-check"></i> Protected
-                                    </span>
-                                `}
-                            </td>
-                        </tr>
-                    `;
-                });
-                
-                tbody.innerHTML = html;
-            } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #dc2626;">Error: ${error.message}</td></tr>`;
-            }
-        }
-
-        async function resaltUser(userId) {
-            if (!confirm('Re-salt this user\'s password hash?')) return;
-            
-            try {
-                const response = await fetch(API_BASE + `/resalt/user/${userId}`, {
-                    method: 'POST'
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                    alert('✅ User re-salted successfully!');
-                    loadResaltUsers();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-
-        // Auto-refresh status every 30 seconds
-        setInterval(checkResaltStatus, 30000);
     </script>
 </body>
 </html>

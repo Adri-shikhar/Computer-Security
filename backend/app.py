@@ -3,6 +3,11 @@ Flask Backend for Security Operations Center
 Handles user registration with Argon2 hashing and automatic salt rotation
 """
 
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                           IMPORTS & DEPENDENCIES                               ║
+# ║  All required libraries for Flask API, hashing, database, and security        ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
+
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sqlite3
@@ -14,6 +19,12 @@ import time
 from datetime import datetime, timedelta
 import bcrypt
 import requests
+
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                           ARGON2 CONFIGURATION                                 ║
+# ║  Argon2id is the recommended password hashing algorithm (PHC winner 2015)     ║
+# ║  If not available, falls back to bcrypt                                        ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 # Try to import argon2, fallback to simulation if not available
 try:
@@ -35,8 +46,18 @@ except ImportError:
 
 BCRYPT_AVAILABLE = True  # bcrypt is now installed
 
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                           FLASK APP INITIALIZATION                             ║
+# ║  Create Flask app with CORS enabled for cross-origin requests                 ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
+
 app = Flask(__name__, static_folder='../static', static_url_path='/static')
 CORS(app)
+
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                           DATABASE CONFIGURATION                               ║
+# ║  SQLite database path and auto-resalt configuration                           ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 # Database path
 DB_PATH = os.path.join(os.path.dirname(__file__), 'database.db')
@@ -45,6 +66,12 @@ DB_PATH = os.path.join(os.path.dirname(__file__), 'database.db')
 AUTO_RESALT_INTERVAL = 300  # 5 minutes for demo (set to 3600 for 1 hour in production)
 auto_resalt_enabled = False
 resalt_thread = None
+
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                           CORE HASHING FUNCTIONS                               ║
+# ║  Functions for generating salts and hashing passwords with various algorithms ║
+# ║  Supported: MD5 (weak), SHA-1 (deprecated), SHA-256, SHA-512, bcrypt, Argon2  ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 def generate_salt(length=32):
     """Generate a cryptographically secure random salt"""
@@ -117,6 +144,48 @@ def verify_password_after_resalt(password, salt, stored_hash, original_md5):
     # Compare with stored hash
     return final_hash == stored_hash
 
+def hash_with_custom_salt(input_hash, salt_length, target_algorithm):
+    """
+    Convert a hash to another hash type with custom salt length
+    
+    Args:
+        input_hash: The input hash (e.g., MD5 hash)
+        salt_length: Length of salt in bytes (8, 16, 32, 64, etc.)
+        target_algorithm: Target hash algorithm (sha1, sha256, sha512, argon2id, bcrypt)
+    
+    Returns:
+        tuple: (final_hash, salt_used)
+    """
+    # Generate salt
+    salt = generate_salt(salt_length)
+    
+    # Combine input hash with salt
+    salted_input = input_hash + salt
+    
+    # Hash based on target algorithm
+    if target_algorithm.lower() == 'sha1':
+        final_hash = hashlib.sha1(salted_input.encode()).hexdigest()
+        return final_hash, salt
+    elif target_algorithm.lower() == 'sha256':
+        final_hash = hashlib.sha256(salted_input.encode()).hexdigest()
+        return final_hash, salt
+    elif target_algorithm.lower() == 'sha512':
+        final_hash = hashlib.sha512(salted_input.encode()).hexdigest()
+        return final_hash, salt
+    elif target_algorithm.lower() == 'bcrypt':
+        # For bcrypt, hash the salted input
+        password_bytes = salted_input.encode('utf-8')
+        hashed = bcrypt.hashpw(password_bytes, bcrypt.gensalt(rounds=12))
+        return hashed.decode('utf-8'), salt
+    elif target_algorithm.lower() == 'argon2id' and ARGON2_AVAILABLE:
+        # For Argon2id, hash the salted input
+        hash_result = ph.hash(salted_input)
+        return hash_result, salt
+    else:
+        # Default to SHA-256
+        final_hash = hashlib.sha256(salted_input.encode()).hexdigest()
+        return final_hash, salt
+
 def verify_password(password, algorithm, password_hash):
     """Verify password against stored hash"""
     try:
@@ -141,6 +210,12 @@ def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                           DATABASE INITIALIZATION                              ║
+# ║  Creates tables: users, demo_users, resalt_log                                 ║
+# ║  Also populates 30 demo users with MD5 hashes for lab demonstrations          ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 def init_db():
     """Initialize the database with users table"""
@@ -255,7 +330,11 @@ def init_db():
     conn.close()
     print("✅ Database initialized successfully!")
 
-# ==================== AUTO-RESALT FEATURE ====================
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                           AUTO-RESALT FEATURE                                  ║
+# ║  Background thread that automatically resalts all users at intervals          ║
+# ║  Demonstrates periodic salt rotation for enhanced security                    ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 def resalt_all_users():
     """Resalt all users with new salt values"""
@@ -305,7 +384,15 @@ def auto_resalt_worker():
             count = resalt_all_users()
             print(f"🔄 Auto-resalt completed: {count} users resalted at {datetime.now().strftime('%H:%M:%S')}")
 
-# ==================== API ROUTES ====================
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                              API ROUTES                                        ║
+# ║  RESTful endpoints for the Security Operations Center Platform                ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
+
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                         STATIC FILE SERVING                                    ║
+# ║  Serve HTML pages and static assets (CSS, JS, images)                         ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 @app.route('/')
 def index():
@@ -326,6 +413,13 @@ def result_login():
 def serve_static(path):
     """Serve static files"""
     return send_from_directory('..', path)
+
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                         USER REGISTRATION ENDPOINT                             ║
+# ║  POST /api/register - Register new users with MD5 hash                        ║
+# ║  Stores: name, email, password_hash, multi-hash values, security score        ║
+# ║  Also checks password against Have I Been Pwned API                           ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -440,6 +534,13 @@ def register():
             'success': False,
             'message': f'Server error: {str(e)}'
         }), 500
+
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                         USER DATA ENDPOINTS                                    ║
+# ║  GET /api/users - Get all registered users from backend database              ║
+# ║  GET /api/demo-users - Get demo users for lab demonstrations                  ║
+# ║  DELETE /api/users/clear - Clear all registered users                         ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 @app.route('/api/users', methods=['GET'])
 def get_users():
@@ -564,6 +665,14 @@ def clear_users():
             'message': f'Server error: {str(e)}'
         }), 500
 
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                         RESALT MANAGEMENT ENDPOINTS                            ║
+# ║  POST /api/resalt - Manual resalt trigger for all users                       ║
+# ║  POST /api/resalt/auto - Toggle automatic resalt feature                      ║
+# ║  GET /api/resalt/status - Get current auto-resalt status                      ║
+# ║  GET /api/resalt/log - Get resalt history log                                 ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
+
 @app.route('/api/resalt', methods=['POST'])
 def trigger_resalt():
     """Manually trigger resalt for all users"""
@@ -675,6 +784,11 @@ def get_resalt_log():
             'message': f'Server error: {str(e)}'
         }), 500
 
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                         STATISTICS ENDPOINT                                    ║
+# ║  GET /api/stats - Get dashboard statistics and counts                         ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
+
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
     """Get dashboard statistics"""
@@ -718,6 +832,11 @@ def get_stats():
             'message': f'Server error: {str(e)}'
         }), 500
 
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                         HASH ENDPOINT                                          ║
+# ║  POST /api/hash - Hash a password with Argon2id and custom salt               ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
+
 @app.route('/api/hash', methods=['POST'])
 def hash_password():
     """Hash a password with Argon2 and salt"""
@@ -753,6 +872,13 @@ def hash_password():
             'success': False,
             'message': f'Server error: {str(e)}'
         }), 500
+
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                         DEMO DATA ENDPOINT                                     ║
+# ║  POST /api/demo/populate - Populate database with realistic demo data        ║
+# ║  Creates users with various security profiles for lab demonstrations          ║
+# ║  Includes: duplicate passwords, weak passwords, breached passwords           ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 @app.route('/api/demo/populate', methods=['POST'])
 def populate_demo_data():
@@ -974,7 +1100,13 @@ def populate_demo_data():
             'message': f'Error populating demo data: {str(e)}'
         }), 500
 
-# ==================== AUDIT FEATURES ====================
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                         SECURITY AUDIT FEATURES                                ║
+# ║  Endpoints for auditing password security in the database                     ║
+# ║  GET /api/audit/duplicate-passwords - Find duplicate password hashes         ║
+# ║  GET /api/audit/weak-passwords - Find users with security score < 50         ║
+# ║  GET /api/audit/breached-passwords - Find users with breached passwords      ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 @app.route('/api/audit/duplicate-passwords', methods=['GET'])
 def find_duplicate_passwords():
@@ -1138,7 +1270,13 @@ def analyze_hash_distribution():
             'message': f'Server error: {str(e)}'
         }), 500
 
-# ==================== RE-SALT FEATURE ====================
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                         RE-SALT MANAGEMENT FEATURE                             ║
+# ║  Endpoints for managing salt rotation on individual users                     ║
+# ║  GET /api/resalt/users - Get users with their salt status                    ║
+# ║  POST /api/resalt/user/<id> - Re-salt a single user's password               ║
+# ║  Uses: MD5 hash + new salt → SHA-256 (preserves original password check)     ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 @app.route('/api/resalt/users', methods=['GET'])
 def get_users_for_resalt():
@@ -1398,7 +1536,204 @@ def resalt_all_users():
             'message': f'Server error: {str(e)}'
         }), 500
 
-# ==================== HEALTH CHECK ====================
+# ==================== HASH MIGRATION ====================
+
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                         HASH MIGRATION ENDPOINTS                               ║
+# ║  Convert user password hashes from one algorithm to another                   ║
+# ║  GET /api/hash-migration/users - Get users with their current hash algorithms ║
+# ║  POST /api/hash-migration/convert - Convert hash to new algorithm + salt      ║
+# ║  Supports: SHA-1, SHA-256, SHA-512, bcrypt, Argon2id                          ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
+
+@app.route('/api/hash-migration/users', methods=['GET'])
+def get_users_for_migration():
+    """Get all users with their current hash algorithms"""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT id, name, email, algorithm, password_hash, 
+                   hash_md5, hash_sha1, hash_sha256, hash_sha512,
+                   created_at
+            FROM users
+            ORDER BY id DESC
+        ''')
+        
+        users = []
+        for row in cursor.fetchall():
+            users.append({
+                'id': row['id'],
+                'name': row['name'],
+                'email': row['email'],
+                'algorithm': row['algorithm'],
+                'currentHash': row['password_hash'][:50] + '...' if len(row['password_hash']) > 50 else row['password_hash'],
+                'md5': row['hash_md5'] or '',
+                'sha1': row['hash_sha1'] or '',
+                'sha256': row['hash_sha256'] or '',
+                'sha512': row['hash_sha512'] or '',
+                'createdAt': row['created_at']
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'users': users
+        })
+    except Exception as e:
+        print(f"Error fetching users: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+@app.route('/api/hash-migration/convert', methods=['POST'])
+def convert_hash():
+    """Convert user's hash from one algorithm to another with custom salt"""
+    try:
+        data = request.get_json()
+        user_id = data.get('userId')
+        target_algorithm = data.get('targetAlgorithm')
+        salt_length = data.get('saltLength', 32)  # Default 32 bytes
+        
+        if not user_id or not target_algorithm:
+            return jsonify({
+                'success': False,
+                'message': 'User ID and target algorithm are required'
+            }), 400
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        # Get current user data
+        cursor.execute('''
+            SELECT id, name, email, algorithm, password_hash, hash_md5
+            FROM users WHERE id = ?
+        ''', (user_id,))
+        
+        user = cursor.fetchone()
+        if not user:
+            conn.close()
+            return jsonify({
+                'success': False,
+                'message': 'User not found'
+            }), 404
+        
+        # Get the current hash to use as input
+        current_algorithm = user['algorithm']
+        current_hash = user['password_hash']
+        
+        # Use MD5 hash as the base for migration
+        base_hash = user['hash_md5'] if user['hash_md5'] else current_hash
+        
+        # Convert to target algorithm with custom salt
+        new_hash, new_salt = hash_with_custom_salt(base_hash, salt_length, target_algorithm)
+        
+        # Update user record
+        cursor.execute('''
+            UPDATE users 
+            SET algorithm = ?, password_hash = ?, salt = ?
+            WHERE id = ?
+        ''', (target_algorithm.upper(), new_hash, new_salt, user_id))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Successfully migrated {user["name"]} from {current_algorithm} to {target_algorithm.upper()}',
+            'data': {
+                'userId': user_id,
+                'oldAlgorithm': current_algorithm,
+                'newAlgorithm': target_algorithm.upper(),
+                'saltLength': salt_length,
+                'newHash': new_hash[:50] + '...' if len(new_hash) > 50 else new_hash
+            }
+        })
+    except Exception as e:
+        print(f"Error converting hash: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+@app.route('/api/hash-migration/batch-convert', methods=['POST'])
+def batch_convert_hash():
+    """Convert multiple users' hashes in batch"""
+    try:
+        data = request.get_json()
+        user_ids = data.get('userIds', [])
+        target_algorithm = data.get('targetAlgorithm')
+        salt_length = data.get('saltLength', 32)
+        
+        if not user_ids or not target_algorithm:
+            return jsonify({
+                'success': False,
+                'message': 'User IDs and target algorithm are required'
+            }), 400
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        converted_users = []
+        failed_users = []
+        
+        for user_id in user_ids:
+            try:
+                cursor.execute('''
+                    SELECT id, name, email, algorithm, password_hash, hash_md5
+                    FROM users WHERE id = ?
+                ''', (user_id,))
+                
+                user = cursor.fetchone()
+                if not user:
+                    failed_users.append({'userId': user_id, 'reason': 'User not found'})
+                    continue
+                
+                # Get base hash (MD5)
+                base_hash = user['hash_md5'] if user['hash_md5'] else user['password_hash']
+                
+                # Convert to target algorithm
+                new_hash, new_salt = hash_with_custom_salt(base_hash, salt_length, target_algorithm)
+                
+                # Update user record
+                cursor.execute('''
+                    UPDATE users 
+                    SET algorithm = ?, password_hash = ?, salt = ?
+                    WHERE id = ?
+                ''', (target_algorithm.upper(), new_hash, new_salt, user_id))
+                
+                converted_users.append({
+                    'userId': user_id,
+                    'name': user['name'],
+                    'oldAlgorithm': user['algorithm'],
+                    'newAlgorithm': target_algorithm.upper()
+                })
+            except Exception as e:
+                failed_users.append({'userId': user_id, 'reason': str(e)})
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Converted {len(converted_users)} users successfully',
+            'converted': converted_users,
+            'failed': failed_users
+        })
+    except Exception as e:
+        print(f"Error in batch conversion: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                         HEALTH CHECK ENDPOINT                                  ║
+# ║  GET /api/health - Verify backend is running and check algorithm status       ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -1411,7 +1746,11 @@ def health_check():
         'timestamp': datetime.now().isoformat()
     })
 
-# ==================== MAIN ====================
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                         APPLICATION ENTRY POINT                                ║
+# ║  Initialize database and start Flask development server                       ║
+# ║  Access: http://localhost:5000                                                ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 if __name__ == '__main__':
     print("🔐 Security Operations Center - Flask Backend")

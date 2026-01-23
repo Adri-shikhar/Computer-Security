@@ -367,11 +367,8 @@
                 <i class="fas fa-chevron-down nav-toggle"></i>
             </a>
             <div id="hashToolsNav" class="sub-nav">
-                <a href="features/hash-tools/md5-generator.html" class="sub-nav-item">
-                    <i class="fas fa-lock"></i> MD5 Generator
-                </a>
-                <a href="features/hash-tools/sha256-generator.html" class="sub-nav-item">
-                    <i class="fas fa-shield-alt"></i> SHA-256 Generator
+                <a href="features/hash-tools/multi-hash-generator.html" class="sub-nav-item">
+                    <i class="fas fa-hashtag"></i> Multi-Hash Generator
                 </a>
                 <a href="features/hash-tools/hash-comparison.html" class="sub-nav-item">
                     <i class="fas fa-balance-scale"></i> Hash Comparison
@@ -382,18 +379,12 @@
             </div>
 
             <a href="dashboard-features/breach-checker/breach-checker.html" class="nav-item">
-                <i class="fas fa-exclamation-triangle"></i> Password Breach Checker
+                <i class="fas fa-exclamation-triangle"></i> Breach Checker
             </a>
 
-            <a href="#" class="nav-item" onclick="toggleSubNav('utilityToolsNav', event)">
-                <i class="fas fa-tools"></i> Utility Tools
-                <i class="fas fa-chevron-down nav-toggle"></i>
+            <a href="dashboard-features/password-generator/password-generator.html" class="nav-item">
+                <i class="fas fa-key"></i> Password Generator
             </a>
-            <div id="utilityToolsNav" class="sub-nav">
-                <a href="dashboard-features/password-generator/password-generator.html" class="sub-nav-item">
-                    <i class="fas fa-key"></i> Password Generator
-                </a>
-            </div>
         </nav>
     </aside>
 
@@ -414,10 +405,10 @@
 
         <div class="content-area">
             <!-- REGISTRATION SECTION -->
-            <div class="auth-container">
-                <div class="auth-card">
+            <div class="auth-container animate-fadeInUp">
+                <div class="auth-card card-animate">
                     <div class="auth-header">
-                        <i class="fas fa-user-shield"></i>
+                        <i class="fas fa-user-shield animate-bounceIn"></i>
                         <h2>User Registration</h2>
                         <p>Secure Authentication System</p>
                     </div>
@@ -568,9 +559,9 @@
                 </div>
 
                 <!-- Quick Access -->
-                <div class="quick-access">
-                    <a href="backend/dashboard.html" class="quick-card">
-                        <div class="quick-icon" style="background: #d1fae5; color: var(--success);">
+                <div class="quick-access animate-fadeInUp delay-300">
+                    <a href="backend/dashboard.html" class="quick-card hover-lift">
+                        <div class="quick-icon animate-pulse" style="background: #d1fae5; color: var(--success);">
                             <i class="fas fa-database"></i>
                         </div>
                         <div>
@@ -578,8 +569,8 @@
                             <p>View all registered users</p>
                         </div>
                     </a>
-                    <a href="dashboard-features/password-generator/password-generator.html" class="quick-card">
-                        <div class="quick-icon" style="background: #dbeafe; color: var(--primary);">
+                    <a href="dashboard-features/password-generator/password-generator.html" class="quick-card hover-lift">
+                        <div class="quick-icon animate-float" style="background: #dbeafe; color: var(--primary);">
                             <i class="fas fa-key"></i>
                         </div>
                         <div>
@@ -596,6 +587,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="shared/js/live-demo-service.js"></script>
     <script src="shared/js/api-client.js"></script>
+    <link rel="stylesheet" href="shared/css/ux-enhancements.css">
     <script>
         // API Base URL - change this when deploying
         const API_BASE = 'http://localhost:5000/api';

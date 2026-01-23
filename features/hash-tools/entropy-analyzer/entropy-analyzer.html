@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../../shared/css/nav-styles.css">
     <link rel="stylesheet" href="../../../shared/css/ux-enhancements.css">
+    <link rel="stylesheet" href="../../../dashboard-features/password-generator/password-generator.css">
     <style>
         .strength-meter {
             height: 30px;
@@ -86,11 +87,8 @@
                 <i class="fas fa-chevron-down nav-toggle open" id="hashToggle"></i>
             </a>
             <div class="sub-nav show" id="hashSub">
-                <a href="../md5-generator.html" class="sub-nav-item">
-                    <i class="fas fa-lock"></i> MD5 Generator
-                </a>
-                <a href="../sha256-generator.html" class="sub-nav-item">
-                    <i class="fas fa-shield-alt"></i> SHA-256 Generator
+                <a href="../multi-hash-generator.html" class="sub-nav-item">
+                    <i class="fas fa-hashtag"></i> Multi-Hash Generator
                 </a>
                 <a href="../hash-comparison.html" class="sub-nav-item">
                     <i class="fas fa-balance-scale"></i> Hash Comparison
@@ -101,18 +99,12 @@
             </div>
 
             <a href="../../../dashboard-features/breach-checker/breach-checker.html" class="nav-item">
-                <i class="fas fa-user-secret"></i> Password Breach Checker
+                <i class="fas fa-exclamation-triangle"></i> Breach Checker
             </a>
 
-            <a href="#" class="nav-item" onclick="toggleSubNav('utilitySub', event)">
-                <i class="fas fa-tools"></i> Utility Tools
-                <i class="fas fa-chevron-down nav-toggle" id="utilityToggle"></i>
+            <a href="../../../dashboard-features/password-generator/password-generator.html" class="nav-item">
+                <i class="fas fa-key"></i> Password Generator
             </a>
-            <div class="sub-nav" id="utilitySub">
-                <a href="../../../dashboard-features/password-generator/password-generator.html" class="sub-nav-item">
-                    <i class="fas fa-key"></i> Password Generator
-                </a>
-            </div>
         </nav>
     </aside>
 

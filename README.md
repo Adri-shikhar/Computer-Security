@@ -39,11 +39,13 @@ A **Security Operations Center (SOC) Platform** that demonstrates:
 | Feature | Description |
 |---------|-------------|
 | **User Registration** | Register users with secure password hashing |
-| **Multi-Hash Support** | MD5, SHA-1, SHA-256, SHA-512, bcrypt, Argon2id |
+| **Multi-Hash Generator** | Generate MD5, SHA-1, SHA-256, SHA-512, bcrypt hashes with optional salt |
+| **Hash Migration** | Upgrade password hashes from weak to strong algorithms |
+| **Salt & Hash Manager** | 3-in-1 tool: Add Salt, Change Bit Length, Migrate Algorithm |
 | **Security Scoring** | Analyze password strength (0-100 score) |
 | **Duplicate Detection** | Find users sharing the same password |
 | **Breach Detection** | Identify commonly breached passwords |
-| **Re-Salt Management** | Upgrade weak hashes with new salts |
+| **Password Generator** | Generate secure random passwords with customizable rules |
 | **Admin Dashboard** | Real-time security monitoring |
 | **Export/Clear** | Download data or clear database |
 
@@ -695,7 +697,15 @@ CREATE TABLE resalt_log (
 | `/api/audit/breached-passwords` | GET | Find breached passwords | List of breached users |
 | `/api/audit/hash-distribution` | GET | Algorithm & score distribution | Statistics |
 
-### 5.3 Re-Salt Operations
+### 5.3 Hash Migration Operations
+
+| Endpoint | Method | Description | Response |
+|----------|--------|-------------|----------|
+| `/api/hash-migration/users` | GET | Get all users with hash info | User list with algorithm data |
+| `/api/hash-migration/convert` | POST | Convert single user's hash | Updated user details |
+| `/api/hash-migration/batch-convert` | POST | Batch convert multiple users | List of converted users |
+
+### 5.4 Re-Salt Operations
 
 | Endpoint | Method | Description | Response |
 |----------|--------|-------------|----------|
@@ -794,7 +804,64 @@ if is_pwned:
 3. Use k-Anonymity model to protect privacy (only 5-char hash prefix sent)
 4. Flag users with commonly breached passwords
 
-### 6.4 Re-Salt Management
+### 6.4 Salt & Hash Management
+
+The Salt & Hash Manager provides three powerful actions for upgrading password security:
+
+**1. Add Salt** - Add random salt to existing unsalted hashes:
+```python
+# Add cryptographically secure salt
+new_salt = secrets.token_hex(16)  # 32 hex characters
+new_hash = hash_function(original_hash + new_salt)
+```
+
+**2. Change Salt Bit Length** - Modify salt size for stronger protection:
+```
+Available Salt Sizes:
+├── 8 bytes  (64-bit)   - Basic security
+├── 16 bytes (128-bit)  - Good security
+├── 32 bytes (256-bit)  - Recommended
+└── 64 bytes (512-bit)  - Maximum security
+```
+
+**3. Migrate Algorithm** - Upgrade to stronger hash algorithms:
+```
+Migration Paths:
+MD5 → SHA-1 → SHA-256 → SHA-512 → bcrypt → Argon2id
+
+Hash Strength Hierarchy:
+┌─────────────┬────────────┬───────────────────────┐
+│ Algorithm   │ Bit Length │ Security Level        │
+├─────────────┼────────────┼───────────────────────┤
+│ MD5         │ 128-bit    │ ❌ Broken             │
+│ SHA-1       │ 160-bit    │ ⚠️ Deprecated         │
+│ SHA-256     │ 256-bit    │ ✅ Secure             │
+│ SHA-512     │ 512-bit    │ ✅ Very Strong        │
+│ bcrypt      │ 184-bit    │ ✅✅ Password Hashing │
+│ Argon2id    │ Variable   │ ✅✅✅ Maximum        │
+└─────────────┴────────────┴───────────────────────┘
+```
+
+**Migration Logic:**
+```python
+def hash_with_custom_salt(input_hash, salt_length, target_algorithm):
+    """Migrate hash to new algorithm with custom salt"""
+    new_salt = secrets.token_hex(salt_length)
+    combined = input_hash + new_salt
+    
+    if target_algorithm == 'sha256':
+        new_hash = hashlib.sha256(combined.encode()).hexdigest()
+    elif target_algorithm == 'sha512':
+        new_hash = hashlib.sha512(combined.encode()).hexdigest()
+    elif target_algorithm == 'bcrypt':
+        new_hash = bcrypt.hashpw(combined.encode(), bcrypt.gensalt())
+    elif target_algorithm == 'argon2id':
+        new_hash = ph.hash(combined)
+    
+    return new_hash, new_salt
+```
+
+### 6.5 Re-Salt Management (Legacy)
 
 **Purpose:**
 Upgrade weak (unsalted or MD5) hashes to stronger salted hashes.
@@ -963,7 +1030,71 @@ Output: Groups of users with duplicate passwords
   - Check Breached Passwords
 - **Actions**: Export Data, Clear Storage
 
-### 8.3 Navigation Structure
+### 8.3 Multi-Hash Generator
+
+The Multi-Hash Generator provides a unified interface for generating hashes with 5 algorithms:
+
+**Supported Algorithms:**
+- **MD5** - 128-bit hash (educational purposes)
+- **SHA-1** - 160-bit hash (legacy support)
+- **SHA-256** - 256-bit hash (recommended)
+- **SHA-512** - 512-bit hash (high security)
+- **bcrypt** - Password hashing with work factor
+
+**Features:**
+- Optional salt generation (8/16/32/64 bytes)
+- Visual hash flow diagram
+- Copy hash to clipboard
+- Client-side processing with CryptoJS
+
+### 8.4 Salt & Hash Manager
+
+**Access:** Backend Dashboard → "Open Salt & Hash Manager" button
+
+The Salt & Hash Manager is a comprehensive tool for upgrading password security with three integrated actions:
+
+**Action 1: Add Salt**
+- Adds cryptographically secure random salt to existing hashes
+- Salt is generated using `secrets.token_hex()` for true randomness
+- Prevents rainbow table attacks by making each hash unique
+
+**Action 2: Change Salt Bit Length**
+- Configure salt size based on security requirements:
+  - 64-bit (8 bytes) - Basic security
+  - 128-bit (16 bytes) - Good security  
+  - 256-bit (32 bytes) - Recommended (default)
+  - 512-bit (64 bytes) - Maximum security
+
+**Action 3: Migrate Algorithm**
+- Upgrade weak hashes to stronger algorithms:
+  - SHA-1 (160-bit) - Deprecated but supported
+  - SHA-256 (256-bit) - Recommended for most use cases
+  - SHA-512 (512-bit) - High security applications
+  - bcrypt - Adaptive password hashing
+  - Argon2id - Maximum security (memory-hard)
+
+**UI Features:**
+- Statistics dashboard showing user distribution by algorithm
+- Bulk user selection with "Select All MD5" quick action
+- Real-time migration preview showing the conversion process
+- Color-coded algorithm badges (red=weak, green=secure)
+
+**API Endpoints:**
+- `GET /api/hash-migration/users` - List all users with hash info
+- `POST /api/hash-migration/convert` - Convert single user
+- `POST /api/hash-migration/batch-convert` - Batch convert multiple users
+
+### 8.5 Password Generator
+
+Professional password generation with customizable rules:
+
+- Character types (uppercase, lowercase, numbers, symbols)
+- Adjustable length (8-128 characters)
+- Entropy calculation
+- Strength indicator
+- Exclude similar characters option
+
+### 8.6 Navigation Structure
 
 ```
 MAIN NAVIGATION
@@ -972,9 +1103,14 @@ MAIN NAVIGATION
 
 SECURITY TOOLS
 ├── Hash Tools (expandable)
-├── Encryption Tools
-└── Utility Tools
-    └── Password Generator
+│   ├── Multi-Hash Generator
+│   ├── Hash Comparison
+│   └── Entropy Analyzer
+├── Breach Checker
+└── Password Generator
+
+BACKEND DASHBOARD ONLY
+└── Salt & Hash Manager (accessed via dashboard button)
 ```
 
 ---
@@ -1051,7 +1187,7 @@ d:\Computer-Security\
 ├── README.md                       # This documentation
 │
 ├── backend/
-│   ├── app.py                      # Flask server (1382 lines)
+│   ├── app.py                      # Flask server with all APIs
 │   ├── dashboard.html              # Admin dashboard
 │   ├── database.db                 # SQLite database
 │   ├── requirements.txt            # Python dependencies
@@ -1059,13 +1195,17 @@ d:\Computer-Security\
 │
 ├── dashboard-features/
 │   ├── password-generator/
-│   │   ├── password-generator.html
-│   │   ├── password-generator.css
+│   │   ├── password-generator.html # Professional password generator
+│   │   ├── password-generator.css  # Shared UI styles
 │   │   └── password-generator.js
 │   ├── breach-checker/
+│   │   └── breach-checker.html     # Check passwords against HIBP
 │   ├── duplicate-checker/
+│   │   └── duplicate-checker.html  # Find duplicate passwords
 │   ├── resalt-management/
+│   │   └── resalt-management.html  # Salt & Hash Manager (3 Actions)
 │   └── security-analytics/
+│       └── security-analytics.html # Security dashboard
 │
 ├── shared/
 │   ├── css/
@@ -1079,8 +1219,10 @@ d:\Computer-Security\
 │       └── live-demo-service.js    # Demo data service
 │
 └── features/
-    ├── hash-tools/
-    └── login-verifier/
+    └── hash-tools/
+        ├── multi-hash-generator.html  # Multi-Hash Generator (5 algorithms)
+        ├── hash-comparison.html       # Compare hash algorithms
+        └── entropy-analyzer/          # Password entropy analysis
 ```
 
 ---
@@ -1110,20 +1252,124 @@ d:\Computer-Security\
 
 ---
 
+## 12. UI/UX Features
+
+### Animation Effects
+
+The platform includes comprehensive CSS animations for enhanced user experience:
+
+| Animation | Description | Usage |
+|-----------|-------------|-------|
+| `animate-fadeIn` | Smooth fade in effect | Page load elements |
+| `animate-fadeInUp` | Fade in from bottom | Cards, forms |
+| `animate-bounceIn` | Bouncy entrance | Icons, alerts |
+| `animate-pulse` | Continuous pulsing | Active indicators |
+| `animate-float` | Floating effect | Decorative icons |
+| `animate-glow` | Glowing border | Focus states |
+| `hover-lift` | Lift on hover | Interactive cards |
+| `card-animate` | Card hover effect | Dashboard cards |
+| `btn-animate` | Button shine effect | Action buttons |
+| `ripple` | Material ripple effect | Click feedback |
+
+### Responsive Design
+
+- **Desktop**: Full sidebar navigation with expanded features
+- **Tablet**: Collapsible sidebar with touch-friendly controls
+- **Mobile**: Bottom navigation with hamburger menu
+
+### Accessibility
+
+- High contrast color scheme
+- Keyboard navigation support
+- ARIA labels on interactive elements
+- Focus indicators on all controls
+
+---
+
+## 13. Troubleshooting
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Backend not starting | Check if port 5000 is in use: `netstat -an \| findstr 5000` |
+| CORS errors | Ensure Flask-CORS is installed and enabled |
+| Database locked | Close other connections to database.db |
+| Argon2 not found | Install: `pip install argon2-cffi` |
+| bcrypt errors | Install: `pip install bcrypt` |
+| API timeout | Check network connection, HIBP API may be slow |
+
+### Debug Mode
+
+Enable debug logging in `app.py`:
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
+
+---
+
+## 14. Additional Documentation
+
+For detailed backend API documentation, see **[BACKEND.md](BACKEND.md)**
+
+---
+
 ## Summary
 
 This project demonstrates:
 
-- **Cryptographic password hashing** with multiple algorithms
-- **Salt generation and management** for enhanced security
+- **Cryptographic password hashing** with multiple algorithms (MD5, SHA-1, SHA-256, SHA-512, bcrypt, Argon2id)
+- **Multi-Hash Generator** for comparing different hashing algorithms
+- **Salt & Hash Manager** with 3 actions: Add Salt, Change Bit Length, Migrate Algorithm
+- **Salt generation and management** for enhanced security (64/128/256/512 bit options)
+- **Hash Migration** to upgrade weak hashes to stronger algorithms
 - **Security auditing** to detect vulnerabilities
 - **Full-stack architecture** with Flask backend and JS frontend
 - **Real-time security analytics** for administrators
+- **Modern UI/UX** with CSS animations and responsive design
 
 The mathematical foundation ensures passwords are protected using industry-standard cryptographic functions, while the audit tools help administrators identify and remediate security issues.
 
 ---
 
+## 15. Quick Start Guide
+
+### 1. Clone and Setup
+
+```bash
+git clone <repository-url>
+cd Computer-Security
+```
+
+### 2. Install Dependencies
+
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+### 3. Start Backend Server
+
+```bash
+python app.py
+```
+
+### 4. Access the Platform
+
+Open browser to: **http://localhost:5000**
+
+### 5. Register a User
+
+1. Fill in name, email, and password
+2. Watch the real-time security score
+3. Click "Register" to save
+4. View data in Backend Dashboard
+
+---
+
 **Created by:** Security Operations Center Platform  
-**Technologies:** Python Flask, SQLite, JavaScript, HTML/CSS, Argon2id, bcrypt  
+**Technologies:** Python Flask, SQLite, JavaScript, HTML/CSS, Argon2id, bcrypt, CryptoJS  
+**Version:** 1.0.0  
+**Last Updated:** January 2026  
 **License:** MIT
