@@ -1,5 +1,12 @@
-// Advanced Password Generator JavaScript
+/**
+ * ============================================
+ * PASSWORD-GENERATOR.JS - Password Generation
+ * ============================================
+ * Purpose: Generate secure random passwords
+ * Contains: Character sets, entropy calculation, batch generation
+ */
 
+// Sidebar toggle
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('show');
 }
@@ -17,9 +24,8 @@ function updateLengthDisplay(value) {
     document.getElementById('lengthValue').textContent = value;
 }
 
-// Quick Generate - One click with best defaults
+// Quick Generate with optimal defaults
 function quickGenerate() {
-    // Set optimal defaults
     document.getElementById('passwordLength').value = 16;
     document.getElementById('lengthValue').textContent = '16';
     document.getElementById('includeUppercase').checked = true;
@@ -31,7 +37,6 @@ function quickGenerate() {
     document.getElementById('pronounceable').checked = false;
     document.getElementById('batchCount').value = '1';
     
-    // Generate immediately
     generatePasswords();
 }
 
@@ -45,7 +50,7 @@ const AMBIGUOUS = '{}[]()/\\\'"`~,;:.<>';
 const CONSONANTS = 'bcdfghjklmnpqrstvwxyz';
 const VOWELS = 'aeiou';
 
-// Calculate password entropy
+// Calculate entropy
 function calculateEntropy(password, charsetSize) {
     return password.length * Math.log2(charsetSize);
 }
@@ -58,49 +63,40 @@ function getStrengthRating(entropy) {
     return { level: 'very-strong', label: 'Very Strong' };
 }
 
-// Build character set based on options
+// Build character set
 function buildCharset() {
     let charset = '';
     let charsetSize = 0;
     
-    const includeUpper = document.getElementById('includeUppercase').checked;
-    const includeLower = document.getElementById('includeLowercase').checked;
-    const includeNums = document.getElementById('includeNumbers').checked;
-    const includeSyms = document.getElementById('includeSymbols').checked;
-    const excludeSimilar = document.getElementById('excludeSimilar').checked;
-    const excludeAmbiguous = document.getElementById('excludeAmbiguous').checked;
-    
-    if (includeUpper) {
+    if (document.getElementById('includeUppercase').checked) {
         charset += UPPERCASE;
         charsetSize += 26;
     }
-    if (includeLower) {
+    if (document.getElementById('includeLowercase').checked) {
         charset += LOWERCASE;
         charsetSize += 26;
     }
-    if (includeNums) {
+    if (document.getElementById('includeNumbers').checked) {
         charset += NUMBERS;
         charsetSize += 10;
     }
-    if (includeSyms) {
+    if (document.getElementById('includeSymbols').checked) {
         charset += SYMBOLS;
         charsetSize += 32;
     }
     
-    // Remove similar characters
-    if (excludeSimilar) {
+    if (document.getElementById('excludeSimilar').checked) {
         charset = charset.split('').filter(char => !SIMILAR.includes(char)).join('');
     }
     
-    // Remove ambiguous symbols
-    if (excludeAmbiguous) {
+    if (document.getElementById('excludeAmbiguous').checked) {
         charset = charset.split('').filter(char => !AMBIGUOUS.includes(char)).join('');
     }
     
     return { charset, charsetSize };
 }
 
-// Generate a single password
+// Generate single password
 function generateSinglePassword(length, charset) {
     const array = new Uint8Array(length);
     crypto.getRandomValues(array);
@@ -121,25 +117,20 @@ function generatePronounceablePassword(length) {
     let password = '';
     for (let i = 0; i < length; i++) {
         if (i % 2 === 0) {
-            // Consonant
             password += CONSONANTS[array[i] % CONSONANTS.length];
         } else {
-            // Vowel
             password += VOWELS[array[i] % VOWELS.length];
         }
     }
     
-    // Capitalize first letter
     password = password.charAt(0).toUpperCase() + password.slice(1);
     
-    // Add number at end if numbers are enabled
     if (document.getElementById('includeNumbers').checked) {
         const numArray = new Uint8Array(2);
         crypto.getRandomValues(numArray);
         password += (numArray[0] % 10).toString() + (numArray[1] % 10).toString();
     }
     
-    // Add symbol if symbols are enabled
     if (document.getElementById('includeSymbols').checked) {
         const symArray = new Uint8Array(1);
         crypto.getRandomValues(symArray);
@@ -157,7 +148,6 @@ function generatePasswords() {
     const pronounceable = document.getElementById('pronounceable').checked;
     const resultsDiv = document.getElementById('passwordResults');
     
-    // Build charset
     const { charset, charsetSize } = buildCharset();
     
     if (charset.length === 0) {
@@ -169,15 +159,14 @@ function generatePasswords() {
         return;
     }
     
-    // Generate passwords
     let html = `
         <div style="margin-top: 1.5rem; padding: 1rem; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 12px; border-left: 4px solid var(--primary);">
             <h5 style="margin-bottom: 0.5rem; color: var(--primary);">
                 <i class="fas fa-check-circle"></i> Generated ${count} Password${count > 1 ? 's' : ''}
             </h5>
             <p style="margin: 0; font-size: 0.875rem;">
-                <strong>Length:</strong> ${length} characters | 
-                <strong>Charset Size:</strong> ${charsetSize} possible characters |
+                <strong>Length:</strong> ${length} | 
+                <strong>Charset:</strong> ${charsetSize} chars |
                 <strong>Method:</strong> ${pronounceable ? 'Pronounceable' : 'Random'}
             </p>
         </div>
@@ -187,14 +176,7 @@ function generatePasswords() {
     const passwords = [];
     
     for (let i = 0; i < count; i++) {
-        let password;
-        
-        if (pronounceable) {
-            password = generatePronounceablePassword(length);
-        } else {
-            password = generateSinglePassword(length, charset);
-        }
-        
+        let password = pronounceable ? generatePronounceablePassword(length) : generateSinglePassword(length, charset);
         passwords.push(password);
         
         const entropy = calculateEntropy(password, charsetSize);
@@ -204,8 +186,8 @@ function generatePasswords() {
             <div class="password-item">
                 <span class="password-text">${password}</span>
                 <span class="password-strength strength-${strength.level}">${strength.label}</span>
-                <span style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap;">${entropy.toFixed(1)} bits</span>
-                <button class="btn-copy" onclick="copyToClipboard('${password}', 'copy-${i}')">
+                <span style="font-size: 0.75rem; color: var(--text-muted);">${entropy.toFixed(1)} bits</span>
+                <button class="btn-copy" onclick="copyToClipboard('${password}')">
                     <i class="fas fa-copy"></i> Copy
                 </button>
             </div>
@@ -213,10 +195,7 @@ function generatePasswords() {
     }
     
     html += '</div>';
-    
     resultsDiv.innerHTML = html;
-    
-    // Store passwords for batch operations
     window.generatedPasswords = passwords;
 }
 
@@ -231,11 +210,11 @@ function copyAllPasswords() {
     copyToClipboard(text);
     
     if (typeof showToast === 'function') {
-        showToast(`✅ Copied ${window.generatedPasswords.length} passwords to clipboard!`, 'success');
+        showToast(`✅ Copied ${window.generatedPasswords.length} passwords!`, 'success');
     }
 }
 
-// Download passwords as TXT
+// Download passwords
 function downloadPasswords() {
     if (!window.generatedPasswords || window.generatedPasswords.length === 0) {
         alert('Generate passwords first!');
@@ -249,7 +228,6 @@ function downloadPasswords() {
     if (typeof downloadResult === 'function') {
         downloadResult(content, filename);
     } else {
-        // Fallback download method
         const blob = new Blob([content], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -262,35 +240,23 @@ function downloadPasswords() {
     }
 }
 
-// Copy to clipboard helper
-function copyToClipboard(text, buttonId = null) {
-    if (!navigator.clipboard) {
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        return;
+// Copy to clipboard (fallback if ux-helper not loaded)
+if (typeof copyToClipboard === 'undefined') {
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            if (typeof showToast === 'function') {
+                showToast('✅ Copied!', 'success');
+            }
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+        });
     }
-    
-    navigator.clipboard.writeText(text).then(() => {
-        if (typeof showToast === 'function') {
-            showToast('✅ Copied to clipboard!', 'success');
-        }
-    }).catch(err => {
-        console.error('Failed to copy:', err);
-    });
 }
 
-// Initialize
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Password Generator loaded ✓');
-    
-    // Generate initial password on load
-    setTimeout(() => {
-        generatePasswords();
-    }, 500);
+    setTimeout(() => generatePasswords(), 500);
 });
+
+console.log('✅ password-generator.js loaded');

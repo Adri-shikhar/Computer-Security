@@ -1,9 +1,14 @@
-/* UX Enhancement Features - Copy-to-Clipboard & Tooltips */
+/**
+ * ============================================
+ * UX-HELPER.JS - User Experience Utilities
+ * ============================================
+ * Purpose: Copy, toast, tooltips, form helpers
+ * Contains: Clipboard, notifications, modals
+ */
 
 // Copy to Clipboard Function
 function copyToClipboard(text, buttonId = null) {
     if (!navigator.clipboard) {
-        // Fallback for older browsers
         const textarea = document.createElement('textarea');
         textarea.value = text;
         textarea.style.position = 'fixed';
@@ -27,7 +32,6 @@ function copyToClipboard(text, buttonId = null) {
 // Show Copy Feedback
 function showCopyFeedback(buttonId) {
     if (!buttonId) {
-        // Show global feedback
         showToast('✅ Copied to clipboard!', 'success');
         return;
     }
@@ -47,7 +51,6 @@ function showCopyFeedback(buttonId) {
 
 // Toast Notification
 function showToast(message, type = 'info') {
-    // Remove existing toast
     const existingToast = document.querySelector('.ux-toast');
     if (existingToast) existingToast.remove();
     
@@ -72,8 +75,7 @@ const exampleTemplates = {
     text: 'Hello World',
     md5Hash: '5f4dcc3b5aa765d61d8327deb882cf99',
     sha1Hash: '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8',
-    sha256Hash: 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f',
-    passwordSequence: 'CompanyPass2022\nCompanyPass2023\nCompanyPass2024'
+    sha256Hash: 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f'
 };
 
 // Fill Example Data
@@ -84,7 +86,6 @@ function fillExample(field, exampleKey) {
     input.value = exampleTemplates[exampleKey];
     input.focus();
     
-    // Add highlight effect
     input.style.borderColor = '#3b82f6';
     input.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.2)';
     
@@ -169,22 +170,18 @@ function formatHashOutput(hash, algorithm) {
     const length = hash.length;
     const chunks = hash.match(/.{1,16}/g) || [];
     
-    let html = `
+    return `
         <div class="hash-output-container">
             <div class="hash-header">
                 <span class="hash-algo-badge">${algorithm}</span>
                 <span class="hash-length">${length} chars</span>
-                <button class="btn-copy-mini" onclick="copyToClipboard('${hash}')" title="Copy to clipboard">
+                <button class="btn-copy-mini" onclick="copyToClipboard('${hash}')" title="Copy">
                     <i class="fas fa-copy"></i>
                 </button>
             </div>
-            <div class="hash-value">
-                ${chunks.join('<br>')}
-            </div>
+            <div class="hash-value">${chunks.join('<br>')}</div>
         </div>
     `;
-    
-    return html;
 }
 
 // Download Result
@@ -202,7 +199,7 @@ function downloadResult(content, filename = 'result.txt') {
     showToast('💾 Downloaded successfully!', 'success');
 }
 
-// Add Help Modal
+// Help Modal
 function showHelpModal(toolName) {
     const helpContent = {
         'breach-checker': {
@@ -210,61 +207,15 @@ function showHelpModal(toolName) {
             content: `
                 <h5>How it works:</h5>
                 <ol>
-                    <li><strong>Local Hashing:</strong> Your password is hashed with SHA-1 on your device</li>
-                    <li><strong>Partial Send:</strong> Only the first 5 characters of the hash are sent to HIBP API</li>
-                    <li><strong>Bulk Response:</strong> API returns ~500 hash suffixes matching the prefix</li>
-                    <li><strong>Local Match:</strong> Your full hash is checked against the list locally</li>
+                    <li><strong>Local Hashing:</strong> Your password is hashed locally</li>
+                    <li><strong>Partial Send:</strong> Only first 5 chars of hash sent to API</li>
+                    <li><strong>Local Match:</strong> Full hash checked locally</li>
                 </ol>
-                
-                <h5>Privacy Guarantees:</h5>
+                <h5>Privacy:</h5>
                 <ul>
                     <li>✅ Your password NEVER leaves your device</li>
-                    <li>✅ API cannot reverse-engineer your password from 5 chars</li>
-                    <li>✅ This is the same method used by major password managers</li>
+                    <li>✅ Same method used by major password managers</li>
                 </ul>
-                
-                <h5>What to do if compromised:</h5>
-                <ul>
-                    <li>🚨 Change the password immediately</li>
-                    <li>🔐 Use a unique password for each account</li>
-                    <li>✨ Generate a new secure password with our tool</li>
-                </ul>
-            `
-        },
-        'hash-comparison': {
-            title: 'Hash Algorithm Comparison Help',
-            content: `
-                <h5>Algorithm Security:</h5>
-                <table class="help-table">
-                    <tr>
-                        <th>Algorithm</th>
-                        <th>Security</th>
-                        <th>Use Case</th>
-                    </tr>
-                    <tr>
-                        <td>MD5</td>
-                        <td>❌ Broken</td>
-                        <td>Legacy only</td>
-                    </tr>
-                    <tr>
-                        <td>SHA-1</td>
-                        <td>⚠️ Deprecated</td>
-                        <td>Git commits</td>
-                    </tr>
-                    <tr>
-                        <td>SHA-256</td>
-                        <td>✅ Good</td>
-                        <td>General purpose</td>
-                    </tr>
-                    <tr>
-                        <td>SHA-512</td>
-                        <td>✅ Strong</td>
-                        <td>High security</td>
-                    </tr>
-                </table>
-                
-                <h5>Why use salts?</h5>
-                <p>Salts prevent rainbow table attacks by ensuring identical passwords produce different hashes.</p>
             `
         }
     };
@@ -296,8 +247,9 @@ function closeHelpModal() {
     if (modal) modal.remove();
 }
 
-// Initialize on page load
+// Initialize tooltips on page load
 document.addEventListener('DOMContentLoaded', () => {
     initializeTooltips();
-    console.log('UX enhancements loaded ✨');
 });
+
+console.log('✅ ux-helper.js loaded');

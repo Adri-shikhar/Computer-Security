@@ -1196,8 +1196,7 @@ d:\Computer-Security\
 ├── dashboard-features/
 │   ├── password-generator/
 │   │   ├── password-generator.html # Professional password generator
-│   │   ├── password-generator.css  # Shared UI styles
-│   │   └── password-generator.js
+│   │   └── password-generator.css  # Password generator styles
 │   ├── breach-checker/
 │   │   └── breach-checker.html     # Check passwords against HIBP
 │   ├── duplicate-checker/
@@ -1208,15 +1207,28 @@ d:\Computer-Security\
 │       └── security-analytics.html # Security dashboard
 │
 ├── shared/
-│   ├── css/
-│   │   ├── style.css               # Main styles
-│   │   ├── nav-styles.css          # Navigation styles
-│   │   └── ux-enhancements.css     # UX improvements
-│   └── js/
-│       ├── api-client.js           # Backend API client
-│       ├── script.js               # Main JS logic
-│       ├── ux-helper.js            # UX utilities
-│       └── live-demo-service.js    # Demo data service
+│   └── css/
+│       ├── style.css               # Main styles
+│       ├── nav-styles.css          # Navigation styles
+│       └── ux-enhancements.css     # UX improvements
+│
+├── js/                             # All JavaScript files (split by task)
+│   ├── config.js                   # Global configuration & constants
+│   ├── database.js                 # LocalStorage CRUD operations
+│   ├── hashing.js                  # Password hashing (MD5/SHA/BCrypt/Argon2)
+│   ├── breach-checker.js           # HaveIBeenPwned API integration
+│   ├── password-strength.js        # Password analysis & crack time
+│   ├── legacy-migration.js         # MD5 → Argon2 auto-upgrade
+│   ├── export-hashcat.js           # Hashcat export functionality
+│   ├── ui-helpers.js               # UI utilities (spinners, badges)
+│   ├── dashboard.js                # User table rendering
+│   ├── breach-time-display.js      # Visual crack time comparison
+│   ├── form-handlers.js            # Form event handlers
+│   ├── api-client.js               # Backend API client
+│   ├── ux-helper.js                # UX utilities (copy, toast, modals)
+│   ├── live-demo-service.js        # Demo data generator
+│   ├── password-generator.js       # Password generator logic
+│   └── init.js                     # Application initialization
 │
 └── features/
     └── hash-tools/
