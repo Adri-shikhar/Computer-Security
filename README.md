@@ -400,7 +400,7 @@ Verification: ✅ Hash matches official Ubuntu checksum
 Input: 5f4dcc3b5aa765d61d8327deb882cf99
 Result: MD5 (128-bit) - Fast, vulnerable to collisions ❌
 ```
-
+cd d:\Computer-Security\backend; ..\.venv\Scripts\python.exe app.py
 ---
 
 ### 6️⃣ Password Entropy Analyzer 📈

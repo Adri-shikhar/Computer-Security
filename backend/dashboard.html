@@ -180,67 +180,6 @@
             gap: 1rem;
         }
 
-        .storage-toggle {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: var(--bg-primary);
-            padding: 0.75rem 1.25rem;
-            border-radius: 12px;
-            border: 1px solid var(--border-subtle);
-        }
-
-        .storage-toggle label {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-        }
-
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--primary);
-            transition: 0.3s;
-            border-radius: 30px;
-        }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 4px;
-            bottom: 4px;
-            background: white;
-            transition: 0.3s;
-            border-radius: 50%;
-        }
-
-        .toggle-switch input:checked + .toggle-slider { background: var(--success); }
-        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(30px); }
-
-        .storage-label {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-
-        .storage-label.local { background: #dbeafe; color: var(--primary); }
-        .storage-label.backend { background: #d1fae5; color: var(--success); }
-
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -409,7 +348,7 @@
         </div>
 
         <nav class="nav-section">
-            <div class="nav-section-title">Main Navigation</div>
+            <div class="nav-section-title">MAIN NAVIGATION</div>
             <a href="../index.html" class="nav-item">
                 <i class="fas fa-user-plus"></i> Registration
             </a>
@@ -419,27 +358,29 @@
         </nav>
 
         <nav class="nav-section">
-            <div class="nav-section-title">Dashboard Features</div>
+            <div class="nav-section-title">SECURITY TOOLS</div>
             
-            <a href="../dashboard-features/duplicate-checker/duplicate-checker.html" class="nav-item">
-                <i class="fas fa-copy"></i> Duplicate Password Checker
+            <a href="#" class="nav-item" onclick="toggleSubNav('hashToolsNav', event)">
+                <i class="fas fa-hashtag"></i> Hash Tools
+                <i class="fas fa-chevron-down nav-toggle"></i>
+            </a>
+            <div id="hashToolsNav" class="sub-nav">
+                <!-- Hash tools sub-items can go here if needed -->
+            </div>
+
+            <a href="#" class="nav-item">
+                <i class="fas fa-lock"></i> Encryption Tools
             </a>
 
-            <a href="../dashboard-features/breach-checker/breach-checker.html" class="nav-item">
-                <i class="fas fa-user-lock"></i> Breach Checker
+            <a href="#" class="nav-item" onclick="toggleSubNav('utilityToolsNav', event)">
+                <i class="fas fa-tools"></i> Utility Tools
+                <i class="fas fa-chevron-down nav-toggle"></i>
             </a>
-
-            <a href="../dashboard-features/resalt-management/resalt-management.html" class="nav-item">
-                <i class="fas fa-shield-alt"></i> Re-salt Management
-            </a>
-
-            <a href="../dashboard-features/security-analytics/security-analytics.html" class="nav-item">
-                <i class="fas fa-chart-line"></i> Security Analytics
-            </a>
-
-            <a href="../dashboard-features/password-generator/password-generator.html" class="nav-item">
-                <i class="fas fa-key"></i> Password Generator
-            </a>
+            <div id="utilityToolsNav" class="sub-nav">
+                <a href="../dashboard-features/password-generator/password-generator.html" class="sub-nav-item">
+                    <i class="fas fa-key"></i> Password Generator
+                </a>
+            </div>
         </nav>
     </aside>
 
@@ -459,21 +400,11 @@
         </div>
 
         <div class="content-area">
-            <!-- Dashboard Header with Storage Toggle -->
+            <!-- Dashboard Header -->
             <div class="dashboard-header">
                 <div>
                     <h2 style="margin: 0; color: var(--text-primary);"><i class="fas fa-chart-pie"></i> Dashboard</h2>
                     <p style="margin: 0.25rem 0 0; color: var(--text-muted);">View registered users data</p>
-                </div>
-                
-                <!-- Storage Toggle Switch -->
-                <div class="storage-toggle">
-                    <span class="storage-label local" id="localLabel">📁 LOCAL</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="storageToggle" onchange="toggleStorage()">
-                        <span class="toggle-slider"></span>
-                    </label>
-                    <span class="storage-label backend" id="backendLabel" style="opacity: 0.5;">🔗 BACKEND</span>
                 </div>
             </div>
 
@@ -618,47 +549,13 @@
                 </div>
             </div>
 
-            <!-- Auto-Resalt Control Panel -->
-            <div class="card" style="margin-bottom: 1.5rem;">
-                <div class="card-header primary">
-                    <i class="fas fa-cogs"></i> Auto-Resalt Security Feature
-                </div>
-                <div class="card-body">
-                    <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
-                        <div style="flex: 1; min-width: 200px;">
-                            <p style="margin: 0 0 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
-                                <i class="fas fa-info-circle"></i> Auto-resalt periodically regenerates salts to enhance security against rainbow table attacks.
-                            </p>
-                        </div>
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                            <select id="resaltInterval" class="form-select" style="width: auto; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-subtle);">
-                                <option value="60">1 minute</option>
-                                <option value="300" selected>5 minutes</option>
-                                <option value="600">10 minutes</option>
-                                <option value="1800">30 minutes</option>
-                                <option value="3600">1 hour</option>
-                            </select>
-                            <button class="btn btn-success" onclick="toggleAutoResalt(true)" id="btnEnableResalt" style="width: auto; padding: 0.5rem 1rem;">
-                                <i class="fas fa-play"></i> Enable
-                            </button>
-                            <button class="btn btn-danger" onclick="toggleAutoResalt(false)" id="btnDisableResalt" style="width: auto; padding: 0.5rem 1rem; display: none;">
-                                <i class="fas fa-stop"></i> Disable
-                            </button>
-                            <button class="btn btn-primary" onclick="manualResalt()" style="width: auto; padding: 0.5rem 1rem;">
-                                <i class="fas fa-sync"></i> Resalt Now
-                            </button>
-                        </div>
-                    </div>
-                    <div id="resaltStatus" style="margin-top: 0.75rem; padding: 0.5rem; background: var(--bg-secondary); border-radius: 8px; font-size: 0.8rem; display: none;">
-                    </div>
-                </div>
-            </div>
+
 
             <!-- Data Table -->
             <div class="card">
                 <div class="card-header success">
                     <i class="fas fa-table"></i> 
-                    <span id="tableTitle">Registered Users (Demo Data)</span>
+                    <span id="tableTitle">Registered Users</span>
                     <span style="margin-left: auto; font-size: 0.75rem; font-weight: normal;">
                         Showing <span id="recordCount">0</span> records (max 30)
                     </span>
@@ -703,13 +600,12 @@
         // API Base URL - change this when deploying
         const API_BASE = 'http://localhost:5000/api';
         
-        // Storage mode: 'local' or 'backend'
+        // Always use backend mode
         let currentStorage = 'backend';
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
             loadDashboard();
-            checkResaltStatus();
         });
 
         // Toggle sidebar for mobile
@@ -735,135 +631,22 @@
             toggle?.classList.toggle('open');
         }
 
-        // Toggle between Local and Backend storage
-        function toggleStorage() {
-            const toggle = document.getElementById('storageToggle');
-            const localLabel = document.getElementById('localLabel');
-            const backendLabel = document.getElementById('backendLabel');
-            
-            if (toggle.checked) {
-                currentStorage = 'backend';
-                localLabel.style.opacity = '0.5';
-                backendLabel.style.opacity = '1';
-                document.getElementById('tableTitle').textContent = 'Registered Users (Flask Backend - Your Registrations)';
-            } else {
-                currentStorage = 'local';
-                localLabel.style.opacity = '1';
-                backendLabel.style.opacity = '0.5';
-                document.getElementById('tableTitle').textContent = 'Registered Users (Demo Data from Database)';
-            }
-            
-            loadDashboard();
-        }
 
-        // Check auto-resalt status
-        async function checkResaltStatus() {
-            try {
-                const response = await fetch(API_BASE + '/resalt/status');
-                const data = await response.json();
-                
-                if (data.success) {
-                    updateResaltUI(data);
-                }
-            } catch (error) {
-                console.error('Error checking resalt status:', error);
-            }
-        }
 
-        // Update resalt UI based on status
-        function updateResaltUI(data) {
-            const statusCard = document.getElementById('dashAutoResalt');
-            const btnEnable = document.getElementById('btnEnableResalt');
-            const btnDisable = document.getElementById('btnDisableResalt');
-            const statusDiv = document.getElementById('resaltStatus');
-            
-            if (data.auto_resalt_running) {
-                statusCard.textContent = 'ON';
-                statusCard.parentElement.classList.remove('red');
-                statusCard.parentElement.classList.add('green');
-                btnEnable.style.display = 'none';
-                btnDisable.style.display = 'inline-flex';
-                
-                statusDiv.style.display = 'block';
-                statusDiv.innerHTML = `
-                    <i class="fas fa-check-circle" style="color: var(--success);"></i>
-                    <strong>Auto-Resalt Active</strong> | 
-                    Interval: ${data.auto_resalt_interval}s | 
-                    Last: ${data.last_resalt_time || 'Never'} | 
-                    Next: ${data.next_resalt || 'Calculating...'}
-                `;
-            } else {
-                statusCard.textContent = 'OFF';
-                statusCard.parentElement.classList.remove('green');
-                statusCard.parentElement.classList.add('red');
-                btnEnable.style.display = 'inline-flex';
-                btnDisable.style.display = 'none';
-                statusDiv.style.display = 'none';
-            }
-        }
 
-        // Toggle auto-resalt
-        async function toggleAutoResalt(enable) {
-            const interval = parseInt(document.getElementById('resaltInterval').value);
-            
-            try {
-                const response = await fetch(API_BASE + '/resalt/auto', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ enabled: enable, interval: interval })
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    checkResaltStatus();
-                    loadDashboard();
-                    alert(enable ? '✅ Auto-resalt enabled!' : '⏹️ Auto-resalt disabled!');
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
 
-        // Manual resalt
-        async function manualResalt() {
-            if (!confirm('Regenerate salt for ALL users? This will update their password hashes.')) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(API_BASE + '/resalt', {
-                    method: 'POST'
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    alert(`✅ Resalt complete!\n\nUpdated: ${data.updated} users`);
-                    loadDashboard();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-
-        // Load dashboard based on current storage mode
+        // Load dashboard from backend
         async function loadDashboard() {
             try {
-                let users = [];
-                
-                // Always use backend API to show registered users only
-                const endpoint = currentStorage === 'local' ? '/demo-users' : '/users';
-                const response = await fetch(API_BASE + endpoint);
+                // Always use backend API to show registered users
+                const response = await fetch(API_BASE + '/users');
                 const data = await response.json();
                     
                 if (!data.success) {
                     throw new Error(data.message);
                 }
                 
-                users = data.users || [];
+                const users = data.users || [];
                 
                 // Calculate security stats
                 const secureCount = users.filter(u => (u.securityScore || u.security_score || 0) >= 70).length;
@@ -882,7 +665,7 @@
                 
                 if (users.length === 0) {
                     table.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                        ${currentStorage === 'backend' ? 'No registrations yet. Register users from the Registration page.' : 'No demo data available.'}
+                        No registrations yet. Register users from the Registration page.
                     </td></tr>`;
                     return;
                 }
@@ -912,11 +695,6 @@
 
         // Clear current storage
         async function clearCurrentStorage() {
-            if (currentStorage === 'local') {
-                alert('Demo data cannot be cleared.');
-                return;
-            }
-            
             if (confirm('Clear all registered users from Flask backend?')) {
                 try {
                     const response = await fetch(API_BASE + '/users/clear', {
@@ -939,12 +717,10 @@
         // Export data
         async function exportData() {
             try {
-                const endpoint = currentStorage === 'local' ? '/demo-users' : '/users';
-                const response = await fetch(API_BASE + endpoint);
+                const response = await fetch(API_BASE + '/users');
                 const data = await response.json();
                 
                 const exportData = {
-                    storageType: currentStorage,
                     source: 'Flask Backend',
                     users: data.users || [],
                     exportedAt: new Date().toISOString()
@@ -954,15 +730,14 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `soc_${currentStorage}_export.json`;
+                a.download = `soc_backend_export_${new Date().toISOString().split('T')[0]}.json`;
                 a.click();
             } catch (error) {
                 alert('Error exporting data: ' + error.message);
             }
         }
         
-        // Refresh resalt status every 30 seconds
-        setInterval(checkResaltStatus, 30000);
+
 
         // ========== HASH SECURITY AUDITOR - REAL-TIME PROBLEM SOLVERS ==========
 

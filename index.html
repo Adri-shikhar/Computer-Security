@@ -350,7 +350,7 @@
         </div>
 
         <nav class="nav-section">
-            <div class="nav-section-title">Main Navigation</div>
+            <div class="nav-section-title">MAIN NAVIGATION</div>
             <a href="index.html" class="nav-item active">
                 <i class="fas fa-user-plus"></i> Registration
             </a>
@@ -360,27 +360,29 @@
         </nav>
 
         <nav class="nav-section">
-            <div class="nav-section-title">Dashboard Features</div>
+            <div class="nav-section-title">SECURITY TOOLS</div>
             
-            <a href="dashboard-features/duplicate-checker/duplicate-checker.html" class="nav-item">
-                <i class="fas fa-copy"></i> Duplicate Password Checker
+            <a href="#" class="nav-item" onclick="toggleSubNav('hashToolsNav', event)">
+                <i class="fas fa-hashtag"></i> Hash Tools
+                <i class="fas fa-chevron-down nav-toggle"></i>
+            </a>
+            <div id="hashToolsNav" class="sub-nav">
+                <!-- Hash tools sub-items can go here if needed -->
+            </div>
+
+            <a href="#" class="nav-item">
+                <i class="fas fa-lock"></i> Encryption Tools
             </a>
 
-            <a href="dashboard-features/breach-checker/breach-checker.html" class="nav-item">
-                <i class="fas fa-user-lock"></i> Breach Checker
+            <a href="#" class="nav-item" onclick="toggleSubNav('utilityToolsNav', event)">
+                <i class="fas fa-tools"></i> Utility Tools
+                <i class="fas fa-chevron-down nav-toggle"></i>
             </a>
-
-            <a href="dashboard-features/resalt-management/resalt-management.html" class="nav-item">
-                <i class="fas fa-shield-alt"></i> Re-salt Management
-            </a>
-
-            <a href="dashboard-features/security-analytics/security-analytics.html" class="nav-item">
-                <i class="fas fa-chart-line"></i> Security Analytics
-            </a>
-
-            <a href="dashboard-features/password-generator/password-generator.html" class="nav-item">
-                <i class="fas fa-key"></i> Password Generator
-            </a>
+            <div id="utilityToolsNav" class="sub-nav">
+                <a href="dashboard-features/password-generator/password-generator.html" class="sub-nav-item">
+                    <i class="fas fa-key"></i> Password Generator
+                </a>
+            </div>
         </nav>
     </aside>
 
