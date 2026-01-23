@@ -6,6 +6,7 @@
     <title>Security Operations Center - Registration</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@faker-js/faker@8.3.1/dist/faker.min.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -371,17 +372,11 @@
                 <a href="features/hash-tools/algorithm-comparison/algorithm-comparison.html" class="sub-nav-item">
                     <i class="fas fa-balance-scale"></i> Algorithm Comparison
                 </a>
-                <a href="features/hash-tools/salt-generator/salt-generator.html" class="sub-nav-item">
-                    <i class="fas fa-key"></i> Salt Generator
-                </a>
                 <a href="features/hash-tools/file-hash/file-hash.html" class="sub-nav-item">
                     <i class="fas fa-fingerprint"></i> Hash Generator
                 </a>
                 <a href="features/hash-tools/hash-verification/hash-verification.html" class="sub-nav-item">
                     <i class="fas fa-check-double"></i> Hash Verification
-                </a>
-                <a href="features/hash-tools/hash-identifier/hash-identifier.html" class="sub-nav-item">
-                    <i class="fas fa-search"></i> Hash Identifier
                 </a>
             </div>
 
@@ -396,9 +391,6 @@
             <div class="sub-nav" id="utilitySub">
                 <a href="features/password-generator/password-generator.html" class="sub-nav-item">
                     <i class="fas fa-key"></i> Password Generator
-                </a>
-                <a href="features/base64-tool/base64-tool.html" class="sub-nav-item">
-                    <i class="fas fa-code"></i> Base64 Encoder/Decoder
                 </a>
             </div>
         </nav>
@@ -426,7 +418,7 @@
                     <div class="auth-header">
                         <i class="fas fa-user-shield"></i>
                         <h2>User Registration</h2>
-                        <p>Advanced Security with Multi-Hash Authentication</p>
+                        <p>Secure Authentication System</p>
                     </div>
                     <div class="auth-body">
                         <div id="alertArea"></div>
@@ -603,15 +595,6 @@
                             <p>Generate secure passwords</p>
                         </div>
                     </a>
-                    <a href="features/base64-tool/base64-tool.html" class="quick-card">
-                        <div class="quick-icon" style="background: #fef3c7; color: var(--warning);">
-                            <i class="fas fa-code"></i>
-                        </div>
-                        <div>
-                            <h5>Base64 Encoder</h5>
-                            <p>Encode/decode Base64</p>
-                        </div>
-                    </a>
                     <a href="features/encryption/encryption.html" class="quick-card">
                         <div class="quick-icon" style="background: #e9d5ff; color: #9333ea;">
                             <i class="fas fa-lock"></i>
@@ -637,6 +620,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="shared/js/live-demo-service.js"></script>
+    <script src="shared/js/api-client.js"></script>
     <script>
         // API Base URL - change this when deploying
         const API_BASE = 'http://localhost:5000/api';
@@ -899,17 +884,18 @@
             panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
         }
 
-        // Register user with Flask backend (Multi-hash authentication)
+        // Register user with Flask backend (MD5 authentication)
         async function registerUser(event) {
             event.preventDefault();
             
             const name = document.getElementById('fullName').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const algorithm = 'MD5';  // Hardcoded to MD5
             const btn = document.getElementById('registerBtn');
             const originalHTML = btn.innerHTML;
             
-            // Generate all hashes if not already generated
+            // Generate all hashes for reference (MD5, SHA-1, SHA-256, SHA-512)
             const hashData = currentPasswordData || generateMultiHash(password);
             const securityScore = calculateSecurityScore(password);
             
@@ -927,6 +913,7 @@
                         name, 
                         email, 
                         password,
+                        algorithm: algorithm,  // Send selected algorithm
                         hashes: {
                             md5: hashData.md5,
                             sha1: hashData.sha1,
@@ -940,9 +927,8 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert(`✅ Registration successful with Multi-Hash Authentication!<br>
+                    showAlert(`✅ Registration successful!<br>
                         <small>Security Score: <strong>${securityScore}/100</strong></small><br>
-                        <small>SHA-256: <code>${hashData.sha256.substring(0, 32)}...</code></small><br>
                         View in <a href="backend/dashboard.html" style="color: inherit; font-weight: 700;">Backend Dashboard</a>`, 'success');
                     document.getElementById('registerForm').reset();
                     document.getElementById('fullName').focus();
@@ -956,7 +942,7 @@
                 btn.innerHTML = originalHTML;
             } catch (error) {
                 showAlert(`⚠️ Cannot connect to Flask backend.<br>
-                    <small>Run: <code>python backend/app.py</code></small>`, 'danger');
+                    <small>Run: <code>.\.venv\Scripts\python.exe backend\app.py</code></small>`, 'danger');
                 console.error('Registration error:', error);
                 btn.disabled = false;
                 btn.innerHTML = originalHTML;

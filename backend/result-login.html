@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Re-Salt Management - Secure Access</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --text-primary: #1f2937;
+            --text-muted: #6b7280;
+            --border-subtle: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 3px solid #f59e0b;
+        }
+
+        .login-header i {
+            font-size: 3rem;
+            color: #f59e0b;
+            margin-bottom: 1rem;
+        }
+
+        .login-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header p {
+            font-size: 0.875rem;
+            color: #92400e;
+            opacity: 0.9;
+        }
+
+        .login-body {
+            padding: 2rem;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            border-left: 4px solid #2563eb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            color: #1e40af;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .input-group .form-control {
+            padding-left: 2.75rem;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 1rem;
+            padding: 0.25rem;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-login:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-back {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-back:hover {
+            background: var(--border-subtle);
+        }
+
+        .error-message {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: #991b1b;
+            display: none;
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            color: #166534;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <i class="fas fa-shield-alt"></i>
+            <h1>Password Re-Salt Management</h1>
+            <p>Secure Administrator Access Required</p>
+        </div>
+        
+        <div class="login-body">
+            <div class="alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>Restricted Access:</strong> This feature requires administrator credentials to access password re-salting operations.
+            </div>
+
+            <div class="error-message" id="errorMessage">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="errorText"></span>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-envelope"></i> Email Address
+                    </label>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            id="emailInput" 
+                            placeholder="Enter admin email"
+                            required
+                            autocomplete="username"
+                        >
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <div class="input-group">
+                        <i class="fas fa-key"></i>
+                        <input 
+                            type="password" 
+                            class="form-control" 
+                            id="passwordInput" 
+                            placeholder="Enter admin password"
+                            required
+                            autocomplete="current-password"
+                        >
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">
+                            <i class="fas fa-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span id="btnText">Access Re-Salt Feature</span>
+                </button>
+
+                <button type="button" class="btn-back" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </button>
+            </form>
+
+            <div class="security-badge">
+                <i class="fas fa-shield-check"></i>
+                <span>Secured with SHA-256 Authentication</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Admin credentials (in production, this should be server-side)
+        const ADMIN_EMAIL = 'adrishikharbarua77452@gmail.com';
+        const ADMIN_PASSWORD = '##adri@@adri##';
+
+        // Track login attempts to prevent brute force
+        let loginAttempts = 0;
+        const MAX_ATTEMPTS = 5;
+
+        function handleLogin(event) {
+            event.preventDefault();
+
+            // Check if max attempts reached
+            if (loginAttempts >= MAX_ATTEMPTS) {
+                showError('Too many failed attempts. Please refresh the page and try again.');
+                return;
+            }
+
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const loginBtn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('btnText');
+
+            // Hide previous errors
+            errorDiv.style.display = 'none';
+
+            // Disable button and show loading
+            loginBtn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span> Authenticating...';
+
+            // Simulate authentication delay
+            setTimeout(() => {
+                // Verify credentials
+                if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+                    // Success - Set session flag
+                    sessionStorage.setItem('resaltAccess', 'granted');
+                    sessionStorage.setItem('resaltAccessTime', Date.now());
+                    
+                    // Show success message
+                    btnText.innerHTML = '<i class="fas fa-check-circle"></i> Access Granted!';
+                    loginBtn.style.background = '#10b981';
+                    
+                    // Redirect to dashboard with re-salt section visible
+                    setTimeout(() => {
+                        window.location.href = '/dashboard?showResalt=true';
+                    }, 1000);
+                } else {
+                    // Failed login
+                    loginAttempts++;
+                    const remainingAttempts = MAX_ATTEMPTS - loginAttempts;
+                    
+                    if (remainingAttempts > 0) {
+                        showError(`Invalid email or password. ${remainingAttempts} attempt(s) remaining.`);
+                    } else {
+                        showError('Maximum login attempts exceeded. Please refresh the page.');
+                    }
+                    
+                    // Re-enable button
+                    loginBtn.disabled = false;
+                    btnText.innerHTML = '<i class="fas fa-sign-in-alt"></i> Access Re-Salt Feature';
+                    
+                    // Clear password field
+                    document.getElementById('passwordInput').value = '';
+                }
+            }, 1500); // 1.5 second delay for authentication
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            
+            errorText.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            // Shake animation
+            errorDiv.style.animation = 'shake 0.5s';
+            setTimeout(() => {
+                errorDiv.style.animation = '';
+            }, 500);
+        }
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('passwordInput');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        function goBack() {
+            window.location.href = '/dashboard';
+        }
+
+        // Add shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Clear old session after 1 hour
+        const accessTime = sessionStorage.getItem('resaltAccessTime');
+        if (accessTime && Date.now() - accessTime > 3600000) {
+            sessionStorage.removeItem('resaltAccess');
+            sessionStorage.removeItem('resaltAccessTime');
+        }
+    </script>
+</body>
+</html>

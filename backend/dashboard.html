@@ -6,6 +6,7 @@
     <title>Backend Dashboard - SOC Platform</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@faker-js/faker@8.3.1/dist/faker.min.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -431,17 +432,11 @@
                 <a href="../features/hash-tools/algorithm-comparison/algorithm-comparison.html" class="sub-nav-item">
                     <i class="fas fa-balance-scale"></i> Algorithm Comparison
                 </a>
-                <a href="../features/hash-tools/salt-generator/salt-generator.html" class="sub-nav-item">
-                    <i class="fas fa-key"></i> Salt Generator
-                </a>
                 <a href="../features/hash-tools/file-hash/file-hash.html" class="sub-nav-item">
                     <i class="fas fa-fingerprint"></i> Hash Generator
                 </a>
                 <a href="../features/hash-tools/hash-verification/hash-verification.html" class="sub-nav-item">
                     <i class="fas fa-check-double"></i> Hash Verification
-                </a>
-                <a href="../features/hash-tools/hash-identifier/hash-identifier.html" class="sub-nav-item">
-                    <i class="fas fa-search"></i> Hash Identifier
                 </a>
             </div>
 
@@ -456,9 +451,6 @@
             <div class="sub-nav" id="utilitySub">
                 <a href="../features/password-generator/password-generator.html" class="sub-nav-item">
                     <i class="fas fa-key"></i> Password Generator
-                </a>
-                <a href="../features/base64-tool/base64-tool.html" class="sub-nav-item">
-                    <i class="fas fa-code"></i> Base64 Encoder/Decoder
                 </a>
             </div>
         </nav>
@@ -508,17 +500,134 @@
                 <div class="dashboard-card green">
                     <div class="dashboard-card-icon"><i class="fas fa-shield-alt"></i></div>
                     <h3 id="dashHashCount">0</h3>
-                    <p>Argon2 Hashes</p>
+                    <p>Secure Passwords</p>
                 </div>
                 <div class="dashboard-card orange">
-                    <div class="dashboard-card-icon"><i class="fas fa-sync-alt"></i></div>
-                    <h3 id="dashResaltCount">0</h3>
-                    <p>Total Resalts</p>
+                    <div class="dashboard-card-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h3 id="dashWeakCount">0</h3>
+                    <p>Weak Passwords</p>
                 </div>
                 <div class="dashboard-card red">
-                    <div class="dashboard-card-icon"><i class="fas fa-clock"></i></div>
-                    <h3 id="dashAutoResalt">OFF</h3>
-                    <p>Auto-Resalt</p>
+                    <div class="dashboard-card-icon"><i class="fas fa-user-secret"></i></div>
+                    <h3 id="dashBreachedCount">0</h3>
+                    <p>Breached</p>
+                </div>
+            </div>
+
+            <!-- Hash Security Auditor - REAL-TIME PROBLEM SOLVER -->
+            <div class="card" style="margin-bottom: 1.5rem; border: 2px solid #2563eb;">
+                <div class="card-header primary">
+                    <i class="fas fa-shield-virus"></i> Hash Security Auditor - Real-Time Problem Solver
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; gap: 1rem;">
+                        <!-- Action Buttons -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.75rem;">
+                            <button class="btn btn-primary" onclick="findDuplicatePasswords()" style="padding: 0.75rem;">
+                                <i class="fas fa-copy"></i> Find Duplicate Passwords
+                            </button>
+                            <button class="btn btn-danger" onclick="scanWeakPasswords()" style="padding: 0.75rem;">
+                                <i class="fas fa-exclamation-circle"></i> Scan Weak Passwords
+                            </button>
+                            <button class="btn" style="background: #dc2626; color: white; padding: 0.75rem;" onclick="checkBreachedPasswords()">
+                                <i class="fas fa-user-lock"></i> Check Breached Passwords
+                            </button>
+                            <button class="btn btn-success" onclick="analyzeHashDistribution()" style="padding: 0.75rem;">
+                                <i class="fas fa-chart-pie"></i> Analyze Hash Distribution
+                            </button>
+                        </div>
+
+                        <!-- Re-Salt Management Access Button -->
+                        <div style="margin-top: 1rem; padding: 1rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 8px; border-left: 4px solid #f59e0b;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                                <div>
+                                    <h6 style="margin: 0 0 0.25rem 0; color: #92400e; font-weight: 700;">
+                                        <i class="fas fa-shield-alt"></i> Password Re-Salt Management
+                                    </h6>
+                                    <p style="margin: 0; font-size: 0.875rem; color: #92400e; opacity: 0.9;">
+                                        Upgrade weak MD5 passwords to secure SHA-256 with salts
+                                    </p>
+                                </div>
+                                <button type="button" id="btnAccessResalt" onclick="toggleResaltSection()" style="background: #f59e0b; color: white; padding: 0.75rem 1.5rem; font-weight: 600; border: none; border-radius: 8px; cursor: pointer;">
+                                    <i class="fas fa-unlock-alt"></i> Access Re-Salt Feature
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Results Panel -->
+                        <div id="auditResults" style="display: none; padding: 1rem; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 12px; border-left: 4px solid var(--primary);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                                <h6 style="margin: 0; font-weight: 700; color: var(--text-primary);">
+                                    <i class="fas fa-clipboard-check"></i> <span id="auditTitle">Audit Results</span>
+                                </h6>
+                                <button onclick="closeAuditResults()" style="background: none; border: none; cursor: pointer; color: var(--text-muted);">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div id="auditContent" style="font-size: 0.875rem;">
+                                <!-- Results will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Re-Salt Management -->
+            <div class="card" id="resaltManagementCard" style="margin-bottom: 1.5rem; display: none;">
+                <div class="card-header" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #92400e;">
+                    <i class="fas fa-shield-alt"></i> Password Re-Salt Management
+                    <button onclick="closeResaltSection()" style="margin-left: auto; background: none; border: none; cursor: pointer; color: #92400e; font-size: 1.2rem;" title="Close">
+                        <i class="fas fa-times-circle"></i>
+                    </button>
+                    <span id="resaltBadge" style="margin-left: auto; font-size: 0.8rem; font-weight: normal; background: #dc2626; color: white; padding: 0.25rem 0.75rem; border-radius: 20px;">
+                        <i class="fas fa-exclamation-triangle"></i> Loading...
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 1rem;">
+                        <p style="margin: 0; font-size: 0.875rem; color: #92400e;">
+                            <i class="fas fa-info-circle"></i> <strong>What is Re-salting?</strong><br>
+                            Re-salting upgrades weak passwords (MD5, no salt, short salt, low security score) to secure SHA-256 with 32-character salts. 
+                            This feature generates new temporary passwords that must be shared with users for their next login.
+                        </p>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="loadResaltData()" style="flex: 1; min-width: 200px;">
+                            <i class="fas fa-sync"></i> Refresh Security Status
+                        </button>
+                        <button class="btn" onclick="resaltAllUsers()" id="btnResaltAll" style="flex: 1; min-width: 200px; background: #dc2626; color: white;">
+                            <i class="fas fa-shield-alt"></i> Re-salt All Weak Passwords
+                        </button>
+                    </div>
+
+                    <!-- Users Table with Re-salt Options -->
+                    <div id="resaltTableContainer" style="overflow-x: auto; max-height: 500px; overflow-y: auto; border: 1px solid var(--border-subtle); border-radius: 8px;">
+                        <table class="data-table" style="margin: 0;">
+                            <thead style="position: sticky; top: 0; background: var(--bg-secondary); z-index: 10;">
+                                <tr>
+                                    <th style="padding: 0.75rem;">Status</th>
+                                    <th style="padding: 0.75rem;">Name</th>
+                                    <th style="padding: 0.75rem;">Email</th>
+                                    <th style="padding: 0.75rem;">Algorithm</th>
+                                    <th style="padding: 0.75rem;">Salt Length</th>
+                                    <th style="padding: 0.75rem;">Security Score</th>
+                                    <th style="padding: 0.75rem;">Breach Status</th>
+                                    <th style="padding: 0.75rem;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resaltTableBody">
+                                <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">Click "Refresh Security Status" to load data</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Info Message -->
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 4px;">
+                        <p style="margin: 0; font-size: 0.875rem; color: #1e40af;">
+                            <i class="fas fa-info-circle"></i> <strong>Note:</strong> Re-salting adds salt to existing password hashes. User passwords remain unchanged - only hash security is upgraded.
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -577,7 +686,7 @@
                                 <th>Algorithm</th>
                                 <th>🧂 Salt</th>
                                 <th>Password Hash</th>
-                                <th>Resalts</th>
+                                <th>Results</th>
                                 <th>Registered</th>
                             </tr>
                         </thead>
@@ -601,12 +710,14 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../shared/js/live-demo-service.js"></script>
+    <script src="../shared/js/api-client.js"></script>
     <script>
         // API Base URL - change this when deploying
         const API_BASE = 'http://localhost:5000/api';
         
         // Storage mode: 'local' or 'backend'
-        let currentStorage = 'local';
+        let currentStorage = 'backend';
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
@@ -754,24 +865,30 @@
         // Load dashboard based on current storage mode
         async function loadDashboard() {
             try {
+                let users = [];
+                
+                // Always use backend API to show registered users only
                 const endpoint = currentStorage === 'local' ? '/demo-users' : '/users';
                 const response = await fetch(API_BASE + endpoint);
                 const data = await response.json();
-                
+                    
                 if (!data.success) {
                     throw new Error(data.message);
                 }
                 
-                const users = data.users || [];
+                users = data.users || [];
                 
-                // Update stats
+                // Calculate security stats
+                const secureCount = users.filter(u => (u.securityScore || u.security_score || 0) >= 70).length;
+                const weakCount = users.filter(u => (u.securityScore || u.security_score || 0) < 50).length;
+                const breachedCount = users.filter(u => (u.breachStatus || u.breach_status) === 'BREACHED').length;
+                
+                // Update stats cards
                 document.getElementById('dashTotalUsers').textContent = users.length;
-                document.getElementById('dashHashCount').textContent = users.length;
+                document.getElementById('dashHashCount').textContent = secureCount;
+                document.getElementById('dashWeakCount').textContent = weakCount;
+                document.getElementById('dashBreachedCount').textContent = breachedCount;
                 document.getElementById('recordCount').textContent = users.length;
-                
-                // Calculate total resalts
-                const totalResalts = users.reduce((sum, u) => sum + (u.resaltCount || 0), 0);
-                document.getElementById('dashResaltCount').textContent = totalResalts;
                 
                 // Update table
                 const table = document.getElementById('dashboardTable');
@@ -859,6 +976,556 @@
         
         // Refresh resalt status every 30 seconds
         setInterval(checkResaltStatus, 30000);
+
+        // ========== HASH SECURITY AUDITOR - REAL-TIME PROBLEM SOLVERS ==========
+
+        // Problem 1: Find users with duplicate passwords (same hash = same password)
+        async function findDuplicatePasswords() {
+            const resultsDiv = document.getElementById('auditResults');
+            const titleDiv = document.getElementById('auditTitle');
+            const contentDiv = document.getElementById('auditContent');
+            
+            titleDiv.innerHTML = '<i class="fas fa-copy"></i> Duplicate Password Detection';
+            resultsDiv.style.display = 'block';
+            contentDiv.innerHTML = '<div style="text-align: center; padding: 1rem;"><i class="fas fa-spinner fa-spin"></i> Analyzing...</div>';
+            
+            try {
+                const response = await fetch(API_BASE + '/audit/duplicate-passwords');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message);
+                }
+                
+                if (data.total_groups === 0) {
+                    contentDiv.innerHTML = `
+                        <div style="padding: 1rem; text-align: center; color: #10b981;">
+                            <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                            <p style="margin: 0; font-weight: 600;">✅ No duplicate passwords found!</p>
+                            <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; opacity: 0.8;">All users have unique passwords.</p>
+                        </div>
+                    `;
+                } else {
+                    let html = `
+                        <div style="padding: 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; margin-bottom: 1rem; border-radius: 6px;">
+                            <p style="margin: 0; font-weight: 600; color: #92400e;">
+                                <i class="fas fa-exclamation-triangle"></i> Found ${data.total_groups} duplicate password group(s)
+                            </p>
+                            <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; opacity: 0.8; color: #92400e;">
+                                ${data.total_affected} users affected - Multiple users are using the same password!
+                            </p>
+                        </div>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                    `;
+                    
+                    data.duplicates.forEach((group, index) => {
+                        html += `
+                            <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem; border: 1px solid #e5e7eb;">
+                                <div style="font-weight: 700; color: #ef4444; margin-bottom: 0.5rem;">
+                                    Duplicate Group ${index + 1} (${group.count} users)
+                                </div>
+                                <div style="font-family: monospace; font-size: 0.75rem; color: #6b7280; margin-bottom: 0.75rem; word-break: break-all;">
+                                    Hash: ${group.hash}
+                                </div>
+                                <div style="font-size: 0.875rem;">
+                                    <strong>Affected Users:</strong><br>
+                        `;
+                        
+                        group.users.forEach(user => {
+                            html += `<div style="padding: 0.25rem 0; border-bottom: 1px solid #f3f4f6;">• ${user}</div>`;
+                        });
+                        
+                        html += `
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    contentDiv.innerHTML = html;
+                }
+            } catch (error) {
+                contentDiv.innerHTML = `
+                    <div style="padding: 1rem; text-align: center; color: #ef4444;">
+                        <i class="fas fa-exclamation-circle"></i> Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Problem 2: Find weak passwords (low security score)
+        async function scanWeakPasswords() {
+            const resultsDiv = document.getElementById('auditResults');
+            const titleDiv = document.getElementById('auditTitle');
+            const contentDiv = document.getElementById('auditContent');
+            
+            titleDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Weak Password Scanner';
+            resultsDiv.style.display = 'block';
+            contentDiv.innerHTML = '<div style="text-align: center; padding: 1rem;"><i class="fas fa-spinner fa-spin"></i> Scanning...</div>';
+            
+            try {
+                const response = await fetch(API_BASE + '/audit/weak-passwords');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message);
+                }
+                
+                if (data.total_weak === 0) {
+                    contentDiv.innerHTML = `
+                        <div style="padding: 1rem; text-align: center; color: #10b981;">
+                            <i class="fas fa-shield-alt" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                            <p style="margin: 0; font-weight: 600;">✅ No weak passwords found!</p>
+                            <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; opacity: 0.8;">All users have strong passwords (score ≥ 50).</p>
+                        </div>
+                    `;
+                } else {
+                    let html = `
+                        <div style="padding: 1rem; background: #fee2e2; border-left: 4px solid #ef4444; margin-bottom: 1rem; border-radius: 6px;">
+                            <p style="margin: 0; font-weight: 600; color: #991b1b;">
+                                <i class="fas fa-exclamation-circle"></i> Found ${data.total_weak} weak password(s)
+                            </p>
+                            <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; opacity: 0.8; color: #991b1b;">
+                                These users should strengthen their passwords.
+                            </p>
+                        </div>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table style="width: 100%; font-size: 0.875rem;">
+                                <thead>
+                                    <tr style="background: #f9fafb;">
+                                        <th style="padding: 0.5rem; text-align: left; border-bottom: 2px solid #e5e7eb;">Name</th>
+                                        <th style="padding: 0.5rem; text-align: left; border-bottom: 2px solid #e5e7eb;">Email</th>
+                                        <th style="padding: 0.5rem; text-align: center; border-bottom: 2px solid #e5e7eb;">Security Score</th>
+                                        <th style="padding: 0.5rem; text-align: center; border-bottom: 2px solid #e5e7eb;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    data.weak_passwords.forEach(user => {
+                        const scoreColor = user.score >= 40 ? '#f59e0b' : '#ef4444';
+                        const statusColor = user.status === 'BREACHED' ? '#dc2626' : '#d97706';
+                        
+                        html += `
+                            <tr>
+                                <td style="padding: 0.5rem; border-bottom: 1px solid #f3f4f6;">${user.name}</td>
+                                <td style="padding: 0.5rem; border-bottom: 1px solid #f3f4f6;">${user.email}</td>
+                                <td style="padding: 0.5rem; border-bottom: 1px solid #f3f4f6; text-align: center; color: ${scoreColor}; font-weight: 700;">${user.score}/100</td>
+                                <td style="padding: 0.5rem; border-bottom: 1px solid #f3f4f6; text-align: center;">
+                                    <span style="background: ${statusColor}; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">${user.status}</span>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    contentDiv.innerHTML = html;
+                }
+            } catch (error) {
+                contentDiv.innerHTML = `
+                    <div style="padding: 1rem; text-align: center; color: #ef4444;">
+                        <i class="fas fa-exclamation-circle"></i> Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Problem 3: Check for breached passwords
+        async function checkBreachedPasswords() {
+            const resultsDiv = document.getElementById('auditResults');
+            const titleDiv = document.getElementById('auditTitle');
+            const contentDiv = document.getElementById('auditContent');
+            
+            titleDiv.innerHTML = '<i class="fas fa-user-lock"></i> Breached Password Checker';
+            resultsDiv.style.display = 'block';
+            contentDiv.innerHTML = '<div style="text-align: center; padding: 1rem;"><i class="fas fa-spinner fa-spin"></i> Checking...</div>';
+            
+            try {
+                const response = await fetch(API_BASE + '/audit/breached-passwords');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message);
+                }
+                
+                if (data.total_breached === 0) {
+                    contentDiv.innerHTML = `
+                        <div style="padding: 1rem; text-align: center; color: #10b981;">
+                            <i class="fas fa-shield-alt" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                            <p style="margin: 0; font-weight: 600;">✅ No breached passwords found!</p>
+                            <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; opacity: 0.8;">All passwords are secure.</p>
+                        </div>
+                    `;
+                } else {
+                    let html = `
+                        <div style="padding: 1rem; background: #fef2f2; border-left: 4px solid #dc2626; margin-bottom: 1rem; border-radius: 6px;">
+                            <p style="margin: 0; font-weight: 600; color: #991b1b;">
+                                <i class="fas fa-exclamation-circle"></i> CRITICAL: Found ${data.total_breached} breached password(s)
+                            </p>
+                            <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; opacity: 0.8; color: #991b1b;">
+                                These passwords appear in known data breaches and must be changed immediately!
+                            </p>
+                        </div>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table style="width: 100%; font-size: 0.875rem;">
+                                <thead>
+                                    <tr style="background: #f9fafb;">
+                                        <th style="padding: 0.5rem; text-align: left; border-bottom: 2px solid #e5e7eb;">Name</th>
+                                        <th style="padding: 0.5rem; text-align: left; border-bottom: 2px solid #e5e7eb;">Email</th>
+                                        <th style="padding: 0.5rem; text-align: center; border-bottom: 2px solid #e5e7eb;">Security Score</th>
+                                        <th style="padding: 0.5rem; text-align: center; border-bottom: 2px solid #e5e7eb;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    data.breached_passwords.forEach(user => {
+                        html += `
+                            <tr style="background: #fef2f2;">
+                                <td style="padding: 0.5rem; border-bottom: 1px solid #f3f4f6;">${user.name}</td>
+                                <td style="padding: 0.5rem; border-bottom: 1px solid #f3f4f6;">${user.email}</td>
+                                <td style="padding: 0.5rem; border-bottom: 1px solid #f3f4f6; text-align: center; color: #dc2626; font-weight: 700;">${user.score}/100</td>
+                                <td style="padding: 0.5rem; border-bottom: 1px solid #f3f4f6; text-align: center;">
+                                    <span style="background: #dc2626; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                                        <i class="fas fa-exclamation-triangle"></i> BREACHED
+                                    </span>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    contentDiv.innerHTML = html;
+                }
+            } catch (error) {
+                contentDiv.innerHTML = `
+                    <div style="padding: 1rem; text-align: center; color: #ef4444;">
+                        <i class="fas fa-exclamation-circle"></i> Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Problem 4: Analyze hash algorithm distribution
+        async function analyzeHashDistribution() {
+            const resultsDiv = document.getElementById('auditResults');
+            const titleDiv = document.getElementById('auditTitle');
+            const contentDiv = document.getElementById('auditContent');
+            
+            titleDiv.innerHTML = '<i class="fas fa-chart-pie"></i> Hash Algorithm Distribution';
+            resultsDiv.style.display = 'block';
+            contentDiv.innerHTML = '<div style="text-align: center; padding: 1rem;"><i class="fas fa-spinner fa-spin"></i> Analyzing...</div>';
+            
+            try {
+                const response = await fetch(API_BASE + '/audit/hash-distribution');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message);
+                }
+                
+                const total = data.total_users;
+                
+                let html = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <!-- Hash Algorithm Distribution -->
+                        <div>
+                            <h6 style="margin-bottom: 1rem; font-weight: 700;">Hash Algorithms</h6>
+                            <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e5e7eb;">
+                `;
+                
+                Object.entries(data.algorithms).forEach(([algo, count]) => {
+                    const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                    const color = algo.toUpperCase() === 'MD5' ? '#f59e0b' : algo.toUpperCase() === 'SHA256' ? '#3b82f6' : '#10b981';
+                    
+                    html += `
+                        <div style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="font-weight: 600; font-size: 0.875rem;">${algo}</span>
+                                <span style="font-weight: 700; color: ${color};">${count} (${percentage}%)</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden;">
+                                <div style="height: 100%; width: ${percentage}%; background: ${color}; transition: width 0.3s;"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                            </div>
+                        </div>
+                        
+                        <!-- Security Score Distribution -->
+                        <div>
+                            <h6 style="margin-bottom: 1rem; font-weight: 700;">Security Levels</h6>
+                            <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e5e7eb;">
+                `;
+                
+                Object.entries(data.security_distribution).forEach(([level, count]) => {
+                    const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                    const color = level.includes('Secure') ? '#10b981' : level.includes('Medium') ? '#f59e0b' : '#ef4444';
+                    
+                    html += `
+                        <div style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="font-weight: 600; font-size: 0.875rem;">${level}</span>
+                                <span style="font-weight: 700; color: ${color};">${count} (${percentage}%)</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden;">
+                                <div style="height: 100%; width: ${percentage}%; background: ${color}; transition: width 0.3s;"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary Stats -->
+                    <div style="margin-top: 1.5rem; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+                            <div>
+                                <div style="font-size: 1.75rem; font-weight: 700;">${total}</div>
+                                <div style="font-size: 0.875rem; opacity: 0.9;">Total Users</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.75rem; font-weight: 700;">${data.security_distribution['Secure (70-100)']}</div>
+                                <div style="font-size: 0.875rem; opacity: 0.9;">Secure Passwords</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.75rem; font-weight: 700;">${data.algorithms['MD5'] || 0}</div>
+                                <div style="font-size: 0.875rem; opacity: 0.9;">MD5 Hashes</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                contentDiv.innerHTML = html;
+            } catch (error) {
+                contentDiv.innerHTML = `
+                    <div style="padding: 1rem; text-align: center; color: #ef4444;">
+                        <i class="fas fa-exclamation-circle"></i> Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Close audit results panel
+        function closeAuditResults() {
+            document.getElementById('auditResults').style.display = 'none';
+        }
+
+        // ========== RE-SALT PASSWORD MANAGEMENT ==========
+
+        // Load users and their security status for re-salting
+        async function loadResaltData() {
+            const tableBody = document.getElementById('resaltTableBody');
+            const badge = document.getElementById('resaltBadge');
+            
+            tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 1rem;"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+            
+            try {
+                const response = await fetch(API_BASE + '/resalt/users');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message);
+                }
+                
+                // Update badge
+                if (data.needs_resalt > 0) {
+                    badge.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${data.needs_resalt} users need re-salting`;
+                    badge.style.background = '#dc2626';
+                } else {
+                    badge.innerHTML = `<i class="fas fa-check-circle"></i> All users secure`;
+                    badge.style.background = '#10b981';
+                }
+                
+                // Populate table
+                if (data.users.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">No users found</td></tr>';
+                } else {
+                    let html = '';
+                    data.users.forEach(user => {
+                        const statusIcon = user.needs_resalt 
+                            ? '<i class="fas fa-exclamation-triangle" style="color: #dc2626;"></i>' 
+                            : '<i class="fas fa-check-circle" style="color: #10b981;"></i>';
+                        
+                        const statusBg = user.needs_resalt ? '#fef2f2' : '#f0fdf4';
+                        const scoreColor = user.security_score >= 70 ? '#10b981' : user.security_score >= 50 ? '#f59e0b' : '#dc2626';
+                        
+                        html += `
+                            <tr style="background: ${statusBg};">
+                                <td style="padding: 0.75rem; text-align: center;">${statusIcon}</td>
+                                <td style="padding: 0.75rem;">${user.name}</td>
+                                <td style="padding: 0.75rem;">${user.email}</td>
+                                <td style="padding: 0.75rem;">
+                                    <span class="badge" style="background: ${user.algorithm === 'MD5' ? '#dc2626' : '#10b981'}; color: white;">
+                                        ${user.algorithm}
+                                    </span>
+                                </td>
+                                <td style="padding: 0.75rem; text-align: center;">
+                                    <span style="color: ${user.salt_length >= 16 ? '#10b981' : '#dc2626'}; font-weight: 700;">
+                                        ${user.salt_length} chars
+                                    </span>
+                                </td>
+                                <td style="padding: 0.75rem; text-align: center;">
+                                    <span style="color: ${scoreColor}; font-weight: 700; font-size: 1rem;">
+                                        ${user.security_score}/100
+                                    </span>
+                                </td>
+                                <td style="padding: 0.75rem; text-align: center;">
+                                    <span class="badge" style="background: ${user.breach_status === 'BREACHED' ? '#dc2626' : '#10b981'}; color: white;">
+                                        ${user.breach_status}
+                                    </span>
+                                </td>
+                                <td style="padding: 0.75rem; text-align: center;">
+                                    ${user.needs_resalt ? 
+                                        `<button class="btn btn-sm" onclick="resaltSingleUser(${user.id}, '${user.name}')" style="background: #dc2626; color: white; padding: 0.35rem 0.75rem; font-size: 0.75rem;">
+                                            <i class="fas fa-shield-alt"></i> Re-salt
+                                        </button>` 
+                                        : 
+                                        `<span style="color: #10b981; font-size: 0.75rem;"><i class="fas fa-check"></i> Secure</span>`
+                                    }
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    tableBody.innerHTML = html;
+                }
+            } catch (error) {
+                tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #dc2626;"><i class="fas fa-exclamation-circle"></i> Error: ${error.message}</td></tr>`;
+                badge.innerHTML = `<i class="fas fa-exclamation-circle"></i> Error loading`;
+                badge.style.background = '#dc2626';
+            }
+        }
+
+        // Re-salt a single user
+        async function resaltSingleUser(userId, userName) {
+            if (!confirm(`⚠️ Re-salt password for ${userName}?\n\nThis will:\n✓ Generate a new 32-char salt\n✓ Upgrade to SHA-256 algorithm\n✓ Improve security score to 85/100\n✓ Original password will still work\n\nContinue?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(API_BASE + '/resalt/user/' + userId, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message);
+                }
+                
+                // Reload table to show updated status
+                loadResaltData();
+                
+                alert(`✅ User re-salted successfully!\n\n${data.user.name}'s password has been upgraded to SHA-256 with a 32-char salt.\n\n✓ Security improved\n✓ Original password still works\n✓ No user action required`);
+                
+            } catch (error) {
+                alert(`❌ Error re-salting user: ${error.message}`);
+            }
+        }
+
+        // Re-salt all weak passwords
+        async function resaltAllUsers() {
+            if (!confirm('⚠️ RE-SALT ALL WEAK PASSWORDS?\n\nThis will:\n✓ Re-salt ALL users with MD5, no salt, or weak passwords\n✓ Upgrade them to SHA-256 with 32-char salts\n✓ Improve security scores to 85/100\n✓ Original passwords will still work\n\nContinue?')) {
+                return;
+            }
+            
+            const btn = document.getElementById('btnResaltAll');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Re-salting...';
+            
+            try {
+                const response = await fetch(API_BASE + '/resalt/all', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message);
+                }
+                
+                // Reload table
+                loadResaltData();
+                
+                alert(`✅ Bulk re-salt complete!\n\n${data.count} users upgraded to SHA-256 with salts\n\n✓ Security improved\n✓ All original passwords still work\n✓ No user action required`);
+                
+            } catch (error) {
+                alert(`❌ Error re-salting users: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        // Toggle Re-Salt Management Section
+        function toggleResaltSection() {
+            const card = document.getElementById('resaltManagementCard');
+            const btn = document.getElementById('btnAccessResalt');
+            
+            if (card.style.display === 'none' || !card.style.display) {
+                // Show re-salt section
+                card.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-lock"></i> Hide Re-Salt Feature';
+                btn.style.background = '#dc2626';
+                
+                // Scroll to re-salt section
+                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Load data when opening
+                loadResaltData();
+            } else {
+                // Hide re-salt section
+                card.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-unlock-alt"></i> Access Re-Salt Feature';
+                btn.style.background = '#f59e0b';
+            }
+        }
+
+        // Access Re-Salt Feature (direct access without login)
+        function accessResaltFeature() {
+            toggleResaltSection();
+        }
+
+        // Show Re-Salt Section (direct access)
+        function showResaltSection() {
+            const card = document.getElementById('resaltManagementCard');
+            const btn = document.getElementById('btnAccessResalt');
+            
+            if (card && btn) {
+                card.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-lock"></i> Hide Re-Salt Feature';
+                btn.style.background = '#dc2626';
+                
+                // Scroll to re-salt section
+                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Load data when opening
+                loadResaltData();
+            }
+        }
+
+        // Close Re-Salt Section
+        function closeResaltSection() {
+            toggleResaltSection();
+        }
+
+        // Check URL parameters on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // No authentication required - direct access
+        });
     </script>
 </body>
 </html>

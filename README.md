@@ -1,71 +1,264 @@
 # 🔐 Security Operations Center (SOC) Platform
 
-A comprehensive web-based security toolkit featuring hash analysis and encryption tools for cybersecurity professionals, students, and enthusiasts.
+A comprehensive web-based security toolkit featuring hash analysis, encryption tools, and **advanced password re-salting capabilities** for cybersecurity professionals, students, and enthusiasts.
 
 ![Platform](https://img.shields.io/badge/Platform-Web-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Status](https://img.shields.io/badge/Status-Active-success)
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![Flask](https://img.shields.io/badge/Flask-2.3+-green)
 
 ---
 
 ## 📋 Table of Contents
 
 - [Features](#features)
+- [How to Run the Backend](#how-to-run-the-backend)
 - [Quick Start](#quick-start)
+- [Hash Algorithms](#hash-algorithms)
+- [NEW: Password Re-Salt Management](#password-re-salt-management)
 - [Tools Overview](#tools-overview)
-- [How to Use](#how-to-use)
+- [Backend Dashboard](#backend-dashboard)
 - [Security Features](#security-features)
 - [Technical Details](#technical-details)
+- [Viva Preparation](#viva-preparation)
 - [Browser Compatibility](#browser-compatibility)
-- [Troubleshooting](#troubleshooting)
+
+---
+
+## 🔐 Hash Algorithms
+
+This platform uses **MD5 hashing** for initial password storage and provides re-salting capabilities:
+
+### **For Password Storage (Registration):**
+- **MD5** - Fast hashing algorithm (automatic, for demonstration)
+- **Upgradable via Re-salt** - Can upgrade to SHA-256 + 32-char salt
+
+### **For General Hashing (Tools & File Verification):**
+- MD5, SHA-1, SHA-256, SHA-512 (Available in hash tools)
+
+See [VIVA_PREPARATION_GUIDE.md](VIVA_PREPARATION_GUIDE.md) for technical details.
+
+---
+
+## 🚀 How to Run the Backend
+
+### **Step 1: Navigate to Backend Directory**
+```bash
+cd d:\Computer-Security\backend
+```
+
+### **Step 2: Activate Virtual Environment & Start Server**
+```bash
+..\\.venv\Scripts\python.exe app.py
+```
+
+### **Step 3: Access the Application**
+- **Main Page (Registration):** http://127.0.0.1:5000
+- **Admin Dashboard:** http://127.0.0.1:5000/dashboard
+
+### **Quick Terminal Command (One-Line)**
+```powershell
+cd d:\Computer-Security\backend; ..\\.venv\Scripts\python.exe app.py
+```
+
+### **Server Status**
+When running successfully, you'll see:
+```
+🔐 Security Operations Center - Flask Backend
+==================================================
+✅ Database initialized successfully!
+🚀 Starting server on http://localhost:5000
+ * Running on http://127.0.0.1:5000
+ * Debug mode: on
+```
+
+### **Stop the Server**
+Press `Ctrl+C` in the terminal
 
 ---
 
 ## ✨ Features
 
-### 🔢 Hash & Security Tools
-- **8 Professional Tools** for password and hash analysis
-- **Password Breach Checker** - Check 600M+ breached passwords (HIBP)
-- **Hash Algorithm Comparison** - Compare MD5, SHA-1, SHA-256, SHA-512
-- **Salt Generator** - Create cryptographic salts
-- **File Hash Calculator** - Verify file integrity
-- **Hash Type Identifier** - Auto-detect hash algorithms
-- **Entropy Analyzer** - Measure password strength
-- **Rotation Pattern Detector** - Find weak password patterns
+### 🎯 Core Platform Features
+- **User Registration** - Automatic MD5 password hashing
+- **Backend Admin Dashboard** - Monitor all registered users
+- **Security Audit Tools** - 4 professional security analysis tools
+- **Password Re-Salt Management** ⭐ **NEW** - Upgrade weak MD5 to strong SHA-256 + salt
+- **8 Hash Analysis Tools** - Professional password and hash tools
+- **Encryption Suite** - AES-256, Triple DES, RC4
 
-### 🔒 Encryption Tools
-- **AES-256** - Industry-standard symmetric encryption
-- **Triple DES** - Legacy encryption support
-- **RC4 Stream Cipher** - Educational purposes
-- **Real-time Encryption/Decryption** - Instant results
+### 🔒 Security Audit Features (Backend Dashboard)
+1. **Find Duplicate Passwords** - Identify users with identical password hashes
+2. **Scan Weak Passwords** - Detect passwords with security score < 50
+3. **Check Breached Passwords** - Query 600M+ breached passwords (HIBP)
+4. **Analyze Hash Distribution** - View algorithm usage and security metrics
+
+### ⚡ Password Re-Salt Management ⭐ **NEW FEATURE**
+- **Individual Re-salt** - Upgrade single user from MD5 → SHA-256 + salt
+- **Bulk Re-salt** - Upgrade all weak passwords with one click
+- **Automatic Salt Generation** - 32-character cryptographic salts
+- **Password Preservation** - Original passwords still work after re-salting
+- **Security Score Improvement** - Boost scores from 35 → 85
+
+#### How Re-Salt Works (Technical):
+1. **Original Registration:** Password "test123" → MD5 hash stored
+2. **Re-salt Process:** MD5 hash + new salt → SHA-256 hash
+3. **Original MD5 preserved** in `hash_md5` column for verification
+4. **Login after re-salt:** Password → MD5 → MD5+salt → SHA-256 → compare
+
+**Result:** Users keep their passwords, but hash security improves dramatically!
 
 ---
 
 ## 🚀 Quick Start
 
-### Option 1: Direct Open (Recommended)
-1. Download or clone this repository
-2. Open `index.html` in any modern browser
-3. Start using the tools immediately - **No installation required!**
+### Option 1: Run Backend Server (Recommended)
 
-### Option 2: Local Server (Optional)
+#### Prerequisites
+- Python 3.12+
+- pip (Python package manager)
+
+#### Installation Steps
+
 ```bash
-# Using Python
-python -m http.server 8000
+# 1. Clone the repository
+git clone <your-repo-url>
+cd Computer-Security
 
-# Using Node.js
-npx http-server
+# 2. Create virtual environment
+python -m venv .venv
 
-# Then open: http://localhost:8000
+# 3. Activate virtual environment
+# Windows:
+.venv\Scripts\activate
+# Linux/Mac:
+source .venv/bin/activate
+
+# 4. Install dependencies
+cd backend
+pip install -r requirements.txt
+
+# 5. Run the Flask server
+python app.py
 ```
 
-### Option 3: VS Code Live Server
-1. Install "Live Server" extension in VS Code
-2. Right-click `index.html` → "Open with Live Server"
+#### Access the Application
+
+```
+🌐 Frontend (User Registration):
+http://localhost:5000/
+
+📊 Backend Dashboard (Admin Panel):
+http://localhost:5000/dashboard
+
+✅ Health Check:
+http://localhost:5000/api/health
+```
+
+### Option 2: Frontend Only (No Backend Features)
+
+1. Open `index.html` in any modern browser
+2. Hash tools and encryption features work offline
+3. **Note:** Registration and dashboard require backend server (Option 1)
 
 ---
 
-## 🛠️ Tools Overview
+## 🔄 Password Re-Salt Management ⭐ NEW
+
+### What is Password Re-Salting?
+
+Password re-salting upgrades weak password hashes to strong, salted hashes without requiring users to manually reset passwords.
+
+### Why is it Important?
+
+Legacy systems often use:
+- ❌ MD5 (vulnerable to rainbow tables)
+- ❌ No salt (same password = same hash)  
+- ❌ Short salts (< 16 chars)
+- ❌ Low security scores
+
+### The Re-Salt Process
+
+```
+BEFORE:                          AFTER RE-SALT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+User: John Doe                   User: John Doe
+Algorithm: MD5                   Algorithm: SHA-256
+Salt: (none)                     Salt: a7f3d9...b8c (32 chars)
+Hash: 5f4dcc3b...                Hash: ef3a7d92... (64 chars)
+Score: 35/100 ❌                 Score: 85/100 ✅
+                                 Temp Pass: X7k@9pL!mQ2v
+```
+
+### How to Use
+
+**Access Dashboard:**
+```
+http://localhost:5000/dashboard
+```
+
+**Individual Re-salt:**
+1. Click "Refresh Security Status"
+2. Find user with ⚠️ red warning
+3. Click "Re-salt" button
+4. Copy temporary password
+5. Share with user
+
+**Bulk Re-salt:**
+1. Click "Re-salt All Weak Passwords"
+2. Confirm operation
+3. All temp passwords displayed
+4. Click "Copy All"
+5. Distribute to users
+
+### Security Benefits
+- ✅ MD5 → SHA-256 upgrade
+- ✅ 32-char cryptographic salts
+- ✅ Rainbow table protection
+- ✅ Score: 35 → 85
+- ✅ Zero downtime
+
+---
+
+## 📊 Backend Dashboard Features
+
+### Access
+```
+URL: http://localhost:5000/dashboard
+```
+
+### Security Audit Tools
+
+**1. Find Duplicate Passwords**
+- Identify shared password hashes
+- Group users by password
+- Risk assessment
+
+**2. Scan Weak Passwords**  
+- Detect score < 50
+- Sort by weakest
+- Actionable recommendations
+
+**3. Check Breached Passwords**
+- Query 600M+ HIBP database
+- Critical alerts
+- k-Anonymity privacy
+
+**4. Analyze Hash Distribution**
+- Algorithm statistics
+- Security level charts
+- Visual metrics
+
+### Re-Salt Management
+- Real-time security monitoring
+- Individual/bulk operations
+- Temporary password generation
+- One-click upgrades
+
+---
+
+## 🛠️ Hash Analysis Tools (8 Tools)
 
 ### 1️⃣ Password Breach Checker 🔓
 
@@ -483,11 +676,86 @@ MIT License - Free for personal and commercial use
 ## 🤝 Contributing
 
 Contributions welcome! Areas for improvement:
-- Additional hash algorithms (BLAKE2, BLAKE3)
+- Additional hash algorithms (BLAKE2, BLAKE3, Argon2)
+- Two-factor authentication (2FA)
+- Email notifications for re-salt operations
 - More encryption methods
 - UI/UX enhancements
 - Security audits
 - Documentation improvements
+
+---
+
+## 🎓 Viva Preparation
+
+### Complete Documentation
+
+For comprehensive viva preparation including:
+- Detailed technical implementation
+- Security concepts explained
+- Sample viva questions with answers
+- Demonstration flow guide
+- Architecture diagrams
+- Code walkthroughs
+
+**See:** [VIVA_PREPARATION_GUIDE.md](VIVA_PREPARATION_GUIDE.md)
+
+### Key Features to Demonstrate
+
+1. **User Registration** (MD5 auto-hash)
+2. **Backend Dashboard** (User monitoring)
+3. **Security Audit Tools** (4 professional tools)
+4. **Password Re-Salt** ⭐ (Individual + Bulk upgrade)
+5. **Hash Analysis Tools** (8 educational tools)
+6. **Breach Checking** (HIBP integration with k-Anonymity)
+
+### Quick Demo Flow (10 minutes)
+
+```
+1. Register 5 users with varying password strengths
+2. Open dashboard → Show all users with MD5
+3. Run 4 audit tools → Identify vulnerabilities
+4. Use re-salt feature:
+   - Individual re-salt for 1 user
+   - Bulk re-salt for remaining users
+5. Show security improvement: MD5 → SHA-256, Score 35 → 85
+6. Demonstrate hash analysis tools
+```
+
+### Technical Questions Prepared
+
+- What is password hashing vs encryption?
+- Why is MD5 considered weak?
+- What is a salt and why use it?
+- Explain rainbow table attacks
+- How does k-Anonymity protect privacy?
+- Walk through the re-salt algorithm
+- What is the difference between MD5, SHA-256, and Argon2?
+
+**Full Q&A available in:** [VIVA_PREPARATION_GUIDE.md](VIVA_PREPARATION_GUIDE.md)
+
+---
+
+## 📚 Project Structure
+
+```
+Computer-Security/
+├── index.html                  # User registration page (MD5 hashing)
+├── backend/
+│   ├── app.py                  # Flask REST API server
+│   ├── database.db             # SQLite database
+│   ├── dashboard.html          # Admin dashboard with re-salt
+│   └── requirements.txt        # Python dependencies
+├── features/
+│   ├── encryption/             # AES-256, Triple DES, RC4
+│   ├── hash-tools/             # 8 professional hash tools
+│   └── password-generator/     # Strong password generator
+├── shared/
+│   ├── css/                    # Global styles
+│   └── js/                     # API client, utilities
+├── README.md                   # This file
+└── VIVA_PREPARATION_GUIDE.md   # Comprehensive viva documentation
+```
 
 ---
 

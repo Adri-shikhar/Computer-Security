@@ -12,6 +12,7 @@ import os
 import threading
 import time
 from datetime import datetime, timedelta
+import bcrypt
 
 # Try to import argon2, fallback to simulation if not available
 try:
@@ -28,8 +29,10 @@ try:
     )
 except ImportError:
     ARGON2_AVAILABLE = False
-    print("⚠️ argon2-cffi not installed. Using SHA-256 with salt as fallback.")
+    print("⚠️ argon2-cffi not installed.")
     print("   Install with: pip install argon2-cffi")
+
+BCRYPT_AVAILABLE = True  # bcrypt is now installed
 
 app = Flask(__name__, static_folder='../static', static_url_path='/static')
 CORS(app)
@@ -46,21 +49,64 @@ def generate_salt(length=32):
     """Generate a cryptographically secure random salt"""
     return secrets.token_hex(length // 2)
 
-def hash_password_argon2(password, salt=None):
-    """Hash password using Argon2id algorithm with salt"""
-    if salt is None:
-        salt = generate_salt(16)
-    
+def hash_password_bcrypt(password):
+    """Hash password using bcrypt"""
+    # bcrypt generates its own salt internally
+    password_bytes = password.encode('utf-8')
+    hashed = bcrypt.hashpw(password_bytes, bcrypt.gensalt(rounds=12))
+    return hashed.decode('utf-8'), ''  # Return empty salt since bcrypt handles it internally
+
+def hash_password_argon2(password):
+    """Hash password using Argon2id algorithm"""
     if ARGON2_AVAILABLE:
-        # Use Argon2id (recommended variant)
-        salted_password = salt + password
-        hash_result = ph.hash(salted_password)
-        return hash_result, salt
+        # Argon2 handles salt internally
+        hash_result = ph.hash(password)
+        return hash_result, ''  # Return empty salt since Argon2 handles it internally
     else:
-        # Fallback: SHA-256 with salt (still better than plain MD5)
-        salted_password = salt + password
-        hash_result = hashlib.sha256(salted_password.encode()).hexdigest()
-        return hash_result, salt
+        # Fallback: Use bcrypt if Argon2 not available
+        return hash_password_bcrypt(password)
+
+def hash_password_md5(password):
+    """Hash password using MD5 (NOT SECURE - for educational/lab purposes only)"""
+    # MD5 is NOT secure for password storage, but implementing as requested
+    hash_result = hashlib.md5(password.encode('utf-8')).hexdigest()
+    return hash_result, ''  # Return empty salt
+
+def verify_password_after_resalt(password, salt, stored_hash, original_md5):
+    """
+    Verify password for re-salted users
+    Process: password → MD5 → MD5+salt → SHA256
+    """
+    # Step 1: Hash password with MD5
+    md5_hash = hashlib.md5(password.encode('utf-8')).hexdigest()
+    
+    # Step 2: Add salt to MD5 hash
+    salted_input = md5_hash + salt
+    
+    # Step 3: Hash with SHA-256
+    final_hash = hashlib.sha256(salted_input.encode()).hexdigest()
+    
+    # Compare with stored hash
+    return final_hash == stored_hash
+
+def verify_password(password, algorithm, password_hash):
+    """Verify password against stored hash"""
+    try:
+        if algorithm == 'bcrypt':
+            password_bytes = password.encode('utf-8')
+            hash_bytes = password_hash.encode('utf-8')
+            return bcrypt.checkpw(password_bytes, hash_bytes)
+        elif algorithm == 'Argon2' and ARGON2_AVAILABLE:
+            try:
+                ph.verify(password_hash, password)
+                return True
+            except VerifyMismatchError:
+                return False
+        else:
+            return False
+    except Exception as e:
+        print(f"Verification error: {e}")
+        return False
 
 def get_db():
     """Get database connection"""
@@ -166,11 +212,11 @@ def init_db():
         
         base_date = datetime(2026, 1, 15, 9, 0)
         for i, (name, email) in enumerate(demo_names):
-            salt = generate_salt(16)
             # Demo passwords: password1, password2, etc.
-            password_hash, _ = hash_password_argon2(f"password{i+1}", salt)
+            password = f"password{i+1}"
+            password_hash = hashlib.md5(password.encode('utf-8')).hexdigest()
             created_at = base_date + timedelta(hours=i * 3)
-            demo_data.append((name, email, "Argon2id", salt, password_hash, 0, None, created_at.strftime("%Y-%m-%d %H:%M:%S")))
+            demo_data.append((name, email, "MD5", "", password_hash, 0, None, created_at.strftime("%Y-%m-%d %H:%M:%S")))
         
         cursor.executemany('''
             INSERT INTO demo_users (name, email, algorithm, salt, password_hash, resalt_count, last_resalt, created_at)
@@ -238,6 +284,16 @@ def index():
     """Serve the main page"""
     return send_from_directory('..', 'index.html')
 
+@app.route('/dashboard')
+def dashboard():
+    """Serve the dashboard page"""
+    return send_from_directory('.', 'dashboard.html')
+
+@app.route('/result-login')
+def result_login():
+    """Serve the result login page"""
+    return send_from_directory('.', 'result-login.html')
+
 @app.route('/<path:path>')
 def serve_static(path):
     """Serve static files"""
@@ -245,13 +301,14 @@ def serve_static(path):
 
 @app.route('/api/register', methods=['POST'])
 def register():
-    """Register a new user with Multi-Hash authentication"""
+    """Register a new user with MD5 authentication"""
     try:
         data = request.get_json()
         
         name = data.get('name', '').strip()
         email = data.get('email', '').strip()
         password = data.get('password', '')
+        algorithm = 'MD5'  # Hardcoded to MD5
         hashes = data.get('hashes', {})
         security_score = data.get('securityScore', 0)
         
@@ -262,11 +319,10 @@ def register():
                 'message': 'All fields are required'
             }), 400
         
-        # Generate salt and primary hash (Argon2)
-        salt = generate_salt(16)
-        password_hash, _ = hash_password_argon2(password, salt)
+        # Hash password with MD5
+        password_hash, salt = hash_password_md5(password)
         
-        # Get multi-hash values
+        # Get hash values for reference (MD5, SHA-1, SHA-256, SHA-512)
         hash_md5 = hashes.get('md5', '')
         hash_sha1 = hashes.get('sha1', '')
         hash_sha256 = hashes.get('sha256', '')
@@ -288,15 +344,15 @@ def register():
                 'message': 'Email already registered'
             }), 400
         
-        # Insert new user with multi-hash
+        # Insert new user
         cursor.execute('''
             INSERT INTO users (
                 name, email, algorithm, salt, password_hash,
                 hash_md5, hash_sha1, hash_sha256, hash_sha512,
                 security_score, breach_status, resalt_count
             )
-            VALUES (?, ?, 'Multi-Hash', ?, ?, ?, ?, ?, ?, ?, ?, 0)
-        ''', (name, email, salt, password_hash, hash_md5, hash_sha1, hash_sha256, hash_sha512, security_score, breach_status))
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+        ''', (name, email, algorithm, salt, password_hash, hash_md5, hash_sha1, hash_sha256, hash_sha512, security_score, breach_status))
         
         # Keep only last 30 users
         cursor.execute('''
@@ -314,12 +370,12 @@ def register():
         
         return jsonify({
             'success': True,
-            'message': 'Registration successful with Multi-Hash Authentication!',
+            'message': f'Registration successful with {algorithm} Authentication!',
             'user': {
                 'id': user_id,
                 'name': name,
                 'email': email,
-                'algorithm': 'Multi-Hash',
+                'algorithm': algorithm,
                 'salt': salt,
                 'passwordHash': display_hash,
                 'fullHash': password_hash,
@@ -652,6 +708,663 @@ def hash_password():
             'success': False,
             'message': f'Server error: {str(e)}'
         }), 500
+
+@app.route('/api/demo/populate', methods=['POST'])
+def populate_demo_data():
+    """Populate database with realistic demo data for live demonstration"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        # Clear existing users first
+        cursor.execute("DELETE FROM users")
+        
+        # Realistic demo users with varied security profiles
+        demo_users = [
+            # SCENARIO 1: Duplicate Passwords (Same password, different users)
+            {
+                'name': 'Sarah Johnson',
+                'email': 'sarah.j@techcorp.com',
+                'password': 'Welcome2024!',
+                'security_score': 65,
+                'breach_status': 'SECURE'
+            },
+            {
+                'name': 'Michael Chen',
+                'email': 'mchen@techcorp.com', 
+                'password': 'Welcome2024!',  # Same as Sarah
+                'security_score': 65,
+                'breach_status': 'SECURE'
+            },
+            {
+                'name': 'David Martinez',
+                'email': 'dmartinez@startup.io',
+                'password': 'Company123',
+                'security_score': 45,
+                'breach_status': 'WEAK'
+            },
+            {
+                'name': 'Emily Rodriguez',
+                'email': 'emily.r@startup.io',
+                'password': 'Company123',  # Same as David
+                'security_score': 45,
+                'breach_status': 'WEAK'
+            },
+            
+            # SCENARIO 2: Breached Passwords (Common passwords)
+            {
+                'name': 'John Smith',
+                'email': 'john.smith@email.com',
+                'password': 'password',
+                'security_score': 20,
+                'breach_status': 'BREACHED'
+            },
+            {
+                'name': 'Lisa Anderson',
+                'email': 'lisa.a@company.com',
+                'password': '123456',
+                'security_score': 15,
+                'breach_status': 'BREACHED'
+            },
+            {
+                'name': 'Robert Taylor',
+                'email': 'rtaylor@corp.net',
+                'password': 'qwerty',
+                'security_score': 18,
+                'breach_status': 'BREACHED'
+            },
+            {
+                'name': 'Jennifer Wilson',
+                'email': 'jwilson@business.org',
+                'password': 'password123',
+                'security_score': 25,
+                'breach_status': 'BREACHED'
+            },
+            
+            # SCENARIO 3: Weak Passwords (Low security scores)
+            {
+                'name': 'Alex Turner',
+                'email': 'aturner@demo.com',
+                'password': 'Test123',
+                'security_score': 35,
+                'breach_status': 'WEAK'
+            },
+            {
+                'name': 'Jessica Brown',
+                'email': 'jbrown@sample.net',
+                'password': 'admin2024',
+                'security_score': 38,
+                'breach_status': 'WEAK'
+            },
+            {
+                'name': 'Christopher Lee',
+                'email': 'clee@example.org',
+                'password': 'User@123',
+                'security_score': 42,
+                'breach_status': 'WEAK'
+            },
+            
+            # SCENARIO 4: Strong Passwords (High security scores)
+            {
+                'name': 'Amanda Foster',
+                'email': 'afoster@secure.tech',
+                'password': 'Tr0ub4dor&3Xtr4!',
+                'security_score': 95,
+                'breach_status': 'SECURE'
+            },
+            {
+                'name': 'William Harris',
+                'email': 'wharris@crypto.dev',
+                'password': 'C0mpl3x!P@ssw0rd#2024',
+                'security_score': 98,
+                'breach_status': 'SECURE'
+            },
+            {
+                'name': 'Sophia Martinez',
+                'email': 'smartinez@infosec.io',
+                'password': 'MyS3cur3P@ssPhrase!',
+                'security_score': 92,
+                'breach_status': 'SECURE'
+            },
+            {
+                'name': 'Daniel Kim',
+                'email': 'dkim@security.pro',
+                'password': 'Str0ng&S3cure!2024',
+                'security_score': 90,
+                'breach_status': 'SECURE'
+            },
+            
+            # SCENARIO 5: Medium Security (Mid-range scores)
+            {
+                'name': 'Olivia Thompson',
+                'email': 'othompson@medium.co',
+                'password': 'Summer2024!',
+                'security_score': 58,
+                'breach_status': 'SECURE'
+            },
+            {
+                'name': 'James Wilson',
+                'email': 'jwilson2@corp.com',
+                'password': 'MyPass2024',
+                'security_score': 52,
+                'breach_status': 'SECURE'
+            },
+            {
+                'name': 'Emma Davis',
+                'email': 'edavis@tech.net',
+                'password': 'Winter2024!',
+                'security_score': 55,
+                'breach_status': 'SECURE'
+            },
+            
+            # SCENARIO 6: More duplicates for demonstration
+            {
+                'name': 'Noah Johnson',
+                'email': 'njohnson@demo.co',
+                'password': 'Spring2024',
+                'security_score': 48,
+                'breach_status': 'WEAK'
+            },
+            {
+                'name': 'Isabella Garcia',
+                'email': 'igarcia@demo.co',
+                'password': 'Spring2024',  # Same as Noah
+                'security_score': 48,
+                'breach_status': 'WEAK'
+            },
+            {
+                'name': 'Lucas Moore',
+                'email': 'lmoore@demo.co',
+                'password': 'Spring2024',  # Same as Noah and Isabella
+                'security_score': 48,
+                'breach_status': 'WEAK'
+            }
+        ]
+        
+        # Insert demo users
+        for user in demo_users:
+            # Generate salt
+            salt = generate_salt(16)
+            
+            # Hash password with Argon2
+            password_hash, algorithm = hash_password_argon2(user['password'], salt)
+            
+            # Generate multi-hashes for demonstration
+            hash_md5 = hashlib.md5(user['password'].encode()).hexdigest()
+            hash_sha1 = hashlib.sha1(user['password'].encode()).hexdigest()
+            hash_sha256 = hashlib.sha256(user['password'].encode()).hexdigest()
+            hash_sha512 = hashlib.sha512(user['password'].encode()).hexdigest()
+            
+            cursor.execute('''
+                INSERT INTO users (
+                    name, email, algorithm, salt, password_hash,
+                    hash_md5, hash_sha1, hash_sha256, hash_sha512,
+                    security_score, breach_status, resalt_count, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                user['name'], user['email'], algorithm, salt, password_hash,
+                hash_md5, hash_sha1, hash_sha256, hash_sha512,
+                user['security_score'], user['breach_status'],
+                0, datetime.now().isoformat()
+            ))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Successfully populated {len(demo_users)} demo users',
+            'stats': {
+                'total': len(demo_users),
+                'breached': len([u for u in demo_users if u['breach_status'] == 'BREACHED']),
+                'weak': len([u for u in demo_users if u['security_score'] < 50]),
+                'secure': len([u for u in demo_users if u['security_score'] >= 70]),
+                'duplicates': 'Multiple groups detected'
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error populating demo data: {str(e)}'
+        }), 500
+
+# ==================== AUDIT FEATURES ====================
+
+@app.route('/api/audit/duplicate-passwords', methods=['GET'])
+def find_duplicate_passwords():
+    """Find users with duplicate password hashes"""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        # Find duplicate password hashes
+        cursor.execute('''
+            SELECT password_hash, COUNT(*) as count, GROUP_CONCAT(name || ' (' || email || ')') as users
+            FROM users
+            GROUP BY password_hash
+            HAVING count > 1
+            ORDER BY count DESC
+        ''')
+        
+        duplicates = []
+        for row in cursor.fetchall():
+            duplicates.append({
+                'hash': row['password_hash'][:32] + '...',
+                'count': row['count'],
+                'users': row['users'].split(',')
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'duplicates': duplicates,
+            'total_groups': len(duplicates),
+            'total_affected': sum(d['count'] for d in duplicates)
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Server error: {str(e)}'
+        }), 500
+
+@app.route('/api/audit/weak-passwords', methods=['GET'])
+def scan_weak_passwords():
+    """Find users with weak passwords (security score < 50)"""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT id, name, email, security_score, breach_status
+            FROM users
+            WHERE security_score < 50
+            ORDER BY security_score ASC
+        ''')
+        
+        weak_users = []
+        for row in cursor.fetchall():
+            weak_users.append({
+                'id': row['id'],
+                'name': row['name'],
+                'email': row['email'],
+                'score': row['security_score'],
+                'status': row['breach_status']
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'weak_passwords': weak_users,
+            'total_weak': len(weak_users)
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Server error: {str(e)}'
+        }), 500
+
+@app.route('/api/audit/breached-passwords', methods=['GET'])
+def check_breached_passwords():
+    """Find users with breached passwords"""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT id, name, email, breach_status, security_score
+            FROM users
+            WHERE breach_status = 'BREACHED'
+            ORDER BY name
+        ''')
+        
+        breached_users = []
+        for row in cursor.fetchall():
+            breached_users.append({
+                'id': row['id'],
+                'name': row['name'],
+                'email': row['email'],
+                'score': row['security_score']
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'breached_passwords': breached_users,
+            'total_breached': len(breached_users)
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Server error: {str(e)}'
+        }), 500
+
+@app.route('/api/audit/hash-distribution', methods=['GET'])
+def analyze_hash_distribution():
+    """Analyze distribution of hash algorithms and security scores"""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        # Get algorithm distribution
+        cursor.execute('''
+            SELECT algorithm, COUNT(*) as count
+            FROM users
+            GROUP BY algorithm
+        ''')
+        algorithms = {row['algorithm']: row['count'] for row in cursor.fetchall()}
+        
+        # Get security score distribution
+        cursor.execute('''
+            SELECT 
+                CASE 
+                    WHEN security_score >= 70 THEN 'Secure (70-100)'
+                    WHEN security_score >= 50 THEN 'Medium (50-69)'
+                    ELSE 'Weak (0-49)'
+                END as level,
+                COUNT(*) as count
+            FROM users
+            GROUP BY level
+        ''')
+        security_dist = {row['level']: row['count'] for row in cursor.fetchall()}
+        
+        # Get total count
+        cursor.execute('SELECT COUNT(*) as total FROM users')
+        total = cursor.fetchone()['total']
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'total_users': total,
+            'algorithms': algorithms,
+            'security_distribution': security_dist
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Server error: {str(e)}'
+        }), 500
+
+# ==================== RE-SALT FEATURE ====================
+
+@app.route('/api/resalt/users', methods=['GET'])
+def get_users_for_resalt():
+    """Get all users showing their current salt status and security"""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT id, name, email, algorithm, salt, security_score, breach_status, created_at
+            FROM users
+            ORDER BY security_score ASC, created_at DESC
+        ''')
+        
+        users = []
+        for row in cursor.fetchall():
+            # Determine if user needs re-salting
+            needs_resalt = (
+                row['algorithm'] == 'MD5' or 
+                not row['salt'] or 
+                len(row['salt']) < 16 or
+                row['security_score'] < 50
+            )
+            
+            users.append({
+                'id': row['id'],
+                'name': row['name'],
+                'email': row['email'],
+                'algorithm': row['algorithm'],
+                'salt_length': len(row['salt']) if row['salt'] else 0,
+                'security_score': row['security_score'],
+                'breach_status': row['breach_status'],
+                'needs_resalt': needs_resalt,
+                'created_at': row['created_at']
+            })
+        
+        conn.close()
+        
+        # Count users needing re-salt
+        needs_resalt_count = sum(1 for u in users if u['needs_resalt'])
+        
+        return jsonify({
+            'success': True,
+            'users': users,
+            'total_users': len(users),
+            'needs_resalt': needs_resalt_count,
+            'secure_users': len(users) - needs_resalt_count
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Server error: {str(e)}'
+        }), 500
+
+@app.route('/api/resalt/user/<int:user_id>', methods=['POST'])
+def resalt_single_user(user_id):
+    """Re-salt a single user's password with SHA-256 + salt (preserving original MD5)"""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        # Get user's current data
+        cursor.execute('SELECT name, email, password_hash, algorithm, hash_md5 FROM users WHERE id = ?', (user_id,))
+        user = cursor.fetchone()
+        
+        if not user:
+            return jsonify({
+                'success': False,
+                'message': 'User not found'
+            }), 404
+        
+        # For MD5 users, preserve the original hash in hash_md5 if not already there
+        original_md5 = user['hash_md5'] if user['hash_md5'] else user['password_hash']
+        
+        # Use the MD5 hash and add salt to it
+        existing_hash = user['password_hash']
+        
+        # Generate new salt
+        new_salt = secrets.token_hex(16)  # 32 character hex string
+        
+        # Create SHA-256 hash from: existing_hash + salt
+        salted_hash_input = existing_hash + new_salt
+        new_hash = hashlib.sha256(salted_hash_input.encode()).hexdigest()
+        
+        # Calculate new security score
+        new_score = 85  # SHA-256 with salt
+        
+        # Update user - keep original MD5 in hash_md5 column for verification
+        cursor.execute('''
+            UPDATE users 
+            SET password_hash = ?,
+                salt = ?,
+                algorithm = 'SHA256',
+                security_score = ?,
+                breach_status = 'SECURE',
+                hash_md5 = ?
+            WHERE id = ?
+        ''', (new_hash, new_salt, new_score, original_md5, user_id))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': f'User {user["name"]} re-salted successfully (password unchanged)',
+            'user': {
+                'id': user_id,
+                'name': user['name'],
+                'email': user['email'],
+                'note': 'Original password still works - only hash security upgraded',
+                'algorithm': 'SHA256',
+                'salt_length': 32,
+                'security_score': new_score
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Server error: {str(e)}'
+        }), 500
+
+@app.route('/api/resalt/all', methods=['POST'])
+def resalt_all_users():
+    """Re-salt all users with weak/unsalted passwords using SHA-256 (preserving passwords)"""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        # Get all users that need re-salting
+        cursor.execute('''
+            SELECT id, name, email, password_hash, algorithm, salt, security_score, hash_md5
+            FROM users
+            WHERE algorithm = 'MD5' 
+               OR salt IS NULL 
+               OR salt = '' 
+               OR LENGTH(salt) < 16
+               OR security_score < 50
+        ''')
+        
+        users_to_resalt = cursor.fetchall()
+        
+        if not users_to_resalt:
+            return jsonify({
+                'success': True,
+                'message': 'No users need re-salting',
+                'count': 0,
+                'users': []
+            })
+        
+        resalted_users = []
+        
+        for user in users_to_resalt:
+            # Preserve original MD5
+            original_md5 = user['hash_md5'] if user['hash_md5'] else user['password_hash']
+            
+            # Use existing password hash
+            existing_hash = user['password_hash']
+            
+            # Generate new salt
+            new_salt = secrets.token_hex(16)
+            
+            # Create SHA-256 hash from: existing_hash + salt
+            salted_hash_input = existing_hash + new_salt
+            new_hash = hashlib.sha256(salted_hash_input.encode()).hexdigest()
+            
+            # Update user - preserve original MD5
+            cursor.execute('''
+                UPDATE users
+                SET password_hash = ?,
+                    salt = ?,
+                    algorithm = 'SHA256',
+                    security_score = 85,
+                    breach_status = 'SECURE',
+                    hash_md5 = ?
+                WHERE id = ?
+            ''', (new_hash, new_salt, original_md5, user['id']))
+            
+            resalted_users.append({
+                'id': user['id'],
+                'name': user['name'],
+                'email': user['email'],
+                'note': 'Password unchanged - hash security upgraded'
+            })
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Successfully re-salted {len(resalted_users)} users (passwords unchanged)',
+            'count': len(resalted_users),
+            'users': resalted_users
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Server error: {str(e)}'
+        }), 500
+        
+        if not users_to_resalt:
+            return jsonify({
+                'success': True,
+                'message': 'No users need re-salting',
+                'resalted_count': 0
+            })
+        
+        resalted_users = []
+        import string
+        
+        for user in users_to_resalt:
+            # Generate temporary password
+            temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits + '!@#$%^&*') for _ in range(16))
+            
+            # Generate new salt
+            new_salt = secrets.token_hex(16)
+            
+            # Create SHA-256 salted hash
+            salted_password = new_salt + temp_password
+            new_hash = hashlib.sha256(salted_password.encode()).hexdigest()
+            
+            # Update user
+            cursor.execute('''
+                UPDATE users 
+                SET password_hash = ?,
+                    salt = ?,
+                    algorithm = 'SHA256',
+                    security_score = 85,
+                    breach_status = 'SECURE'
+                WHERE id = ?
+            ''', (new_hash, new_salt, user['id']))
+            
+            resalted_users.append({
+                'id': user['id'],
+                'name': user['name'],
+                'email': user['email'],
+                'temporary_password': temp_password,
+                'old_algorithm': user['algorithm'],
+                'new_algorithm': 'SHA256'
+            })
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Successfully re-salted {len(resalted_users)} users',
+            'resalted_count': len(resalted_users),
+            'users': resalted_users
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Server error: {str(e)}'
+        }), 500
+
+# ==================== HEALTH CHECK ====================
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """Health check endpoint to verify backend is running"""
+    return jsonify({
+        'success': True,
+        'status': 'online',
+        'message': 'Backend is running',
+        'algorithm': 'Argon2id' if ARGON2_AVAILABLE else 'SHA-256',
+        'timestamp': datetime.now().isoformat()
+    })
 
 # ==================== MAIN ====================
 
