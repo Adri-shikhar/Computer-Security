@@ -570,15 +570,27 @@
                                 <th>Algorithm</th>
                                 <th>🧂 Salt</th>
                                 <th>Password Hash</th>
-                                <th>Results</th>
                                 <th>Registered</th>
                             </tr>
                         </thead>
                         <tbody id="dashboardTable">
-                            <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">No data available</td></tr>
+                            <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No data available</td></tr>
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div id="paginationControls" style="margin-top: 1.5rem; display: none; justify-content: center; align-items: center; gap: 1rem;">
+                <button class="btn" onclick="changePage('prev')" id="btnPrev" style="background: var(--primary); color: white; padding: 0.5rem 1rem;">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <span style="font-weight: 600; color: var(--text-primary);">
+                    Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+                </span>
+                <button class="btn" onclick="changePage('next')" id="btnNext" style="background: var(--primary); color: white; padding: 0.5rem 1rem;">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
 
             <!-- Actions -->
@@ -604,6 +616,11 @@
         
         // Always use backend mode
         let currentStorage = 'backend';
+        
+        // Pagination variables
+        let currentPage = 1;
+        let itemsPerPage = 30;
+        let allUsers = [];
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
@@ -648,51 +665,90 @@
                     throw new Error(data.message);
                 }
                 
-                const users = data.users || [];
+                allUsers = data.users || [];
                 
                 // Calculate security stats
-                const secureCount = users.filter(u => (u.securityScore || u.security_score || 0) >= 70).length;
-                const weakCount = users.filter(u => (u.securityScore || u.security_score || 0) < 50).length;
-                const breachedCount = users.filter(u => (u.breachStatus || u.breach_status) === 'BREACHED').length;
+                const secureCount = allUsers.filter(u => (u.securityScore || u.security_score || 0) >= 70).length;
+                const weakCount = allUsers.filter(u => (u.securityScore || u.security_score || 0) < 50).length;
+                const breachedCount = allUsers.filter(u => (u.breachStatus || u.breach_status) === 'BREACHED').length;
                 
                 // Update stats cards
-                document.getElementById('dashTotalUsers').textContent = users.length;
+                document.getElementById('dashTotalUsers').textContent = allUsers.length;
                 document.getElementById('dashHashCount').textContent = secureCount;
                 document.getElementById('dashWeakCount').textContent = weakCount;
                 document.getElementById('dashBreachedCount').textContent = breachedCount;
-                document.getElementById('recordCount').textContent = users.length;
+                document.getElementById('recordCount').textContent = allUsers.length;
                 
-                // Update table
-                const table = document.getElementById('dashboardTable');
+                // Reset to page 1
+                currentPage = 1;
                 
-                if (users.length === 0) {
-                    table.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                        No registrations yet. Register users from the Registration page.
-                    </td></tr>`;
-                    return;
-                }
-                
-                table.innerHTML = users.map(user => `
-                    <tr>
-                        <td>${user.id}</td>
-                        <td><strong>${user.name}</strong></td>
-                        <td>${user.email}</td>
-                        <td><span class="badge badge-primary">${user.algorithm || 'argon2'}</span></td>
-                        <td class="hash-text" title="${user.salt || 'N/A'}" style="color: var(--warning);">${(user.salt || 'N/A').substring(0, 8)}...</td>
-                        <td class="hash-text" title="${user.passwordHash}">${user.passwordHash.substring(0, 20)}...</td>
-                        <td><span class="badge ${(user.resaltCount || 0) > 0 ? 'badge-success' : 'badge-secondary'}">${user.resaltCount || 0}</span></td>
-                        <td>${new Date(user.createdAt).toLocaleDateString()}</td>
-                    </tr>
-                `).join('');
+                // Render current page
+                renderPage();
                 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
                 document.getElementById('dashboardTable').innerHTML = `
-                    <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--danger);">
+                    <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--danger);">
                         <i class="fas fa-exclamation-triangle"></i> Error connecting to Flask backend.<br>
                         <small>Make sure the server is running: <code>python backend/app.py</code></small>
                     </td></tr>`;
+                document.getElementById('paginationControls').style.display = 'none';
             }
+        }
+        
+        // Render current page of users
+        function renderPage() {
+            const table = document.getElementById('dashboardTable');
+            const paginationControls = document.getElementById('paginationControls');
+            
+            if (allUsers.length === 0) {
+                table.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    No registrations yet. Register users from the Registration page.
+                </td></tr>`;
+                paginationControls.style.display = 'none';
+                return;
+            }
+            
+            // Calculate pagination
+            const totalPages = Math.ceil(allUsers.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, allUsers.length);
+            const usersToShow = allUsers.slice(startIndex, endIndex);
+            
+            // Update pagination controls
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('totalPages').textContent = totalPages;
+            document.getElementById('btnPrev').disabled = currentPage === 1;
+            document.getElementById('btnNext').disabled = currentPage === totalPages;
+            
+            // Show/hide pagination controls
+            paginationControls.style.display = totalPages > 1 ? 'flex' : 'none';
+            
+            // Render table
+            table.innerHTML = usersToShow.map(user => `
+                <tr>
+                    <td>${user.id}</td>
+                    <td><strong>${user.name}</strong></td>
+                    <td>${user.email}</td>
+                    <td><span class="badge badge-primary">${user.algorithm || 'argon2'}</span></td>
+                    <td class="hash-text" title="${user.salt || 'N/A'}" style="color: var(--warning);">${(user.salt || 'N/A').substring(0, 8)}...</td>
+                    <td class="hash-text" title="${user.passwordHash}">${user.passwordHash.substring(0, 20)}...</td>
+                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
+        }
+        
+        // Change page
+        function changePage(direction) {
+            const totalPages = Math.ceil(allUsers.length / itemsPerPage);
+            
+            if (direction === 'prev' && currentPage > 1) {
+                currentPage--;
+            } else if (direction === 'next' && currentPage < totalPages) {
+                currentPage++;
+            }
+            
+            renderPage();
         }
 
         // Clear current storage
