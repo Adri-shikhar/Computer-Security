@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Entropy Analyzer - SOC Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../../shared/css/nav-styles.css">
+    <link rel="stylesheet" href="../../../shared/css/ux-enhancements.css">
+    <style>
+        .strength-meter {
+            height: 30px;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+        .strength-fill {
+            height: 100%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        .strength-very-weak { background: linear-gradient(90deg, #dc2626, #ef4444); color: white; }
+        .strength-weak { background: linear-gradient(90deg, #f59e0b, #fbbf24); color: white; }
+        .strength-moderate { background: linear-gradient(90deg, #eab308, #facc15); color: #000; }
+        .strength-strong { background: linear-gradient(90deg, #84cc16, #a3e635); color: #000; }
+        .strength-very-strong { background: linear-gradient(90deg, #059669, #10b981); color: white; }
+        
+        .metric-card {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .crack-time {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><a href="../../../index.html" style="color: white; text-decoration: none;"><i class="fas fa-shield-halved"></i> SOC Platform</a></h4>
+            <p>Security Operations Center</p>
+        </div>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">MAIN NAVIGATION</div>
+            <a href="../../../index.html" class="nav-item">
+                <i class="fas fa-user-plus"></i> Registration
+            </a>
+            <a href="../../../backend/dashboard.html" class="nav-item">
+                <i class="fas fa-database"></i> Backend Dashboard
+            </a>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">SECURITY TOOLS</div>
+            
+            <a href="#" class="nav-item" onclick="toggleSubNav('hashSub', event)">
+                <i class="fas fa-hashtag"></i> Hash Tools
+                <i class="fas fa-chevron-down nav-toggle open" id="hashToggle"></i>
+            </a>
+            <div class="sub-nav show" id="hashSub">
+                <a href="../md5-generator.html" class="sub-nav-item">
+                    <i class="fas fa-lock"></i> MD5 Generator
+                </a>
+                <a href="../sha256-generator.html" class="sub-nav-item">
+                    <i class="fas fa-shield-alt"></i> SHA-256 Generator
+                </a>
+                <a href="../hash-comparison.html" class="sub-nav-item">
+                    <i class="fas fa-balance-scale"></i> Hash Comparison
+                </a>
+                <a href="entropy-analyzer.html" class="sub-nav-item active">
+                    <i class="fas fa-chart-line"></i> Entropy Analyzer
+                </a>
+            </div>
+
+            <a href="../../../dashboard-features/breach-checker/breach-checker.html" class="nav-item">
+                <i class="fas fa-user-secret"></i> Password Breach Checker
+            </a>
+
+            <a href="#" class="nav-item" onclick="toggleSubNav('utilitySub', event)">
+                <i class="fas fa-tools"></i> Utility Tools
+                <i class="fas fa-chevron-down nav-toggle" id="utilityToggle"></i>
+            </a>
+            <div class="sub-nav" id="utilitySub">
+                <a href="../../../dashboard-features/password-generator/password-generator.html" class="sub-nav-item">
+                    <i class="fas fa-key"></i> Password Generator
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="page-title">
+                <i class="fas fa-chart-line" style="font-size: 1.5rem; color: var(--primary);"></i>
+                <h2>Password Entropy Analyzer</h2>
+            </div>
+            <span class="status-badge info">
+                <i class="fas fa-calculator"></i> Real-Time Analysis
+            </span>
+        </div>
+
+        <div class="content-area">
+            <div class="info-box">
+                <div class="info-box-title">
+                    <i class="fas fa-info-circle"></i> What is Password Entropy?
+                </div>
+                <div class="info-box-content">
+                    <strong>Entropy</strong> measures password unpredictability in bits. Formula: <code>E = L × log₂(N)</code> where L = length, N = character set size.
+                    Higher entropy = exponentially harder to crack. A 60-bit password requires 2⁶⁰ (1 quintillion) guesses.
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-card-header">
+                    <i class="fas fa-keyboard"></i>
+                    <h3>Analyze Password Strength</h3>
+                </div>
+                <div class="tool-card-body">
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-key"></i> Enter Password to Analyze
+                        </label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="passwordInput" placeholder="Enter password..." oninput="analyzePassword()" style="border-right: none;">
+                            <button class="btn btn-secondary" type="button" onclick="togglePassword()" style="border-left: none;">
+                                <i class="fas fa-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">
+                            <i class="fas fa-shield-check"></i> Analysis happens locally - your password never leaves your browser
+                        </small>
+                    </div>
+
+                    <div id="analysisResults" style="display: none;">
+                        <!-- Strength Meter -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-signal"></i> Strength Score
+                            </label>
+                            <div class="strength-meter">
+                                <div id="strengthFill" class="strength-fill" style="width: 0%;">
+                                    <span id="strengthText">0/100</span>
+                                </div>
+                            </div>
+                            <div id="strengthLevel" style="font-weight: 600; font-size: 1rem;"></div>
+                        </div>
+
+                        <!-- Metrics Grid -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="metric-card">
+                                    <div class="metric-value" id="entropyValue">0</div>
+                                    <div class="metric-label">
+                                        <i class="fas fa-chart-line"></i> Entropy (bits)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="metric-card">
+                                    <div class="metric-value" id="lengthValue">0</div>
+                                    <div class="metric-label">
+                                        <i class="fas fa-ruler"></i> Length
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="metric-card">
+                                    <div class="metric-value" id="charsetValue">0</div>
+                                    <div class="metric-label">
+                                        <i class="fas fa-font"></i> Character Set Size
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Character Types -->
+                        <div class="result-box info mb-4">
+                            <div class="result-header">
+                                <i class="fas fa-list-check"></i>
+                                <span>Character Composition</span>
+                            </div>
+                            <div class="result-content">
+                                <div id="characterTypes"></div>
+                            </div>
+                        </div>
+
+                        <!-- Crack Time Estimate -->
+                        <div class="crack-time">
+                            <h5 style="color: var(--primary); margin-bottom: 1rem;">
+                                <i class="fas fa-clock"></i> Estimated Crack Time
+                            </h5>
+                            <div id="crackTimeEstimate" style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;"></div>
+                            <small class="text-muted">
+                                Assuming 10¹² (1 trillion) guesses per second using modern hardware
+                            </small>
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div class="result-box warning mt-4" id="recommendations" style="display: none;">
+                            <div class="result-header">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Improvement Suggestions</span>
+                            </div>
+                            <div class="result-content">
+                                <ul id="recommendationsList" style="margin: 0; padding-left: 1.5rem;"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Entropy Reference Guide -->
+            <div class="tool-card">
+                <div class="tool-card-header">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h3>Entropy Security Levels</h3>
+                </div>
+                <div class="tool-card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Entropy Range</th>
+                                    <th>Security Level</th>
+                                    <th>Crack Time (10¹² guesses/sec)</th>
+                                    <th>Example</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>&lt; 28 bits</strong></td>
+                                    <td><span class="badge bg-danger">Very Weak</span></td>
+                                    <td>&lt; 1 second</td>
+                                    <td><code>abc</code> (14.1 bits)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>28-35 bits</strong></td>
+                                    <td><span class="badge bg-warning">Weak</span></td>
+                                    <td>Minutes</td>
+                                    <td><code>password</code> (37.6 bits)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>36-59 bits</strong></td>
+                                    <td><span class="badge bg-info">Reasonable</span></td>
+                                    <td>Days to Years</td>
+                                    <td><code>Pass123!</code> (52.4 bits)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>60-127 bits</strong></td>
+                                    <td><span class="badge bg-success">Strong</span></td>
+                                    <td>Millions of years</td>
+                                    <td><code>My$ecureP@ss2024</code> (98.6 bits)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>128+ bits</strong></td>
+                                    <td><span class="badge bg-success">Very Strong</span></td>
+                                    <td>Heat death of universe</td>
+                                    <td><code>Tr0ub4dor&3_Correct_Horse_Battery</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../../../shared/js/ux-helper.js"></script>
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('passwordInput');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.className = 'fas fa-eye';
+            }
+        }
+
+        function analyzePassword() {
+            const password = document.getElementById('passwordInput').value;
+            
+            if (!password) {
+                document.getElementById('analysisResults').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('analysisResults').style.display = 'block';
+
+            // Calculate character set size
+            let charsetSize = 0;
+            const hasLower = /[a-z]/.test(password);
+            const hasUpper = /[A-Z]/.test(password);
+            const hasDigit = /[0-9]/.test(password);
+            const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+
+            if (hasLower) charsetSize += 26;
+            if (hasUpper) charsetSize += 26;
+            if (hasDigit) charsetSize += 10;
+            if (hasSymbol) charsetSize += 32;
+
+            // Calculate entropy: E = L × log₂(N)
+            const entropy = charsetSize > 0 ? password.length * Math.log2(charsetSize) : 0;
+
+            // Calculate strength score (0-100)
+            let score = 0;
+            
+            // Length scoring (0-40 points)
+            if (password.length >= 16) score += 40;
+            else if (password.length >= 12) score += 30;
+            else if (password.length >= 8) score += 20;
+            else if (password.length >= 6) score += 10;
+
+            // Character variety (0-40 points)
+            if (hasUpper) score += 10;
+            if (hasLower) score += 10;
+            if (hasDigit) score += 10;
+            if (hasSymbol) score += 10;
+
+            // Entropy bonus (0-20 points)
+            if (entropy > 60) score += 20;
+            else if (entropy > 40) score += 15;
+            else if (entropy > 28) score += 10;
+            else if (entropy > 20) score += 5;
+
+            score = Math.min(score, 100);
+
+            // Update UI
+            document.getElementById('entropyValue').textContent = entropy.toFixed(1);
+            document.getElementById('lengthValue').textContent = password.length;
+            document.getElementById('charsetValue').textContent = charsetSize;
+
+            // Update strength meter
+            const strengthFill = document.getElementById('strengthFill');
+            const strengthText = document.getElementById('strengthText');
+            const strengthLevel = document.getElementById('strengthLevel');
+
+            strengthFill.style.width = score + '%';
+            strengthText.textContent = score + '/100';
+
+            // Determine strength level
+            let levelText, levelClass, levelColor;
+            if (score < 31) {
+                levelText = '🔴 Very Weak';
+                levelClass = 'strength-very-weak';
+                levelColor = '#dc2626';
+            } else if (score < 51) {
+                levelText = '🟠 Weak';
+                levelClass = 'strength-weak';
+                levelColor = '#f59e0b';
+            } else if (score < 71) {
+                levelText = '🟡 Moderate';
+                levelClass = 'strength-moderate';
+                levelColor = '#eab308';
+            } else if (score < 86) {
+                levelText = '🟢 Strong';
+                levelClass = 'strength-strong';
+                levelColor = '#84cc16';
+            } else {
+                levelText = '🟢 Very Strong';
+                levelClass = 'strength-very-strong';
+                levelColor = '#059669';
+            }
+
+            strengthFill.className = 'strength-fill ' + levelClass;
+            strengthLevel.textContent = levelText;
+            strengthLevel.style.color = levelColor;
+
+            // Character composition
+            const types = [];
+            if (hasLower) types.push('<span style="color: var(--success);"><i class="fas fa-check"></i> Lowercase letters</span>');
+            if (hasUpper) types.push('<span style="color: var(--success);"><i class="fas fa-check"></i> Uppercase letters</span>');
+            if (hasDigit) types.push('<span style="color: var(--success);"><i class="fas fa-check"></i> Numbers</span>');
+            if (hasSymbol) types.push('<span style="color: var(--success);"><i class="fas fa-check"></i> Special symbols</span>');
+
+            document.getElementById('characterTypes').innerHTML = types.join('<br>');
+
+            // Crack time estimate
+            const combinations = Math.pow(charsetSize, password.length);
+            const guessesPerSecond = 1e12; // 1 trillion
+            const secondsToCrack = combinations / guessesPerSecond / 2; // Average case
+
+            let crackTime;
+            if (secondsToCrack < 1) {
+                crackTime = '<span style="color: var(--danger);">Instant</span>';
+            } else if (secondsToCrack < 60) {
+                crackTime = '<span style="color: var(--danger);">' + secondsToCrack.toFixed(1) + ' seconds</span>';
+            } else if (secondsToCrack < 3600) {
+                crackTime = '<span style="color: var(--warning);">' + (secondsToCrack / 60).toFixed(1) + ' minutes</span>';
+            } else if (secondsToCrack < 86400) {
+                crackTime = '<span style="color: var(--warning);">' + (secondsToCrack / 3600).toFixed(1) + ' hours</span>';
+            } else if (secondsToCrack < 31536000) {
+                crackTime = '<span style="color: var(--accent);">' + (secondsToCrack / 86400).toFixed(1) + ' days</span>';
+            } else if (secondsToCrack < 31536000000) {
+                crackTime = '<span style="color: var(--success);">' + (secondsToCrack / 31536000).toFixed(1) + ' years</span>';
+            } else {
+                crackTime = '<span style="color: var(--success);">' + (secondsToCrack / 31536000000).toExponential(2) + ' centuries</span>';
+            }
+
+            document.getElementById('crackTimeEstimate').innerHTML = crackTime;
+
+            // Generate recommendations
+            const recommendations = [];
+            if (password.length < 12) recommendations.push('Increase length to at least 12 characters');
+            if (!hasUpper) recommendations.push('Add uppercase letters (A-Z)');
+            if (!hasLower) recommendations.push('Add lowercase letters (a-z)');
+            if (!hasDigit) recommendations.push('Add numbers (0-9)');
+            if (!hasSymbol) recommendations.push('Add special symbols (!@#$%^&*)');
+            if (entropy < 60) recommendations.push('Increase entropy to at least 60 bits for strong security');
+            if (/(.)\1{2,}/.test(password)) recommendations.push('Avoid repeating characters (e.g., "aaa")');
+            if (/^[a-zA-Z]+$/.test(password)) recommendations.push('Mix letters with numbers and symbols');
+
+            const recBox = document.getElementById('recommendations');
+            const recList = document.getElementById('recommendationsList');
+
+            if (recommendations.length > 0 && score < 86) {
+                recBox.style.display = 'block';
+                recList.innerHTML = recommendations.map(r => '<li>' + r + '</li>').join('');
+            } else {
+                recBox.style.display = 'none';
+            }
+        }
+
+        function toggleSubNav(id, event) {
+            event.preventDefault();
+            const subNav = document.getElementById(id);
+            const toggle = event.currentTarget.querySelector('.nav-toggle');
+            subNav.classList.toggle('show');
+            toggle.classList.toggle('open');
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('mobile-active');
+        }
+    </script>
+</body>
+</html>

@@ -13,6 +13,7 @@ import threading
 import time
 from datetime import datetime, timedelta
 import bcrypt
+import requests
 
 # Try to import argon2, fallback to simulation if not available
 try:
@@ -48,6 +49,33 @@ resalt_thread = None
 def generate_salt(length=32):
     """Generate a cryptographically secure random salt"""
     return secrets.token_hex(length // 2)
+
+def check_password_pwned(password):
+    """Check if password has been pwned using Have I Been Pwned API"""
+    try:
+        # Hash the password with SHA-1
+        sha1_hash = hashlib.sha1(password.encode('utf-8')).hexdigest().upper()
+        # Get first 5 characters (k-Anonymity model)
+        prefix = sha1_hash[:5]
+        suffix = sha1_hash[5:]
+        
+        # Query HIBP API
+        url = f'https://api.pwnedpasswords.com/range/{prefix}'
+        response = requests.get(url, timeout=3)
+        
+        if response.status_code == 200:
+            # Check if our suffix appears in the results
+            hashes = response.text.split('\r\n')
+            for hash_line in hashes:
+                hash_suffix, count = hash_line.split(':')
+                if hash_suffix == suffix:
+                    return True, int(count)  # Password is pwned
+            return False, 0  # Password not found in breaches
+        else:
+            return None, 0  # API error, skip check
+    except Exception as e:
+        print(f"⚠️ HIBP API error: {str(e)}")
+        return None, 0  # Error, skip check
 
 def hash_password_bcrypt(password):
     """Hash password using bcrypt"""
@@ -328,9 +356,26 @@ def register():
         hash_sha256 = hashes.get('sha256', '')
         hash_sha512 = hashes.get('sha512', '')
         
-        # Determine breach status
-        common_passwords = ['123456', 'password', '123456789', '12345678', 'qwerty', 'abc123']
-        breach_status = 'BREACHED' if password.lower() in common_passwords else ('WEAK' if security_score < 50 else 'SECURE')
+        # Determine breach status using local list and HIBP API
+        common_passwords = ['123456', 'password', '123456789', '12345678', 'qwerty', 'abc123', 
+                          '111111', 'password1', '12345', '1234567890', 'iloveyou', '1234567',
+                          'qwerty123', 'monkey', 'dragon', 'letmein', 'welcome', 'admin']
+        
+        # Check local common passwords list
+        is_common = password.lower() in common_passwords
+        
+        # Check Have I Been Pwned API
+        is_pwned, pwned_count = check_password_pwned(password)
+        
+        # Determine final breach status
+        if is_common or is_pwned:
+            breach_status = 'BREACHED'
+            if is_pwned:
+                print(f"🔴 Password '{password[:3]}***' found in {pwned_count:,} breaches (HIBP)")
+        elif security_score < 50:
+            breach_status = 'WEAK'
+        else:
+            breach_status = 'SECURE'
         
         conn = get_db()
         cursor = conn.cursor()

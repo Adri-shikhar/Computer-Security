@@ -298,6 +298,284 @@ def generate_salt(length=32):
 └──────────────────────────────────────────────────────────────┘
 ```
 
+#### Registration Flow - Detailed Explanation
+
+**Phase 1: User Input**
+
+When a user registers, they provide:
+- **Name**: User's full name
+- **Email**: Unique identifier for the account
+- **Password**: Secret credential (e.g., "abc")
+
+The password is sent to the backend server via HTTPS (in production) to ensure secure transmission.
+
+---
+
+**Phase 2: Hashing Process (Backend)**
+
+The backend receives the password and processes it through four critical steps:
+
+**Step 1: Generate Salt**
+```python
+import secrets
+
+# Generate cryptographically secure random salt
+salt = secrets.token_hex(16)  # 16 bytes = 32 hex characters
+# Example output: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+```
+
+**What is `secrets.token_hex(16)`?**
+- `secrets` is Python's built-in module for generating cryptographically strong random numbers
+- `token_hex(16)` generates 16 random bytes and converts them to a 32-character hexadecimal string
+- Each byte becomes 2 hex digits (0-9, a-f)
+- Uses the operating system's secure random number generator (e.g., `/dev/urandom` on Linux, `CryptGenRandom` on Windows)
+- **Why secure?** Output is unpredictable and suitable for cryptographic use (unlike `random` module)
+
+**Why do we need salt?**
+- Without salt: Same password → Same hash (vulnerable to rainbow table attacks)
+- With salt: Same password + different salt → Different hash (unique per user)
+- Makes pre-computed hash attacks useless
+
+---
+
+**Step 2: Hash with Algorithm**
+
+The system supports multiple hashing algorithms. Here's how each works:
+
+**MD5 (Educational Only):**
+```python
+import hashlib
+
+password = "abc"
+hash_value = hashlib.md5(password.encode()).hexdigest()
+# Output: "900150983cd24fb0d6963f7d28e17f72"
+```
+
+**How MD5 works:**
+1. Convert password string to bytes using `.encode()`
+2. Pass bytes through MD5 algorithm (uses bitwise operations, modular addition, and compression functions)
+3. Produces 128-bit (16 bytes) output
+4. Convert to hexadecimal string (32 characters) using `.hexdigest()`
+5. **Process:** `"abc"` → bytes → MD5 compression → binary hash → "900150983cd24fb0d6963f7d28e17f72"
+
+**Why MD5 is NOT secure:**
+- Fast computation (attackers can try billions of guesses per second)
+- Collision attacks possible (two different inputs can produce same hash)
+- No protection against brute-force or dictionary attacks
+
+**Argon2id (Recommended):**
+```python
+from argon2 import PasswordHasher
+
+ph = PasswordHasher(
+    time_cost=2,        # Number of iterations (computational cost)
+    memory_cost=65536,  # Memory usage in KB (64 MB)
+    parallelism=1,      # Number of threads
+    hash_len=32,        # Output hash length in bytes
+    salt_len=16         # Salt length in bytes
+)
+
+password = "abc"
+salt = "a1b2c3d4e5f6g7h8"
+hash_value = ph.hash(password)
+# Output: "$argon2id$v=19$m=65536,t=2,p=1$YTFiMmMzZDRlNWY2Zzdo$..."
+```
+
+**How Argon2id works:**
+1. Takes password and generates/uses salt internally
+2. Allocates large memory buffer (64 MB by default)
+3. Performs multiple iterations of memory-hard operations
+4. **Memory-hard**: Forces attackers to use lots of RAM, making GPU/ASIC attacks expensive
+5. Output format includes algorithm parameters, salt, and hash: `$argon2id$v=19$m=65536,t=2,p=1$salt$hash`
+
+**Why Argon2id is secure:**
+- Slow and memory-intensive (protects against brute-force)
+- Resistant to GPU/ASIC attacks (memory is expensive to parallelize)
+- Winner of Password Hashing Competition (2015)
+- Configurable parameters (can increase security as hardware improves)
+
+**Hash Function Process:**
+```
+Input: "abc"
+     ↓
+Encoding: bytes [0x61, 0x62, 0x63]
+     ↓
+Algorithm: Mathematical transformations
+     ↓
+Output: Fixed-length hash string
+```
+
+---
+
+**Step 3: Calculate Security Score**
+
+```python
+def evaluate_password_strength(password):
+    score = 0
+    
+    # Length scoring (0-30 points)
+    if len(password) >= 8:
+        score += 10
+    if len(password) >= 12:
+        score += 10
+    if len(password) >= 16:
+        score += 10
+    
+    # Character variety (0-40 points)
+    if any(c.isupper() for c in password):
+        score += 10  # Has uppercase
+    if any(c.islower() for c in password):
+        score += 10  # Has lowercase
+    if any(c.isdigit() for c in password):
+        score += 10  # Has digits
+    if any(c in '!@#$%^&*()_+-=[]{}|;:,.<>?' for c in password):
+        score += 10  # Has special characters
+    
+    # Entropy calculation (0-30 points)
+    char_set_size = 0
+    if any(c.isupper() for c in password):
+        char_set_size += 26
+    if any(c.islower() for c in password):
+        char_set_size += 26
+    if any(c.isdigit() for c in password):
+        char_set_size += 10
+    if any(c in string.punctuation for c in password):
+        char_set_size += 32
+    
+    entropy = len(password) * math.log2(char_set_size) if char_set_size > 0 else 0
+    if entropy > 60:
+        score += 30
+    elif entropy > 40:
+        score += 20
+    elif entropy > 28:
+        score += 10
+    
+    return min(score, 100)  # Cap at 100
+```
+
+**For password "abc":**
+- Length: 3 characters → 0 points (too short)
+- Character variety: Only lowercase → 10 points
+- Entropy: 3 × log₂(26) = 14.1 bits → 5 points (very low)
+- **Total: 15 points (Very Weak)**
+
+**Score Interpretation:**
+- 0-30: Very Weak (easily cracked in seconds)
+- 31-50: Weak (cracked in minutes to hours)
+- 51-70: Moderate (cracked in days to months)
+- 71-85: Strong (cracked in years)
+- 86-100: Very Strong (practically uncrackable)
+
+---
+
+**Step 4: Check Breach Status**
+
+```python
+# Common breached passwords database
+common_passwords = [
+    '123456', 'password', '123456789', '12345678',
+    'qwerty', 'abc123', '111111', 'password1',
+    '12345', '1234567890', ... (thousands more)
+]
+
+def check_breach_status(password, security_score):
+    # Check if password is in known breach list
+    if password.lower() in common_passwords:
+        return "BREACHED"
+    
+    # Check if password score is too low
+    elif security_score < 50:
+        return "WEAK"
+    
+    # Password is reasonably secure
+    else:
+        return "SECURE"
+```
+
+**How breach detection works:**
+1. **Local Dictionary Check**: Compare password against list of commonly breached passwords from data breaches (e.g., RockYou, LinkedIn, Adobe breaches)
+2. **Have I Been Pwned (HIBP) API**: Check password against Troy Hunt's database of 850+ million pwned passwords using k-Anonymity model (only first 5 characters of SHA-1 hash are sent)
+3. **Score Evaluation**: Even if not in breach list, weak passwords (score < 50) are flagged
+4. **Status Assignment**:
+   - `BREACHED`: Password found in known breach databases (local or HIBP)
+   - `WEAK`: Low security score (< 50)
+   - `SECURE`: Good score and not in breach list
+
+**HIBP k-Anonymity Model:**
+```python
+def check_password_pwned(password):
+    # Hash password with SHA-1
+    sha1_hash = hashlib.sha1(password.encode()).hexdigest().upper()
+    prefix = sha1_hash[:5]  # Send only first 5 chars
+    suffix = sha1_hash[5:]
+    
+    # Query HIBP API with prefix
+    response = requests.get(f'https://api.pwnedpasswords.com/range/{prefix}')
+    
+    # Check if suffix matches any returned hash
+    for hash_line in response.text.split('\\r\\n'):
+        hash_suffix, count = hash_line.split(':')
+        if hash_suffix == suffix:
+            return True, int(count)  # Pwned!
+    return False, 0  # Safe
+```
+
+**Why this matters:**
+- Passwords like "password123" appear in millions of accounts
+- Attackers try these common passwords first
+- Flagging breached passwords prevents easy account compromise
+- HIBP uses k-Anonymity so your actual password is never sent to the API
+- Real-time checking against 850+ million compromised passwords
+
+---
+
+**Phase 3: Database Storage**
+
+After all processing, the user data is stored:
+
+```sql
+INSERT INTO users (
+    name,                -- User's name: "John"
+    email,               -- Unique identifier: "john@email.com"
+    algorithm,           -- Hash algorithm used: "MD5"
+    salt,                -- Generated salt: "a1b2c3d4e5f6g7h8"
+    password_hash,       -- Hashed password: "900150983cd24fb0d6963f7d28e17f72"
+    security_score,      -- Calculated score: 15
+    breach_status        -- Security status: "WEAK"
+) VALUES (
+    'John',
+    'john@email.com',
+    'MD5',
+    'a1b2c3d4e5f6g7h8',
+    '900150983cd24fb0d6963f7d28e17f72',
+    15,
+    'WEAK'
+)
+```
+
+**What gets stored:**
+- ✅ **Password hash**: One-way encrypted version (cannot be reversed)
+- ✅ **Salt**: Needed for verification during login
+- ✅ **Algorithm**: To know which hash function to use for verification
+- ✅ **Security metadata**: Score and breach status for monitoring
+- ❌ **Plain password**: NEVER stored (security best practice)
+
+**Database storage benefits:**
+1. **Verification**: Can check login attempts by hashing input with stored salt and comparing hashes
+2. **Security Monitoring**: Admin can identify weak passwords and take action
+3. **Audit Trail**: Track security metrics across all users
+4. **Re-salting**: Can upgrade weak hashes later without knowing original password
+
+---
+
+**Key Security Principles:**
+
+1. **One-way transformation**: Password → Hash (irreversible)
+2. **Unique salts**: Different hash for same password across users
+3. **Secure storage**: Never store plain passwords
+4. **Server-side processing**: All hashing happens on backend (not in browser)
+5. **Multiple layers**: Hash + salt + score + breach check = defense in depth
+
 #### Login Verification Flow
 
 ```
@@ -496,18 +774,25 @@ Example:
 **Logic:**
 
 ```python
-# Common breached passwords list
+# Common breached passwords list (local)
 common_passwords = ['123456', 'password', 'qwerty', 'abc123', ...]
 
 # Check during registration
 if password.lower() in common_passwords:
     breach_status = 'BREACHED'
+
+# Additionally check Have I Been Pwned API
+is_pwned, pwned_count = check_password_pwned(password)
+if is_pwned:
+    breach_status = 'BREACHED'
+    print(f"Password found in {pwned_count:,} breaches")
 ```
 
 **How It Works:**
-1. Compare password against known breach databases
-2. Check hash against Have I Been Pwned (HIBP) API (if integrated)
-3. Flag users with commonly breached passwords
+1. Compare password against local breach database (fast, offline)
+2. Query Have I Been Pwned API for real-time breach checking (850+ million passwords)
+3. Use k-Anonymity model to protect privacy (only 5-char hash prefix sent)
+4. Flag users with commonly breached passwords
 
 ### 6.4 Re-Salt Management
 
