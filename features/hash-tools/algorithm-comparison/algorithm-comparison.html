@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash Algorithm Comparison - SOC Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../../shared/css/nav-styles.css">
+    <link rel="stylesheet" href="../../../shared/css/ux-enhancements.css">
+    <link rel="stylesheet" href="algorithm-comparison.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><a href="../../../index.html"><i class="fas fa-shield-halved"></i> SOC Platform</a></h4>
+            <p>Security Operations Center</p>
+        </div>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">Main Navigation</div>
+            <a href="../../../index.html" class="nav-item">
+                <i class="fas fa-user-plus"></i> Registration
+            </a>
+            <a href="../../../backend/dashboard.html" class="nav-item">
+                <i class="fas fa-database"></i> Backend Dashboard
+            </a>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">Security Tools</div>
+            
+            <a href="#" class="nav-item" onclick="toggleSubNav('hashSub', event)">
+                <i class="fas fa-hashtag"></i> Hash Tools
+                <i class="fas fa-chevron-down nav-toggle open" id="hashToggle"></i>
+            </a>
+            <div class="sub-nav show" id="hashSub">
+                <a href="../breach-checker/breach-checker.html" class="sub-nav-item">
+                    <i class="fas fa-user-secret"></i> Password Breach Checker
+                </a>
+                <a href="algorithm-comparison.html" class="sub-nav-item" style="font-weight: 600; color: var(--primary);">
+                    <i class="fas fa-balance-scale"></i> Algorithm Comparison
+                </a>
+                <a href="../salt-generator/salt-generator.html" class="sub-nav-item">
+                    <i class="fas fa-key"></i> Salt Generator
+                </a>
+                <a href="../file-hash/file-hash.html" class="sub-nav-item">
+                    <i class="fas fa-fingerprint"></i> Hash Generator
+                </a>
+                <a href="../hash-verification/hash-verification.html" class="sub-nav-item">
+                    <i class="fas fa-check-double"></i> Hash Verification
+                </a>
+                <a href="../hash-identifier/hash-identifier.html" class="sub-nav-item">
+                    <i class="fas fa-search"></i> Hash Identifier
+                </a>
+            </div>
+
+            <a href="../../encryption/encryption.html" class="nav-item">
+                <i class="fas fa-lock"></i> Encryption Tools
+            </a>
+
+            <a href="#" class="nav-item" onclick="toggleSubNav('utilitySub', event)">
+                <i class="fas fa-tools"></i> Utility Tools
+                <i class="fas fa-chevron-down nav-toggle" id="utilityToggle"></i>
+            </a>
+            <div class="sub-nav" id="utilitySub">
+                <a href="../../password-generator/password-generator.html" class="sub-nav-item">
+                    <i class="fas fa-key"></i> Password Generator
+                </a>
+                <a href="../../base64-tool/base64-tool.html" class="sub-nav-item">
+                    <i class="fas fa-code"></i> Base64 Encoder/Decoder
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="page-title">
+                <i class="fas fa-balance-scale" style="font-size: 1.5rem; color: var(--primary);"></i>
+                <h2>Hash Algorithm Comparison</h2>
+            </div>
+            <span class="status-badge primary">
+                <i class="fas fa-shield-check"></i> Client-Side Processing
+            </span>
+        </div>
+
+        <div class="content-area">
+            <div class="info-box">
+                <div class="info-box-title">
+                    <i class="fas fa-info-circle"></i> About Hash Algorithms
+                </div>
+                <div class="info-box-content">
+                    Compare different cryptographic hash algorithms side-by-side. Hash functions create fixed-size outputs from variable-size inputs. Each algorithm has different security levels and use cases.
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <div class="quick-actions-title">
+                    <i class="fas fa-bolt"></i> Quick Actions
+                </div>
+                <button class="btn-example" onclick="fillExample('compareInput', 'text')">
+                    <i class="fas fa-lightbulb"></i> Load Example Text
+                </button>
+                <button class="btn-example" onclick="fillExample('compareInput', 'hashPassword')">
+                    <i class="fas fa-key"></i> Load Example Password
+                </button>
+                <button class="btn-example" onclick="fillExample('compareSalt', 'salt')">
+                    <i class="fas fa-salt-shaker"></i> Add Salt
+                </button>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-card-header">
+                    <i class="fas fa-balance-scale"></i>
+                    <h3>Compare Hash Algorithms</h3>
+                </div>
+                <div class="tool-card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-keyboard"></i> Enter Text or Password
+                                <span class="example-badge">Try an example →</span>
+                            </label>
+                            <input type="text" class="form-control" id="compareInput" placeholder="Type any text to hash...">
+                            <small class="text-muted">This text will be hashed using selected algorithms</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-key"></i> Salt (Optional)
+                            </label>
+                            <input type="text" class="form-control" id="compareSalt" placeholder="Add salt for extra security...">
+                            <small class="text-muted">Salt is prepended to text before hashing</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-list-check"></i> Select Algorithms to Compare
+                        </label>
+                        <div class="algorithm-checkboxes">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="checkMD5" checked>
+                                <label class="form-check-label" for="checkMD5">
+                                    <strong>MD5</strong> <span class="badge bg-danger">Insecure</span>
+                                    <small class="d-block">128-bit • Fast but vulnerable to collisions</small>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="checkSHA1" checked>
+                                <label class="form-check-label" for="checkSHA1">
+                                    <strong>SHA-1</strong> <span class="badge bg-warning">Deprecated</span>
+                                    <small class="d-block">160-bit • Avoid for new applications</small>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="checkSHA256" checked>
+                                <label class="form-check-label" for="checkSHA256">
+                                    <strong>SHA-256</strong> <span class="badge bg-success">Recommended</span>
+                                    <small class="d-block">256-bit • Industry standard</small>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="checkSHA512">
+                                <label class="form-check-label" for="checkSHA512">
+                                    <strong>SHA-512</strong> <span class="badge bg-success">Strong</span>
+                                    <small class="d-block">512-bit • Maximum security</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-lg" onclick="compareHashAlgorithms()">
+                        <i class="fas fa-play"></i> Generate & Compare Hashes
+                    </button>
+
+                    <div id="comparisonResults"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../../../shared/js/ux-helper.js"></script>
+    <script src="algorithm-comparison.js"></script>
+</body>
+</html>

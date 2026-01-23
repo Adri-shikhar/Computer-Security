@@ -403,7 +403,7 @@
         <nav class="nav-section">
             <div class="nav-section-title">Main Navigation</div>
             <a href="../../index.html" class="nav-item">
-                <i class="fas fa-home"></i> Home
+                <i class="fas fa-user-plus"></i> Registration
             </a>
             <a href="../../backend/dashboard.html" class="nav-item">
                 <i class="fas fa-database"></i> Backend Dashboard
@@ -411,32 +411,49 @@
         </nav>
 
         <nav class="nav-section">
-            <div class="nav-section-title">Hash Tools</div>
+            <div class="nav-section-title">Security Tools</div>
             
-            <a href="#" class="sub-nav-item" onclick="showTool('comparison')" style="padding-left: 1.5rem;">
-                <i class="fas fa-balance-scale"></i> Algorithm Comparison
+            <a href="#" class="nav-item active" onclick="toggleSubNav('hashSub', event)">
+                <i class="fas fa-hashtag"></i> Hash Tools
+                <i class="fas fa-chevron-down nav-toggle open" id="hashToggle"></i>
             </a>
-            <a href="#" class="sub-nav-item" onclick="showTool('saltgen')" style="padding-left: 1.5rem;">
-                <i class="fas fa-key"></i> Salt Generator
+            <div class="sub-nav show" id="hashSub">
+                <a href="breach-checker/breach-checker.html" class="sub-nav-item">
+                    <i class="fas fa-user-secret"></i> Password Breach Checker
+                </a>
+                <a href="algorithm-comparison/algorithm-comparison.html" class="sub-nav-item">
+                    <i class="fas fa-balance-scale"></i> Algorithm Comparison
+                </a>
+                <a href="salt-generator/salt-generator.html" class="sub-nav-item">
+                    <i class="fas fa-key"></i> Salt Generator
+                </a>
+                <a href="file-hash/file-hash.html" class="sub-nav-item">
+                    <i class="fas fa-fingerprint"></i> Hash Generator
+                </a>
+                <a href="hash-verification/hash-verification.html" class="sub-nav-item">
+                    <i class="fas fa-check-double"></i> Hash Verification
+                </a>
+                <a href="hash-identifier/hash-identifier.html" class="sub-nav-item">
+                    <i class="fas fa-search"></i> Hash Identifier
+                </a>
+            </div>
+
+            <a href="../encryption/encryption.html" class="nav-item">
+                <i class="fas fa-lock"></i> Encryption Tools
             </a>
-            <a href="#" class="sub-nav-item" onclick="showTool('filehash')" style="padding-left: 1.5rem;">
-                <i class="fas fa-file-alt"></i> File Hash Calculator
+
+            <a href="#" class="nav-item" onclick="toggleSubNav('utilitySub', event)">
+                <i class="fas fa-tools"></i> Utility Tools
+                <i class="fas fa-chevron-down nav-toggle" id="utilityToggle"></i>
             </a>
-            <a href="#" class="sub-nav-item" onclick="showTool('verify')" style="padding-left: 1.5rem;">
-                <i class="fas fa-check-double"></i> Hash Verifier
-            </a>
-            <a href="#" class="sub-nav-item" onclick="showTool('breach')" style="padding-left: 1.5rem;">
-                <i class="fas fa-user-secret"></i> Breach Checker
-            </a>
-            <a href="#" class="sub-nav-item" onclick="showTool('identifier')" style="padding-left: 1.5rem;">
-                <i class="fas fa-search"></i> Hash Identifier
-            </a>
-            <a href="#" class="sub-nav-item" onclick="showTool('entropy')" style="padding-left: 1.5rem;">
-                <i class="fas fa-chart-bar"></i> Entropy Analyzer
-            </a>
-            <a href="#" class="sub-nav-item" onclick="showTool('rotation')" style="padding-left: 1.5rem;">
-                <i class="fas fa-sync-alt"></i> Rotation Detector
-            </a>
+            <div class="sub-nav" id="utilitySub">
+                <a href="../password-generator/password-generator.html" class="sub-nav-item">
+                    <i class="fas fa-key"></i> Password Generator
+                </a>
+                <a href="../base64-tool/base64-tool.html" class="sub-nav-item">
+                    <i class="fas fa-code"></i> Base64 Encoder/Decoder
+                </a>
+            </div>
         </nav>
     </aside>
 
@@ -714,40 +731,58 @@
             <div class="tool-card" id="tool-breach">
                 <div class="tool-card-header">
                     <i class="fas fa-user-secret" style="color: var(--danger);"></i>
-                    <h3>🔓 Password Breach Checker</h3>
+                    <h3>🔓 Password Breach Checker - HIBP Integration</h3>
                 </div>
                 <div class="tool-card-body">
-                    <div class="alert alert-warning mb-3">
-                        <i class="fas fa-shield-alt me-2"></i>
-                        <strong>Privacy First:</strong> Uses k-anonymity - only the first 5 characters of your SHA-1 hash are sent. Your full password is NEVER transmitted.
+                    <div class="alert alert-info mb-3">
+                        <h5><i class="fas fa-shield-alt"></i> Privacy-First Design</h5>
+                        <p style="margin-bottom: 0.5rem;"><strong>k-Anonymity Model:</strong> Your password is NEVER sent over the network!</p>
+                        <ul style="margin: 0; padding-left: 1.5rem; font-size: 0.9rem;">
+                            <li>Password hashed locally with SHA-1</li>
+                            <li>Only first 5 characters of hash sent to API</li>
+                            <li>Checked against 600M+ breached passwords</li>
+                            <li>Results verified locally on your device</li>
+                        </ul>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label"><i class="fas fa-lock"></i> Password to Check</label>
-                        <div class="input-group">
-                            <input type="password" class="form-control" id="breachPassword" placeholder="Enter password to check...">
-                            <button class="btn btn-outline-secondary" type="button" onclick="toggleBreachPassword()">
-                                <i class="fas fa-eye" id="breachEyeIcon"></i>
-                            </button>
+                    <div class="mb-3 breach-checker-input">
+                        <label class="form-label"><i class="fas fa-lock"></i> Enter Password to Check</label>
+                        <input type="password" class="form-control" id="breachPassword" placeholder="Type or paste password here..." style="font-size: 1.1rem; padding: 0.75rem;">
+                        <small class="text-muted">Checks against Have I Been Pwned (Troy Hunt) - 12+ billion breached credentials</small>
+                    </div>
+
+                    <div class="breach-checker-actions">
+                        <button class="btn btn-danger btn-lg" onclick="checkPasswordBreach()" style="padding: 0.75rem 2rem;">
+                            <i class="fas fa-search"></i> Check Password Security
+                        </button>
+                        <button class="btn btn-success btn-lg" onclick="generateSecurePassword()" style="padding: 0.75rem 2rem;">
+                            <i class="fas fa-random"></i> Generate Secure Password
+                        </button>
+                    </div>
+
+                    <div class="breach-result" id="breachResult"></div>
+
+                    <div class="mt-4 p-3" style="background: linear-gradient(135deg, #eff6ff 0%, #f3f4f6 100%); border-radius: 12px; border-left: 4px solid var(--primary);">
+                        <h6 style="margin-bottom: 0.75rem;"><i class="fas fa-info-circle"></i> How k-Anonymity Protects You:</h6>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.875rem;">
+                            <div>
+                                <strong>1️⃣ Local Hashing</strong><br>
+                                <span style="color: var(--text-muted);">SHA-1 computed on your device</span>
+                            </div>
+                            <div>
+                                <strong>2️⃣ Partial Match</strong><br>
+                                <span style="color: var(--text-muted);">Only 5 chars sent to server</span>
+                            </div>
+                            <div>
+                                <strong>3️⃣ Bulk Response</strong><br>
+                                <span style="color: var(--text-muted);">Server returns ~500 hashes</span>
+                            </div>
+                            <div>
+                                <strong>4️⃣ Local Verify</strong><br>
+                                <span style="color: var(--text-muted);">Match checked on your device</span>
+                            </div>
                         </div>
-                        <small class="text-muted">Checks against Have I Been Pwned database (12+ billion breached passwords)</small>
                     </div>
-
-                    <div class="mb-3 p-3" style="background: var(--bg-secondary); border-radius: 8px;">
-                        <h6><i class="fas fa-question-circle"></i> How k-Anonymity Works:</h6>
-                        <ol style="font-size: 0.85rem; margin: 0; padding-left: 1.25rem;">
-                            <li>Your password is hashed with SHA-1 locally</li>
-                            <li>Only the first 5 chars of the hash are sent to the API</li>
-                            <li>API returns all hashes starting with those 5 chars</li>
-                            <li>We check locally if your full hash is in the list</li>
-                        </ol>
-                    </div>
-
-                    <button class="btn btn-danger" onclick="checkBreach()">
-                        <i class="fas fa-search"></i> Check for Breaches
-                    </button>
-                    <button class="btn btn-outline-secondary" onclick="demonstrateBreach()">
-                        <i class="fas fa-flask"></i> Demo with "password123"
                     </button>
 
                     <div class="results-area" id="breachResults"></div>
@@ -819,6 +854,7 @@
         // Toggle sub-navigation
         function toggleSubNav(id, event) {
             event.preventDefault();
+            event.stopPropagation();
             const subNav = document.getElementById(id);
             const allSubNavs = document.querySelectorAll('.sub-nav');
             const toggle = event.currentTarget.querySelector('.nav-toggle');

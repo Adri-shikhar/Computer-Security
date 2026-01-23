@@ -73,15 +73,21 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
     
-    # Create users table with salt and resalt tracking
+    # Create users table with multi-hash support
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
-            algorithm TEXT DEFAULT 'Argon2id',
+            algorithm TEXT DEFAULT 'Multi-Hash',
             salt TEXT NOT NULL,
             password_hash TEXT NOT NULL,
+            hash_md5 TEXT,
+            hash_sha1 TEXT,
+            hash_sha256 TEXT,
+            hash_sha512 TEXT,
+            security_score INTEGER DEFAULT 0,
+            breach_status TEXT DEFAULT 'UNKNOWN',
             resalt_count INTEGER DEFAULT 0,
             last_resalt TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -94,9 +100,15 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
-            algorithm TEXT DEFAULT 'Argon2id',
+            algorithm TEXT DEFAULT 'Multi-Hash',
             salt TEXT NOT NULL,
             password_hash TEXT NOT NULL,
+            hash_md5 TEXT,
+            hash_sha1 TEXT,
+            hash_sha256 TEXT,
+            hash_sha512 TEXT,
+            security_score INTEGER DEFAULT 0,
+            breach_status TEXT DEFAULT 'UNKNOWN',
             resalt_count INTEGER DEFAULT 0,
             last_resalt TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -233,13 +245,15 @@ def serve_static(path):
 
 @app.route('/api/register', methods=['POST'])
 def register():
-    """Register a new user with Argon2 password hashing and salt"""
+    """Register a new user with Multi-Hash authentication"""
     try:
         data = request.get_json()
         
         name = data.get('name', '').strip()
         email = data.get('email', '').strip()
         password = data.get('password', '')
+        hashes = data.get('hashes', {})
+        security_score = data.get('securityScore', 0)
         
         # Validation
         if not name or not email or not password:
@@ -248,9 +262,19 @@ def register():
                 'message': 'All fields are required'
             }), 400
         
-        # Generate salt and hash password
+        # Generate salt and primary hash (Argon2)
         salt = generate_salt(16)
         password_hash, _ = hash_password_argon2(password, salt)
+        
+        # Get multi-hash values
+        hash_md5 = hashes.get('md5', '')
+        hash_sha1 = hashes.get('sha1', '')
+        hash_sha256 = hashes.get('sha256', '')
+        hash_sha512 = hashes.get('sha512', '')
+        
+        # Determine breach status
+        common_passwords = ['123456', 'password', '123456789', '12345678', 'qwerty', 'abc123']
+        breach_status = 'BREACHED' if password.lower() in common_passwords else ('WEAK' if security_score < 50 else 'SECURE')
         
         conn = get_db()
         cursor = conn.cursor()
@@ -264,11 +288,15 @@ def register():
                 'message': 'Email already registered'
             }), 400
         
-        # Insert new user
+        # Insert new user with multi-hash
         cursor.execute('''
-            INSERT INTO users (name, email, algorithm, salt, password_hash, resalt_count)
-            VALUES (?, ?, 'Argon2id', ?, ?, 0)
-        ''', (name, email, salt, password_hash))
+            INSERT INTO users (
+                name, email, algorithm, salt, password_hash,
+                hash_md5, hash_sha1, hash_sha256, hash_sha512,
+                security_score, breach_status, resalt_count
+            )
+            VALUES (?, ?, 'Multi-Hash', ?, ?, ?, ?, ?, ?, ?, ?, 0)
+        ''', (name, email, salt, password_hash, hash_md5, hash_sha1, hash_sha256, hash_sha512, security_score, breach_status))
         
         # Keep only last 30 users
         cursor.execute('''
@@ -281,20 +309,28 @@ def register():
         user_id = cursor.lastrowid
         conn.close()
         
-        # Truncate hash for display (Argon2 hashes are long)
+        # Truncate hash for display
         display_hash = password_hash[:50] + "..." if len(password_hash) > 50 else password_hash
         
         return jsonify({
             'success': True,
-            'message': 'Registration successful with Argon2id!',
+            'message': 'Registration successful with Multi-Hash Authentication!',
             'user': {
                 'id': user_id,
                 'name': name,
                 'email': email,
-                'algorithm': 'Argon2id',
+                'algorithm': 'Multi-Hash',
                 'salt': salt,
                 'passwordHash': display_hash,
-                'fullHash': password_hash
+                'fullHash': password_hash,
+                'securityScore': security_score,
+                'breachStatus': breach_status,
+                'hashes': {
+                    'md5': hash_md5,
+                    'sha1': hash_sha1,
+                    'sha256': hash_sha256,
+                    'sha512': hash_sha512
+                }
             }
         })
         
@@ -312,7 +348,9 @@ def get_users():
         cursor = conn.cursor()
         
         cursor.execute('''
-            SELECT id, name, email, algorithm, salt, password_hash, resalt_count, last_resalt, created_at 
+            SELECT id, name, email, algorithm, salt, password_hash,
+                   hash_md5, hash_sha1, hash_sha256, hash_sha512,
+                   security_score, breach_status, resalt_count, last_resalt, created_at 
             FROM users 
             ORDER BY id DESC 
             LIMIT 30
@@ -332,6 +370,12 @@ def get_users():
                 'salt': row['salt'],
                 'passwordHash': display_hash,
                 'fullHash': full_hash,
+                'hashMD5': row['hash_md5'] or '',
+                'hashSHA1': row['hash_sha1'] or '',
+                'hashSHA256': row['hash_sha256'] or '',
+                'hashSHA512': row['hash_sha512'] or '',
+                'securityScore': row['security_score'] or 0,
+                'breachStatus': row['breach_status'] or 'UNKNOWN',
                 'resaltCount': row['resalt_count'],
                 'lastResalt': row['last_resalt'],
                 'createdAt': row['created_at']

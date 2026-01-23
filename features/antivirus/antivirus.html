@@ -6,7 +6,291 @@
     <title>Advanced Malware Protection - Security Operations Center</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+    <link rel="stylesheet" href="../../shared/css/nav-styles.css">
+    <link rel="stylesheet" href="antivirus.css">
+</head>
+<body>
+    <!-- Mobile Toggle -->
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Left Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><a href="../../index.html"><i class="fas fa-shield-halved"></i> SOC Platform</a></h4>
+            <p>Security Operations Center</p>
+        </div>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">Main Navigation</div>
+            <a href="../../index.html" class="nav-item">
+                <i class="fas fa-user-plus"></i> Registration
+            </a>
+            <a href="../../backend/dashboard.html" class="nav-item">
+                <i class="fas fa-database"></i> Backend Dashboard
+            </a>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">Security Tools</div>
+            
+            <a href="#" class="nav-item" onclick="toggleSubNav('hashSub', event)">
+                <i class="fas fa-hashtag"></i> Hash Tools
+                <i class="fas fa-chevron-down nav-toggle" id="hashToggle"></i>
+            </a>
+            <div class="sub-nav" id="hashSub">
+                <a href="../hash-tools/breach-checker/breach-checker.html" class="sub-nav-item">
+                    <i class="fas fa-user-secret"></i> Password Breach Checker
+                </a>
+                <a href="../hash-tools/algorithm-comparison/algorithm-comparison.html" class="sub-nav-item">
+                    <i class="fas fa-balance-scale"></i> Algorithm Comparison
+                </a>
+                <a href="../hash-tools/salt-generator/salt-generator.html" class="sub-nav-item">
+                    <i class="fas fa-key"></i> Salt Generator
+                </a>
+                <a href="../hash-tools/file-hash/file-hash.html" class="sub-nav-item">
+                    <i class="fas fa-fingerprint"></i> Hash Generator
+                </a>
+                <a href="../hash-tools/hash-verification/hash-verification.html" class="sub-nav-item">
+                    <i class="fas fa-check-double"></i> Hash Verification
+                </a>
+                <a href="../hash-tools/hash-identifier/hash-identifier.html" class="sub-nav-item">
+                    <i class="fas fa-search"></i> Hash Identifier
+                </a>
+            </div>
+
+            <a href="../encryption/encryption.html" class="nav-item">
+                <i class="fas fa-lock"></i> Encryption Tools
+            </a>
+
+            <a href="#" class="nav-item" onclick="toggleSubNav('utilitySub', event)">
+                <i class="fas fa-tools"></i> Utility Tools
+                <i class="fas fa-chevron-down nav-toggle" id="utilityToggle"></i>
+            </a>
+            <div class="sub-nav" id="utilitySub">
+                <a href="../password-generator/password-generator.html" class="sub-nav-item">
+                    <i class="fas fa-key"></i> Password Generator
+                </a>
+                <a href="../base64-tool/base64-tool.html" class="sub-nav-item">
+                    <i class="fas fa-code"></i> Base64 Encoder/Decoder
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="page-title">
+                <i class="fas fa-shield-virus" style="font-size: 1.5rem; color: var(--warning);"></i>
+                <h2>Advanced Malware Protection</h2>
+            </div>
+            <span style="background: #d1fae5; color: #059669; padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600;">
+                <i class="fas fa-shield-check"></i> Protected
+            </span>
+        </div>
+
+        <div class="content-area">
+            <!-- Tool 1: Crypto-Canary Shield -->
+            <section class="tool-section" id="canary">
+                <div class="tool-header">
+                    <h2><i class="fas fa-crow" style="color: var(--warning);"></i> Crypto-Canary Ransomware Shield</h2>
+                    <span class="status-badge inactive" id="canaryStatus">INACTIVE</span>
+                </div>
+                <div class="tool-body">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="tool-description">
+                                <h4>🛡️ Bait File Defense System</h4>
+                                <p>Deploys hidden "canary" files across critical directories. If ransomware attempts to encrypt these bait files, the malicious process is instantly terminated before it can damage your real data.</p>
+                            </div>
+
+                            <div class="principle-box p2">
+                                <strong><i class="fas fa-balance-scale"></i> CEH Principle P2: Speed vs False Positives</strong>
+                                <p>Must terminate threats in &lt;100ms to prevent encryption, but cannot block legitimate backup software or auto-save features.</p>
+                            </div>
+
+                            <div class="control-row">
+                                <div class="control-group">
+                                    <label><i class="fas fa-sliders"></i> Protection Sensitivity</label>
+                                    <select id="canarySensitivity">
+                                        <option value="low">Low - 10 canary files</option>
+                                        <option value="medium" selected>Medium - 25 canary files</option>
+                                        <option value="high">High - 50 canary files</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-warning" onclick="toggleCanaryShield()">
+                                <i class="fas fa-play"></i> <span id="canaryBtnText">Activate Shield</span>
+                            </button>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="stats-panel">
+                                <h5><i class="fas fa-chart-line"></i> Statistics</h5>
+                                <div class="stat-item">
+                                    <span class="stat-label">Bait Files</span>
+                                    <span class="stat-value warning" id="baitFilesCount">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Processes Monitored</span>
+                                    <span class="stat-value info" id="processesMonitored">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Threats Blocked</span>
+                                    <span class="stat-value danger" id="threatsBlocked">0</span>
+                                </div>
+                                <div class="log-panel" id="canaryLog">
+                                    <div class="text-muted">Waiting for activation...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tool 2: Fileless Malware Hunter -->
+            <section class="tool-section" id="fileless">
+                <div class="tool-header">
+                    <h2><i class="fas fa-memory" style="color: var(--accent);"></i> Fileless Malware Hunter</h2>
+                    <span class="status-badge inactive" id="filelessStatus">INACTIVE</span>
+                </div>
+                <div class="tool-body">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="tool-description">
+                                <h4>🧠 Memory-Based Threat Detection</h4>
+                                <p>Monitors RAM usage patterns and PowerShell execution logs to detect malicious scripts running in memory without touching the hard drive. Defends against advanced persistent threats (APTs).</p>
+                            </div>
+
+                            <div class="principle-box p3">
+                                <strong><i class="fas fa-brain"></i> CEH Principle P3: Heuristic Analysis</strong>
+                                <p>Requires analyzing behavior patterns, not just scanning files. Uses pattern matching to identify suspicious script execution and memory injection.</p>
+                            </div>
+
+                            <div class="control-row">
+                                <div class="control-group">
+                                    <label><i class="fas fa-microchip"></i> RAM Threshold</label>
+                                    <select id="ramThreshold">
+                                        <option value="50">50 MB - Light</option>
+                                        <option value="100" selected>100 MB - Standard</option>
+                                        <option value="200">200 MB - Aggressive</option>
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label><i class="fas fa-terminal"></i> PowerShell Log Depth</label>
+                                    <select id="psLogDepth">
+                                        <option value="basic">Basic</option>
+                                        <option value="detailed" selected>Detailed</option>
+                                        <option value="forensic">Forensic</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-primary" onclick="toggleFilelessHunter()">
+                                <i class="fas fa-play"></i> <span id="filelessBtnText">Start Hunter</span>
+                            </button>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="stats-panel">
+                                <h5><i class="fas fa-microchip"></i> Memory Analysis</h5>
+                                <div class="stat-item">
+                                    <span class="stat-label">Suspicious Processes</span>
+                                    <span class="stat-value warning" id="suspiciousProcesses">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">PowerShell Scripts</span>
+                                    <span class="stat-value info" id="psScriptsDetected">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Memory Injections</span>
+                                    <span class="stat-value danger" id="memoryInjections">0</span>
+                                </div>
+                                <div class="log-panel" id="filelessLog">
+                                    <div class="text-muted">Hunter inactive...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tool 3: USB Condom -->
+            <section class="tool-section" id="usb">
+                <div class="tool-header">
+                    <h2><i class="fas fa-usb" style="color: var(--success);"></i> USB Condom - Device Protection</h2>
+                    <span class="status-badge inactive" id="usbStatus">INACTIVE</span>
+                </div>
+                <div class="tool-body">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="tool-description">
+                                <h4>🔌 USB Threat Prevention</h4>
+                                <p>Forces "Read-Only" mode on all new USB devices until they pass rigorous isolated scanning or receive admin approval. Prevents BadUSB, Stuxnet-style attacks, and autorun malware.</p>
+                            </div>
+
+                            <div class="principle-box p2">
+                                <strong><i class="fas fa-balance-scale"></i> CEH Principle P2: Usability vs Security</strong>
+                                <p>Users want instant USB access, but security requires verification delays. Balance convenience with protection through configurable scan depths.</p>
+                            </div>
+
+                            <div class="control-row">
+                                <div class="control-group">
+                                    <label><i class="fas fa-shield-alt"></i> Default USB Mode</label>
+                                    <select id="usbDefaultMode">
+                                        <option value="blocked">Blocked - No access</option>
+                                        <option value="readonly" selected>Read-Only</option>
+                                        <option value="prompt">Prompt User</option>
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label><i class="fas fa-search"></i> Scan Depth</label>
+                                    <select id="usbScanDepth">
+                                        <option value="quick">Quick (30s)</option>
+                                        <option value="standard" selected>Standard (2 min)</option>
+                                        <option value="deep">Deep (5 min)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-warning" onclick="toggleUSBProtection()">
+                                <i class="fas fa-play"></i> <span id="usbBtnText">Enable Protection</span>
+            </button>
+                            <button class="btn btn-info" onclick="simulateUSBInsert()" style="margin-left: 0.5rem;">
+                                <i class="fas fa-usb"></i> Simulate USB Insert
+                            </button>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="stats-panel">
+                                <h5><i class="fas fa-shield-alt"></i> USB Monitor</h5>
+                                <div class="stat-item">
+                                    <span class="stat-label">Devices Detected</span>
+                                    <span class="stat-value info" id="usbDevicesDetected">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Blocked Attempts</span>
+                                    <span class="stat-value danger" id="usbBlockedAttempts">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Approved Devices</span>
+                                    <span class="stat-value success" id="usbApprovedDevices">0</span>
+                                </div>
+                                <div class="log-panel" id="usbLog">
+                                    <div class="text-muted">USB protection disabled...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="antivirus.js"></script>
+</body>
+</html>
         :root {
             --primary: #2563eb;
             --primary-dark: #1e40af;
@@ -695,6 +979,7 @@
         // Toggle sub-navigation
         function toggleSubNav(id, event) {
             event.preventDefault();
+            event.stopPropagation();
             const subNav = document.getElementById(id);
             const allSubNavs = document.querySelectorAll('.sub-nav');
             const toggle = event.currentTarget.querySelector('.nav-toggle');

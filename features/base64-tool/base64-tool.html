@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64 Encoder/Decoder - SOC Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../shared/css/nav-styles.css">
+    <link rel="stylesheet" href="../../shared/css/ux-enhancements.css">
+    <link rel="stylesheet" href="base64-tool.css">
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><a href="../../index.html"><i class="fas fa-shield-halved"></i> SOC Platform</a></h4>
+            <p>Security Operations Center</p>
+        </div>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">Main Navigation</div>
+            <a href="../../index.html" class="nav-item">
+                <i class="fas fa-user-plus"></i> Registration
+            </a>
+            <a href="../../backend/dashboard.html" class="nav-item">
+                <i class="fas fa-database"></i> Backend Dashboard
+            </a>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">Security Tools</div>
+            
+            <a href="#" class="nav-item" onclick="toggleSubNav('hashSub', event)">
+                <i class="fas fa-hashtag"></i> Hash Tools
+                <i class="fas fa-chevron-down nav-toggle" id="hashToggle"></i>
+            </a>
+            <div class="sub-nav" id="hashSub">
+                <a href="../hash-tools/breach-checker/breach-checker.html" class="sub-nav-item">
+                    <i class="fas fa-user-secret"></i> Password Breach Checker
+                </a>
+                <a href="../hash-tools/algorithm-comparison/algorithm-comparison.html" class="sub-nav-item">
+                    <i class="fas fa-balance-scale"></i> Algorithm Comparison
+                </a>
+                <a href="../hash-tools/salt-generator/salt-generator.html" class="sub-nav-item">
+                    <i class="fas fa-key"></i> Salt Generator
+                </a>
+                <a href="../hash-tools/file-hash/file-hash.html" class="sub-nav-item">
+                    <i class="fas fa-fingerprint"></i> Hash Generator
+                </a>
+                <a href="../hash-tools/hash-verification/hash-verification.html" class="sub-nav-item">
+                    <i class="fas fa-check-double"></i> Hash Verification
+                </a>
+                <a href="../hash-tools/hash-identifier/hash-identifier.html" class="sub-nav-item">
+                    <i class="fas fa-search"></i> Hash Identifier
+                </a>
+            </div>
+
+            <a href="../encryption/encryption.html" class="nav-item">
+                <i class="fas fa-lock"></i> Encryption Tools
+            </a>
+
+            <a href="#" class="nav-item" onclick="toggleSubNav('utilitySub', event)">
+                <i class="fas fa-tools"></i> Utility Tools
+                <i class="fas fa-chevron-down nav-toggle open" id="utilityToggle"></i>
+            </a>
+            <div class="sub-nav show" id="utilitySub">
+                <a href="../password-generator/password-generator.html" class="sub-nav-item">
+                    <i class="fas fa-key"></i> Password Generator
+                </a>
+                <a href="base64-tool.html" class="sub-nav-item active">
+                    <i class="fas fa-code"></i> Base64 Encoder/Decoder
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="page-title">
+                <i class="fas fa-code" style="font-size: 1.5rem; color: var(--primary);"></i>
+                <h2>Base64 Encoder / Decoder</h2>
+            </div>
+            <span class="status-badge primary">
+                <i class="fas fa-shield-check"></i> Client-Side Only
+            </span>
+        </div>
+
+        <div class="content-area">
+            <div class="info-box">
+                <div class="info-box-title">
+                    <i class="fas fa-info-circle"></i> About Base64 Encoding
+                </div>
+                <div class="info-box-content">
+                    Base64 encoding converts binary data into ASCII text format using 64 printable characters. Commonly used for embedding images in HTML/CSS, JWT tokens, API authentication, and transmitting data over text-based protocols.
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <div class="quick-actions-title">
+                    <i class="fas fa-bolt"></i> Quick Actions
+                </div>
+                <button class="btn-example" onclick="loadExample('text')">
+                    <i class="fas fa-font"></i> Example Text
+                </button>
+                <button class="btn-example" onclick="loadExample('json')">
+                    <i class="fas fa-code"></i> Example JSON
+                </button>
+                <button class="btn-example" onclick="loadExample('url')">
+                    <i class="fas fa-link"></i> Example URL
+                </button>
+                <button class="btn-example" onclick="loadExample('jwt')">
+                    <i class="fas fa-key"></i> Example JWT
+                </button>
+            </div>
+
+            <!-- Text Encoding/Decoding -->
+            <div class="tool-card">
+                <div class="tool-card-header">
+                    <i class="fas fa-font"></i>
+                    <h3>Text Encoding / Decoding</h3>
+                </div>
+                <div class="tool-card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-align-left"></i> Plain Text Input
+                            </label>
+                            <textarea class="form-control" id="plainText" rows="10" placeholder="Enter text to encode..."></textarea>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn btn-primary" onclick="encodeText()">
+                                    <i class="fas fa-arrow-right"></i> Encode to Base64
+                                </button>
+                                <button class="btn btn-secondary" onclick="clearInput('plainText')">
+                                    <i class="fas fa-eraser"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-code"></i> Base64 Encoded Output
+                            </label>
+                            <textarea class="form-control" id="encodedText" rows="10" placeholder="Encoded output will appear here..." readonly></textarea>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn btn-success" onclick="copyToClipboard(document.getElementById('encodedText').value)">
+                                    <i class="fas fa-copy"></i> Copy Encoded
+                                </button>
+                                <button class="btn btn-secondary" onclick="downloadText(document.getElementById('encodedText').value, 'encoded.txt')">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-code"></i> Base64 Encoded Input
+                            </label>
+                            <textarea class="form-control" id="encodedInput" rows="10" placeholder="Enter Base64 to decode..."></textarea>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn btn-warning" onclick="decodeText()">
+                                    <i class="fas fa-arrow-left"></i> Decode from Base64
+                                </button>
+                                <button class="btn btn-secondary" onclick="clearInput('encodedInput')">
+                                    <i class="fas fa-eraser"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-align-left"></i> Decoded Text Output
+                            </label>
+                            <textarea class="form-control" id="decodedText" rows="10" placeholder="Decoded output will appear here..." readonly></textarea>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn btn-success" onclick="copyToClipboard(document.getElementById('decodedText').value)">
+                                    <i class="fas fa-copy"></i> Copy Decoded
+                                </button>
+                                <button class="btn btn-secondary" onclick="downloadText(document.getElementById('decodedText').value, 'decoded.txt')">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Encoding/Decoding -->
+            <div class="tool-card">
+                <div class="tool-card-header">
+                    <i class="fas fa-file-upload"></i>
+                    <h3>File Encoding / Decoding</h3>
+                </div>
+                <div class="tool-card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-upload"></i> Upload File to Encode
+                            </label>
+                            <div class="file-upload-zone" onclick="document.getElementById('fileInput').click()">
+                                <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                                <p><strong>Click to upload file</strong></p>
+                                <p style="font-size: 0.875rem; color: var(--text-muted);">Images, PDFs, any file type</p>
+                                <input type="file" id="fileInput" style="display: none;" onchange="handleFileUpload(event)">
+                            </div>
+                            <div id="fileInfo" style="margin-top: 1rem;"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-code"></i> Encoded File Data
+                            </label>
+                            <textarea class="form-control" id="encodedFile" rows="15" placeholder="Encoded file data will appear here..." readonly></textarea>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn btn-success" onclick="copyToClipboard(document.getElementById('encodedFile').value)">
+                                    <i class="fas fa-copy"></i> Copy
+                                </button>
+                                <button class="btn btn-secondary" onclick="downloadText(document.getElementById('encodedFile').value, 'encoded-file.txt')">
+                                    <i class="fas fa-download"></i> Download Base64
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Options -->
+            <div class="tool-card">
+                <div class="tool-card-header">
+                    <i class="fas fa-cogs"></i>
+                    <h3>Advanced Encoding Options</h3>
+                </div>
+                <div class="tool-card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="option-card">
+                                <h5><i class="fas fa-hashtag"></i> Base64</h5>
+                                <p>Standard Base64 encoding using A-Z, a-z, 0-9, +, /</p>
+                                <code>SGVsbG8gV29ybGQh</code>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="option-card">
+                                <h5><i class="fas fa-link"></i> Base64URL</h5>
+                                <p>URL-safe variant using A-Z, a-z, 0-9, -, _</p>
+                                <code>SGVsbG8gV29ybGQh</code>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="option-card">
+                                <h5><i class="fas fa-code"></i> Hex</h5>
+                                <p>Hexadecimal encoding (0-9, A-F)</p>
+                                <code>48656C6C6F20576F726C6421</code>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-exchange-alt"></i> Select Encoding Format
+                        </label>
+                        <select class="form-control" id="encodingFormat" style="width: auto;">
+                            <option value="base64" selected>Standard Base64</option>
+                            <option value="base64url">Base64URL (URL-safe)</option>
+                            <option value="hex">Hexadecimal</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Use Cases -->
+            <div class="tool-card">
+                <div class="tool-card-header">
+                    <i class="fas fa-lightbulb"></i>
+                    <h3>Common Use Cases</h3>
+                </div>
+                <div class="tool-card-body">
+                    <div class="use-cases">
+                        <div class="use-case-item">
+                            <i class="fas fa-image"></i>
+                            <div>
+                                <strong>Embedding Images in HTML/CSS</strong>
+                                <p>Convert images to Base64 for data URIs</p>
+                                <code>data:image/png;base64,iVBORw0KGgo...</code>
+                            </div>
+                        </div>
+                        <div class="use-case-item">
+                            <i class="fas fa-key"></i>
+                            <div>
+                                <strong>JWT Tokens</strong>
+                                <p>JSON Web Tokens use Base64URL encoding</p>
+                                <code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</code>
+                            </div>
+                        </div>
+                        <div class="use-case-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <div>
+                                <strong>API Authentication</strong>
+                                <p>Basic Auth uses Base64 for credentials</p>
+                                <code>Authorization: Basic dXNlcjpwYXNz</code>
+                            </div>
+                        </div>
+                        <div class="use-case-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <strong>Email Attachments</strong>
+                                <p>MIME email attachments encoded in Base64</p>
+                                <code>Content-Transfer-Encoding: base64</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../../shared/js/ux-helper.js"></script>
+    <script src="base64-tool.js"></script>
+</body>
+</html>

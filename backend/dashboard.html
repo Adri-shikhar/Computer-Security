@@ -408,12 +408,12 @@
         </div>
 
         <nav class="nav-section">
-            <div class="nav-section-title">Navigation</div>
+            <div class="nav-section-title">Main Navigation</div>
             <a href="../index.html" class="nav-item">
-                <i class="fas fa-home"></i> Home
+                <i class="fas fa-user-plus"></i> Registration
             </a>
-            <a href="#" class="nav-item active">
-                <i class="fas fa-chart-pie"></i> Dashboard
+            <a href="dashboard.html" class="nav-item active">
+                <i class="fas fa-database"></i> Backend Dashboard
             </a>
         </nav>
 
@@ -425,37 +425,40 @@
                 <i class="fas fa-chevron-down nav-toggle" id="hashToggle"></i>
             </a>
             <div class="sub-nav" id="hashSub">
-                <a href="../features/hash-tools/hash-tools.html" class="sub-nav-item">
+                <a href="../features/hash-tools/breach-checker/breach-checker.html" class="sub-nav-item">
+                    <i class="fas fa-user-secret"></i> Password Breach Checker
+                </a>
+                <a href="../features/hash-tools/algorithm-comparison/algorithm-comparison.html" class="sub-nav-item">
                     <i class="fas fa-balance-scale"></i> Algorithm Comparison
                 </a>
-                <a href="../features/hash-tools/hash-tools.html" class="sub-nav-item">
+                <a href="../features/hash-tools/salt-generator/salt-generator.html" class="sub-nav-item">
                     <i class="fas fa-key"></i> Salt Generator
                 </a>
-            </div>
-
-            <a href="#" class="nav-item" onclick="toggleSubNav('avSub', event)">
-                <i class="fas fa-shield-virus"></i> Antivirus
-                <i class="fas fa-chevron-down nav-toggle" id="avToggle"></i>
-            </a>
-            <div class="sub-nav" id="avSub">
-                <a href="../features/antivirus/antivirus.html" class="sub-nav-item">
-                    <i class="fas fa-crow"></i> Crypto-Canary Shield
+                <a href="../features/hash-tools/file-hash/file-hash.html" class="sub-nav-item">
+                    <i class="fas fa-fingerprint"></i> Hash Generator
                 </a>
-                <a href="../features/antivirus/antivirus.html" class="sub-nav-item">
-                    <i class="fas fa-memory"></i> Fileless Hunter
+                <a href="../features/hash-tools/hash-verification/hash-verification.html" class="sub-nav-item">
+                    <i class="fas fa-check-double"></i> Hash Verification
+                </a>
+                <a href="../features/hash-tools/hash-identifier/hash-identifier.html" class="sub-nav-item">
+                    <i class="fas fa-search"></i> Hash Identifier
                 </a>
             </div>
 
-            <a href="#" class="nav-item" onclick="toggleSubNav('fwSub', event)">
-                <i class="fas fa-fire"></i> Firewall
-                <i class="fas fa-chevron-down nav-toggle" id="fwToggle"></i>
+            <a href="../features/encryption/encryption.html" class="nav-item">
+                <i class="fas fa-lock"></i> Encryption Tools
             </a>
-            <div class="sub-nav" id="fwSub">
-                <a href="../features/firewall/firewall.html" class="sub-nav-item">
-                    <i class="fas fa-search"></i> Port Scanner
+
+            <a href="#" class="nav-item" onclick="toggleSubNav('utilitySub', event)">
+                <i class="fas fa-tools"></i> Utility Tools
+                <i class="fas fa-chevron-down nav-toggle" id="utilityToggle"></i>
+            </a>
+            <div class="sub-nav" id="utilitySub">
+                <a href="../features/password-generator/password-generator.html" class="sub-nav-item">
+                    <i class="fas fa-key"></i> Password Generator
                 </a>
-                <a href="../features/firewall/firewall.html" class="sub-nav-item">
-                    <i class="fas fa-chart-line"></i> Traffic Monitor
+                <a href="../features/base64-tool/base64-tool.html" class="sub-nav-item">
+                    <i class="fas fa-code"></i> Base64 Encoder/Decoder
                 </a>
             </div>
         </nav>
@@ -619,6 +622,7 @@
         // Toggle sub-navigation
         function toggleSubNav(id, event) {
             event.preventDefault();
+            event.stopPropagation();
             const subNav = document.getElementById(id);
             const toggle = event.currentTarget.querySelector('.nav-toggle');
             

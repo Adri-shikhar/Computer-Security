@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash Identifier - SOC Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../../shared/css/nav-styles.css">
+    <link rel="stylesheet" href="../../../shared/css/ux-enhancements.css">
+    <link rel="stylesheet" href="hash-identifier.css">
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><a href="../../../index.html"><i class="fas fa-shield-halved"></i> SOC Platform</a></h4>
+            <p>Security Operations Center</p>
+        </div>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">Main Navigation</div>
+            <a href="../../../index.html" class="nav-item">
+                <i class="fas fa-user-plus"></i> Registration
+            </a>
+            <a href="../../../backend/dashboard.html" class="nav-item">
+                <i class="fas fa-database"></i> Backend Dashboard
+            </a>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">Security Tools</div>
+            
+            <a href="#" class="nav-item" onclick="toggleSubNav('hashSub', event)">
+                <i class="fas fa-hashtag"></i> Hash Tools
+                <i class="fas fa-chevron-down nav-toggle open" id="hashToggle"></i>
+            </a>
+            <div class="sub-nav show" id="hashSub">
+                <a href="../breach-checker/breach-checker.html" class="sub-nav-item">
+                    <i class="fas fa-user-secret"></i> Password Breach Checker
+                </a>
+                <a href="../algorithm-comparison/algorithm-comparison.html" class="sub-nav-item">
+                    <i class="fas fa-balance-scale"></i> Algorithm Comparison
+                </a>
+                <a href="../salt-generator/salt-generator.html" class="sub-nav-item">
+                    <i class="fas fa-key"></i> Salt Generator
+                </a>
+                <a href="../file-hash/file-hash.html" class="sub-nav-item">
+                    <i class="fas fa-fingerprint"></i> Hash Generator
+                </a>
+                <a href="../hash-verification/hash-verification.html" class="sub-nav-item">
+                    <i class="fas fa-check-double"></i> Hash Verification
+                </a>
+                <a href="hash-identifier.html" class="sub-nav-item" style="font-weight: 600; color: var(--primary);">
+                    <i class="fas fa-search"></i> Hash Identifier
+                </a>
+            </div>
+
+            <a href="../../encryption/encryption.html" class="nav-item">
+                <i class="fas fa-lock"></i> Encryption Tools
+            </a>
+
+            <a href="#" class="nav-item" onclick="toggleSubNav('utilitySub', event)">
+                <i class="fas fa-tools"></i> Utility Tools
+                <i class="fas fa-chevron-down nav-toggle" id="utilityToggle"></i>
+            </a>
+            <div class="sub-nav" id="utilitySub">
+                <a href="../../password-generator/password-generator.html" class="sub-nav-item">
+                    <i class="fas fa-key"></i> Password Generator
+                </a>
+                <a href="../../base64-tool/base64-tool.html" class="sub-nav-item">
+                    <i class="fas fa-code"></i> Base64 Encoder/Decoder
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="page-title">
+                <i class="fas fa-search" style="font-size: 1.5rem; color: #8b5cf6;"></i>
+                <h2>Hash Identifier</h2>
+            </div>
+            <span class="status-badge success">
+                <i class="fas fa-fingerprint"></i> Hash Analysis
+            </span>
+        </div>
+
+        <div class="content-area">
+            <div class="info-box">
+                <div class="info-box-title">
+                    <i class="fas fa-info-circle"></i> About Hash Identification
+                </div>
+                <div class="info-box-content">
+                    Automatically identify hash algorithm types by analyzing hash length, character patterns, and format. Essential for forensics, reverse engineering, and security analysis.
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <div class="quick-actions-title">
+                    <i class="fas fa-bolt"></i> Quick Examples
+                </div>
+                <button class="btn-example" onclick="loadExample('md5')">
+                    <i class="fas fa-hashtag"></i> MD5
+                </button>
+                <button class="btn-example" onclick="loadExample('sha1')">
+                    <i class="fas fa-hashtag"></i> SHA-1
+                </button>
+                <button class="btn-example" onclick="loadExample('sha256')">
+                    <i class="fas fa-hashtag"></i> SHA-256
+                </button>
+                <button class="btn-example" onclick="loadExample('sha512')">
+                    <i class="fas fa-hashtag"></i> SHA-512
+                </button>
+                <button class="btn-example" onclick="loadExample('bcrypt')">
+                    <i class="fas fa-hashtag"></i> bcrypt
+                </button>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-card-header">
+                    <i class="fas fa-paste"></i>
+                    <h3>Enter Hash to Identify</h3>
+                </div>
+                <div class="tool-card-body">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-hashtag"></i> Hash Value
+                        </label>
+                        <textarea class="form-control" id="hashInput" rows="4" placeholder="Paste hash value here (supports multiple hashes, one per line)&#10;&#10;Example:&#10;5d41402abc4b2a76b9719d911017c592&#10;aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d"></textarea>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary btn-lg" onclick="identifyHash()">
+                            <i class="fas fa-search"></i> Identify Hash
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="clearAll()">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+
+                    <div id="identificationResults"></div>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-card-header">
+                    <i class="fas fa-book"></i>
+                    <h3>Supported Hash Types</h3>
+                </div>
+                <div class="tool-card-body">
+                    <div class="hash-type-grid">
+                        <div class="hash-type-card">
+                            <div class="hash-type-header" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                                <i class="fas fa-lock"></i>
+                                <span>MD5</span>
+                            </div>
+                            <div class="hash-type-body">
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Length:</span>
+                                    <span class="hash-spec-value">32 hex chars</span>
+                                </div>
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Output:</span>
+                                    <span class="hash-spec-value">128 bits</span>
+                                </div>
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Status:</span>
+                                    <span class="badge badge-warning">Deprecated</span>
+                                </div>
+                                <p class="hash-description">Legacy hash, vulnerable to collisions. Not recommended for security.</p>
+                            </div>
+                        </div>
+
+                        <div class="hash-type-card">
+                            <div class="hash-type-header" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);">
+                                <i class="fas fa-lock"></i>
+                                <span>SHA-1</span>
+                            </div>
+                            <div class="hash-type-body">
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Length:</span>
+                                    <span class="hash-spec-value">40 hex chars</span>
+                                </div>
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Output:</span>
+                                    <span class="hash-spec-value">160 bits</span>
+                                </div>
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Status:</span>
+                                    <span class="badge badge-warning">Deprecated</span>
+                                </div>
+                                <p class="hash-description">Broken since 2017. Use SHA-256 or SHA-512 instead.</p>
+                            </div>
+                        </div>
+
+                        <div class="hash-type-card">
+                            <div class="hash-type-header" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+                                <i class="fas fa-shield-check"></i>
+                                <span>SHA-256</span>
+                            </div>
+                            <div class="hash-type-body">
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Length:</span>
+                                    <span class="hash-spec-value">64 hex chars</span>
+                                </div>
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Output:</span>
+                                    <span class="hash-spec-value">256 bits</span>
+                                </div>
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Status:</span>
+                                    <span class="badge badge-success">Recommended</span>
+                                </div>
+                                <p class="hash-description">Industry standard for cryptographic hashing. Secure and widely used.</p>
+                            </div>
+                        </div>
+
+                        <div class="hash-type-card">
+                            <div class="hash-type-header" style="background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);">
+                                <i class="fas fa-shield-check"></i>
+                                <span>SHA-512</span>
+                            </div>
+                            <div class="hash-type-body">
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Length:</span>
+                                    <span class="hash-spec-value">128 hex chars</span>
+                                </div>
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Output:</span>
+                                    <span class="hash-spec-value">512 bits</span>
+                                </div>
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Status:</span>
+                                    <span class="badge badge-success">Recommended</span>
+                                </div>
+                                <p class="hash-description">Strongest SHA-2 variant. Maximum security for critical applications.</p>
+                            </div>
+                        </div>
+
+                        <div class="hash-type-card">
+                            <div class="hash-type-header" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);">
+                                <i class="fas fa-key"></i>
+                                <span>bcrypt</span>
+                            </div>
+                            <div class="hash-type-body">
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Length:</span>
+                                    <span class="hash-spec-value">60 chars</span>
+                                </div>
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Format:</span>
+                                    <span class="hash-spec-value">$2a$, $2b$, $2y$</span>
+                                </div>
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Status:</span>
+                                    <span class="badge badge-success">Recommended</span>
+                                </div>
+                                <p class="hash-description">Adaptive password hashing. Includes salt and cost factor.</p>
+                            </div>
+                        </div>
+
+                        <div class="hash-type-card">
+                            <div class="hash-type-header" style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);">
+                                <i class="fas fa-key"></i>
+                                <span>Argon2</span>
+                            </div>
+                            <div class="hash-type-body">
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Format:</span>
+                                    <span class="hash-spec-value">$argon2i$, $argon2d$</span>
+                                </div>
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Winner:</span>
+                                    <span class="hash-spec-value">PHC 2015</span>
+                                </div>
+                                <div class="hash-spec">
+                                    <span class="hash-spec-label">Status:</span>
+                                    <span class="badge badge-success">Best Choice</span>
+                                </div>
+                                <p class="hash-description">Most secure password hashing. Resistant to GPU/ASIC attacks.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../../../shared/js/ux-helper.js"></script>
+    <script src="hash-identifier.js"></script>
+</body>
+</html>

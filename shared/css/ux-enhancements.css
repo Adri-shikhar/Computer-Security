@@ -1,0 +1,502 @@
+/* UX Enhancement Styles */
+
+/* Toast Notifications */
+.ux-toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: #1f2937;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 10000;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ux-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ux-toast-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.ux-toast-error {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.ux-toast-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.ux-toast-info {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+/* Tooltips */
+.ux-tooltip {
+    position: fixed;
+    background: #1f2937;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    z-index: 9999;
+    pointer-events: none;
+    transform: translate(-50%, 0);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    max-width: 250px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ux-tooltip.show {
+    opacity: 1;
+}
+
+.ux-tooltip::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid #1f2937;
+}
+
+/* Example Buttons */
+.btn-example {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-example:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.btn-example i {
+    font-size: 0.9rem;
+}
+
+/* Copy Button Mini */
+.btn-copy-mini {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.btn-copy-mini:hover {
+    background: #2563eb;
+    transform: scale(1.05);
+}
+
+/* Hash Output Container */
+.hash-output-container {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+    border: 1px solid #334155;
+}
+
+.hash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    gap: 1rem;
+}
+
+.hash-algo-badge {
+    background: #3b82f6;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.hash-length {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-family: 'Monaco', 'Consolas', monospace;
+}
+
+.hash-value {
+    color: #e2e8f0;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 0.85rem;
+    word-break: break-all;
+    line-height: 1.8;
+}
+
+/* Help Button */
+.btn-help {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-help:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+/* Modal */
+.ux-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.ux-modal {
+    background: white;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ux-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.ux-modal-header h4 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.ux-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6b7280;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.ux-modal-close:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.ux-modal-body {
+    padding: 1.5rem;
+    color: #374151;
+    line-height: 1.6;
+}
+
+.ux-modal-body h5 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.ux-modal-body h5:first-child {
+    margin-top: 0;
+}
+
+.ux-modal-body ol,
+.ux-modal-body ul {
+    margin: 0.5rem 0 1rem 1.5rem;
+}
+
+.ux-modal-body li {
+    margin: 0.5rem 0;
+}
+
+.help-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.help-table th,
+.help-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.help-table th {
+    background: #f9fafb;
+    font-weight: 700;
+    color: #111827;
+}
+
+/* Password Toggle Button */
+.password-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.5rem;
+    transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+    color: #111827;
+}
+
+/* Input with Icon */
+.input-with-icon {
+    position: relative;
+}
+
+.input-with-icon input {
+    padding-right: 3rem !important;
+}
+
+/* Example Badge */
+.example-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+/* Quick Actions Bar */
+.quick-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.quick-actions-title {
+    width: 100%;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+/* Strength Meter */
+.strength-meter {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.strength-meter-fill {
+    height: 100%;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+}
+
+.strength-very-weak {
+    width: 20%;
+    background: #ef4444;
+}
+
+.strength-weak {
+    width: 40%;
+    background: #f59e0b;
+}
+
+.strength-medium {
+    width: 60%;
+    background: #eab308;
+}
+
+.strength-strong {
+    width: 80%;
+    background: #84cc16;
+}
+
+.strength-very-strong {
+    width: 100%;
+    background: #10b981;
+}
+
+/* Info Box */
+.info-box {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-left: 4px solid #3b82f6;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.info-box-title {
+    font-weight: 700;
+    color: #1e40af;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-box-content {
+    color: #1e3a8a;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* Warning Box */
+.warning-box {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-left: 4px solid #f59e0b;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.warning-box-title {
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.warning-box-content {
+    color: #78350f;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* Success Box */
+.success-box {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border-left: 4px solid #10b981;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.success-box-title {
+    font-weight: 700;
+    color: #065f46;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.success-box-content {
+    color: #064e3b;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .ux-toast {
+        bottom: 1rem;
+        right: 1rem;
+        left: 1rem;
+        text-align: center;
+    }
+    
+    .ux-modal {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .quick-actions {
+        flex-direction: column;
+    }
+    
+    .btn-example,
+    .btn-help {
+        width: 100%;
+        justify-content: center;
+    }
+}
