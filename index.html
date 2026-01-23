@@ -442,6 +442,17 @@
                                     <div style="height: 8px; background: #e2e8f0; border-radius: 10px; overflow: hidden;">
                                         <div id="securityBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981); transition: width 0.3s ease;"></div>
                                     </div>
+                                    
+                                    <!-- Password Recommendation -->
+                                    <div id="passwordRecommendation" style="margin-top: 0.75rem; padding: 0.75rem; background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%); border-left: 3px solid #3b82f6; border-radius: 6px; display: none;">
+                                        <div style="display: flex; align-items: start; gap: 0.5rem;">
+                                            <i class="fas fa-lightbulb" style="color: #3b82f6; margin-top: 0.125rem;"></i>
+                                            <div style="flex: 1;">
+                                                <div style="font-size: 0.75rem; font-weight: 600; color: #1e40af; margin-bottom: 0.25rem;">💡 Suggestion</div>
+                                                <div id="recommendationText" style="font-size: 0.7rem; color: #1e40af; line-height: 1.4;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 
                                 <small style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.5rem;">
@@ -582,6 +593,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <link rel="stylesheet" href="shared/css/toast-styles.css">
+    <script src="js/toast-notifications.js"></script>
     <script src="js/live-demo-service.js"></script>
     <script src="js/api-client.js"></script>
     <link rel="stylesheet" href="shared/css/ux-enhancements.css">
@@ -683,6 +696,8 @@
             const password = document.getElementById('password').value;
             const meter = document.getElementById('securityMeter');
             const hashPreview = document.getElementById('hashPreview');
+            const recommendation = document.getElementById('passwordRecommendation');
+            const recommendationText = document.getElementById('recommendationText');
             
             if (!password) {
                 meter.style.display = 'none';
@@ -697,6 +712,14 @@
             // Calculate security score
             const score = calculateSecurityScore(password);
             updateSecurityMeter(score);
+            
+            // Show recommendation based on password
+            if (score < 100) {
+                recommendation.style.display = 'block';
+                recommendationText.innerHTML = generatePasswordRecommendation(password, score);
+            } else {
+                recommendation.style.display = 'none';
+            }
             
             // Generate all hashes with timing
             const hashData = generateMultiHash(password);
@@ -747,6 +770,79 @@
             if (/^(password|123456|qwerty)/i.test(password)) score -= 30; // Common patterns
             
             return Math.max(0, Math.min(100, score));
+        }
+        
+        function generatePasswordRecommendation(password, score) {
+            const missing = [];
+            const suggestions = [];
+            
+            // Check what's missing
+            if (!/[a-z]/.test(password)) missing.push('lowercase letters');
+            if (!/[A-Z]/.test(password)) missing.push('uppercase letters');
+            if (!/[0-9]/.test(password)) missing.push('numbers');
+            if (!/[^a-zA-Z0-9]/.test(password)) missing.push('special characters (!@#$%^&*)');
+            
+            // Length suggestions
+            if (password.length < 12) {
+                suggestions.push(`Add ${12 - password.length} more characters (current: ${password.length})`);
+            }
+            
+            // Missing character types
+            if (missing.length > 0) {
+                suggestions.push(`Include ${missing.join(', ')}`);
+            }
+            
+            // Pattern warnings
+            if (/(.)\1{2,}/.test(password)) {
+                suggestions.push('Avoid repeating characters (e.g., "aaa", "111")');
+            }
+            if (/^[0-9]+$/.test(password)) {
+                suggestions.push('Don\'t use only numbers - mix letters and symbols');
+            }
+            if (/^(password|123456|qwerty|admin|letmein)/i.test(password)) {
+                suggestions.push('⚠️ This is a common password! Use something unique');
+            }
+            
+            // Generate stronger example based on current password
+            let strongExample = password;
+            if (password.length < 12) {
+                strongExample += generateRandomChars(12 - password.length);
+            }
+            if (!/[A-Z]/.test(strongExample)) {
+                strongExample = strongExample.charAt(0).toUpperCase() + strongExample.slice(1);
+            }
+            if (!/[0-9]/.test(strongExample)) {
+                strongExample += Math.floor(Math.random() * 100);
+            }
+            if (!/[^a-zA-Z0-9]/.test(strongExample)) {
+                strongExample += ['!', '@', '#', '$', '%'][Math.floor(Math.random() * 5)];
+            }
+            
+            if (suggestions.length === 0) {
+                return '<strong>✅ Excellent password!</strong> Your password is strong.';
+            }
+            
+            let html = '<div style="margin-bottom: 0.5rem;"><strong>To make it stronger:</strong></div>';
+            html += '<ul style="margin: 0; padding-left: 1.25rem; font-size: 0.7rem;">';
+            suggestions.forEach(s => {
+                html += `<li style="margin-bottom: 0.25rem;">${s}</li>`;
+            });
+            html += '</ul>';
+            html += `<div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(59, 130, 246, 0.1); border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.7rem;">`;
+            html += `<strong>Example:</strong> <code style="color: #1e40af;">${strongExample}</code>`;
+            html += `<button onclick="document.getElementById('password').value='${strongExample}'; analyzePassword();" style="margin-left: 0.5rem; background: #3b82f6; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.65rem;"><i class="fas fa-copy"></i> Use This</button>`;
+            html += '</div>';
+            
+            return html;
+        }
+        
+        function generateRandomChars(length) {
+            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
         }
         
         function updateSecurityMeter(score) {
@@ -912,16 +1008,23 @@
             }
         }
 
-        // Show alert message
+        // Show alert message (replaced with toast notifications)
         function showAlert(message, type) {
-            const alertArea = document.getElementById('alertArea');
-            alertArea.innerHTML = `
-                <div class="alert alert-${type}">
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-                    ${message}
-                </div>
-            `;
-            setTimeout(() => alertArea.innerHTML = '', 8000);
+            // Map alert types to toast functions
+            const typeMap = {
+                'success': () => showSuccessToast(message),
+                'danger': () => showErrorToast(message),
+                'warning': () => showWarningToast(message),
+                'info': () => showInfoToast(message),
+                'primary': () => showToast(message, 'primary')
+            };
+            
+            // Call appropriate toast function
+            if (typeMap[type]) {
+                typeMap[type]();
+            } else {
+                showToast(message, type);
+            }
         }
     </script>
 </body>

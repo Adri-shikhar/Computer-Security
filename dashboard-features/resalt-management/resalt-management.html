@@ -503,6 +503,8 @@
         </div>
     </main>
 
+    <link rel="stylesheet" href="../../shared/css/toast-styles.css">
+    <script src="../../js/toast-notifications.js"></script>
     <script src="../../js/ux-helper.js"></script>
     <script>
         // Navigation toggle function
@@ -682,12 +684,17 @@
 
         async function executeMigration() {
             if (selectedUsers.size === 0 || !currentAction) {
-                alert('Please select users and an action');
+                showWarningToast('Please select users and an action');
                 return;
             }
 
             const actionNames = { 'salt': 'Add Salt', 'bit': 'Change Salt Length', 'algo': 'Migrate Algorithm' };
-            if (!confirm(`Execute "${actionNames[currentAction]}" on ${selectedUsers.size} users?`)) return;
+            const confirmed = await showConfirm(
+                `Execute "${actionNames[currentAction]}" on ${selectedUsers.size} users?`,
+                'Confirm Migration',
+                { confirmText: 'Execute', cancelText: 'Cancel', type: 'warning' }
+            );
+            if (!confirmed) return;
 
             try {
                 const response = await fetch(`${API_BASE}/hash-migration/batch-convert`, {
@@ -703,7 +710,7 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    alert(`✅ Success! ${data.converted.length} users migrated.`);
+                    showSuccessToast(`✅ Success! <strong>${data.converted.length} users</strong> migrated.`, 5000);
                     selectedUsers.clear();
                     currentAction = null;
                     await loadUsers();
@@ -712,10 +719,10 @@
                     document.getElementById('previewBox').style.display = 'none';
                     updateExecuteButton();
                 } else {
-                    alert('❌ Error: ' + data.message);
+                    showErrorToast('❌ Error: ' + data.message);
                 }
             } catch (error) {
-                alert('❌ Error: ' + error.message);
+                showErrorToast('❌ Error: ' + error.message);
             }
         }
     </script>

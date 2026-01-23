@@ -53,7 +53,7 @@ function initFormHandlers() {
             const password = regPassword ? regPassword.value : '';
             
             if (!password) {
-                alert('Please enter a password first!');
+                showWarningToast('Please enter a password first!');
                 return;
             }
             
@@ -181,8 +181,13 @@ function initFormHandlers() {
     // Clear Data Button
     const clearDataBtn = document.getElementById('clearDataBtn');
     if (clearDataBtn) {
-        clearDataBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to clear all user data?')) {
+        clearDataBtn.addEventListener('click', async () => {
+            const confirmed = await showConfirm(
+                'Are you sure you want to clear all user data?',
+                'Clear All Data',
+                { confirmText: 'Clear All', cancelText: 'Cancel', type: 'danger' }
+            );
+            if (confirmed) {
                 clearDatabase();
                 renderUserTable();
                 showMessage('registerMessage', 'All data cleared!', 'info');

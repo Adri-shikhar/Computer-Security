@@ -96,7 +96,7 @@ function getAlgorithmName(algorithm) {
 // Copy hash to clipboard
 function copyHash(hash) {
     navigator.clipboard.writeText(hash).then(() => {
-        alert('Hash copied to clipboard!\nUse this in Hashcat or John the Ripper for security testing.');
+        showSuccessToast('Hash copied to clipboard!<br><small>Use this in Hashcat or John the Ripper for security testing.</small>');
     });
 }
 

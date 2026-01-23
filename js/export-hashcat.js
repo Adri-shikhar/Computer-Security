@@ -11,7 +11,7 @@ async function exportDatabaseForHashcat() {
     const users = await getAllUsers();
     
     if (users.length === 0) {
-        alert('No users in database to export!');
+        showWarningToast('No users in database to export!');
         return;
     }
     

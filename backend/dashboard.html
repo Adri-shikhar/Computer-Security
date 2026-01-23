@@ -594,6 +594,8 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="../shared/css/toast-styles.css">
+    <script src="../js/toast-notifications.js"></script>
     <script src="../js/live-demo-service.js"></script>
     <script src="../js/api-client.js"></script>
     <script>
@@ -695,7 +697,12 @@
 
         // Clear current storage
         async function clearCurrentStorage() {
-            if (confirm('Clear all registered users from Flask backend?')) {
+            const confirmed = await showConfirm(
+                'Clear all registered users from Flask backend?',
+                'Clear Backend Users',
+                { confirmText: 'Clear All', cancelText: 'Cancel', type: 'danger' }
+            );
+            if (confirmed) {
                 try {
                     const response = await fetch(API_BASE + '/users/clear', {
                         method: 'DELETE'
@@ -703,13 +710,13 @@
                     const data = await response.json();
                     
                     if (data.success) {
-                        alert('✅ All users cleared successfully!');
+                        showSuccessToast('✅ All users cleared successfully!');
                         loadDashboard();
                     } else {
-                        alert('Error: ' + data.message);
+                        showErrorToast('Error: ' + data.message);
                     }
                 } catch (error) {
-                    alert('Error connecting to server: ' + error.message);
+                    showErrorToast('Error connecting to server: ' + error.message);
                 }
             }
         }
@@ -733,7 +740,7 @@
                 a.download = `soc_backend_export_${new Date().toISOString().split('T')[0]}.json`;
                 a.click();
             } catch (error) {
-                alert('Error exporting data: ' + error.message);
+                showErrorToast('Error exporting data: ' + error.message);
             }
         }
         
@@ -1174,7 +1181,12 @@
 
         // Re-salt a single user
         async function resaltSingleUser(userId, userName) {
-            if (!confirm(`⚠️ Re-salt password for ${userName}?\n\nThis will:\n✓ Generate a new 32-char salt\n✓ Upgrade to SHA-256 algorithm\n✓ Improve security score to 85/100\n✓ Original password will still work\n\nContinue?`)) {
+            const confirmed = await showConfirm(
+                `This will:\n✓ Generate a new 32-char salt\n✓ Upgrade to SHA-256 algorithm\n✓ Improve security score to 85/100\n✓ Original password will still work\n\nContinue?`,
+                `Re-salt password for ${userName}?`,
+                { confirmText: 'Re-salt', cancelText: 'Cancel', type: 'warning' }
+            );
+            if (!confirmed) {
                 return;
             }
             
@@ -1191,16 +1203,21 @@
                 // Reload table to show updated status
                 loadResaltData();
                 
-                alert(`✅ User re-salted successfully!\n\n${data.user.name}'s password has been upgraded to SHA-256 with a 32-char salt.\n\n✓ Security improved\n✓ Original password still works\n✓ No user action required`);
+                showSuccessToast(`✅ User re-salted successfully!<br><br><strong>${data.user.name}</strong>'s password has been upgraded to SHA-256 with a 32-char salt.<br><br>✓ Security improved<br>✓ Original password still works<br>✓ No user action required`, 6000);
                 
             } catch (error) {
-                alert(`❌ Error re-salting user: ${error.message}`);
+                showErrorToast(`❌ Error re-salting user: ${error.message}`);
             }
         }
 
         // Re-salt all weak passwords
         async function resaltAllUsers() {
-            if (!confirm('⚠️ RE-SALT ALL WEAK PASSWORDS?\n\nThis will:\n✓ Re-salt ALL users with MD5, no salt, or weak passwords\n✓ Upgrade them to SHA-256 with 32-char salts\n✓ Improve security scores to 85/100\n✓ Original passwords will still work\n\nContinue?')) {
+            const confirmed = await showConfirm(
+                'This will:\n✓ Re-salt ALL users with MD5, no salt, or weak passwords\n✓ Upgrade them to SHA-256 with 32-char salts\n✓ Improve security scores to 85/100\n✓ Original passwords will still work\n\nContinue?',
+                'RE-SALT ALL WEAK PASSWORDS?',
+                { confirmText: 'Re-salt All', cancelText: 'Cancel', type: 'warning' }
+            );
+            if (!confirmed) {
                 return;
             }
             
@@ -1222,10 +1239,10 @@
                 // Reload table
                 loadResaltData();
                 
-                alert(`✅ Bulk re-salt complete!\n\n${data.count} users upgraded to SHA-256 with salts\n\n✓ Security improved\n✓ All original passwords still work\n✓ No user action required`);
+                showSuccessToast(`✅ Bulk re-salt complete!<br><br><strong>${data.count} users</strong> upgraded to SHA-256 with salts<br><br>✓ Security improved<br>✓ All original passwords still work<br>✓ No user action required`, 6000);
                 
             } catch (error) {
-                alert(`❌ Error re-salting users: ${error.message}`);
+                showErrorToast(`❌ Error re-salting users: ${error.message}`);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalHTML;

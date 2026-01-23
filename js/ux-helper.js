@@ -25,7 +25,7 @@ function copyToClipboard(text, buttonId = null) {
         showCopyFeedback(buttonId);
     }).catch(err => {
         console.error('Failed to copy:', err);
-        alert('Failed to copy to clipboard');
+        showErrorToast('Failed to copy to clipboard');
     });
 }
 

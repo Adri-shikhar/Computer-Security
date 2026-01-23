@@ -202,7 +202,7 @@ function generatePasswords() {
 // Copy all passwords
 function copyAllPasswords() {
     if (!window.generatedPasswords || window.generatedPasswords.length === 0) {
-        alert('Generate passwords first!');
+        showWarningToast('Generate passwords first!');
         return;
     }
     
@@ -217,7 +217,7 @@ function copyAllPasswords() {
 // Download passwords
 function downloadPasswords() {
     if (!window.generatedPasswords || window.generatedPasswords.length === 0) {
-        alert('Generate passwords first!');
+        showWarningToast('Generate passwords first!');
         return;
     }
     

@@ -168,6 +168,8 @@
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <link rel="stylesheet" href="../../shared/css/toast-styles.css">
+    <script src="../../js/toast-notifications.js"></script>
     <script src="../../js/ux-helper.js"></script>
     <script>
         function togglePassword() {
@@ -187,7 +189,7 @@
             const password = document.getElementById('passwordInput').value;
             
             if (!password.trim()) {
-                alert('Please enter a password to check!');
+                showWarningToast('Please enter a password to check!');
                 return;
             }
 
@@ -251,7 +253,7 @@
                 document.getElementById('resultBox').style.display = 'block';
 
             } catch (error) {
-                alert('Error checking password: ' + error.message);
+                showErrorToast('Error checking password: ' + error.message);
             }
         }
 
