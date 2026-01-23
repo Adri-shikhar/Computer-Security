@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Re-salt Management - Dashboard Feature</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../shared/css/style.css">
+    <link rel="stylesheet" href="../../shared/css/nav-styles.css">
+    <style>
+        body { background: #f8fafc; }
+        .feature-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .feature-header {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+        }
+        .feature-header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .control-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .btn-resalt {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-resalt:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        .data-table th {
+            background: #f9fafb;
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 2px solid #e5e7eb;
+            font-weight: 600;
+        }
+        .data-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .data-table tr:hover {
+            background: #f9fafb;
+        }
+        .btn-action {
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            border: none;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-action:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="feature-container">
+        <!-- Header -->
+        <div class="feature-header">
+            <h1>
+                <i class="fas fa-shield-alt"></i>
+                Password Re-Salt Management
+            </h1>
+            <p>Upgrade weak MD5 passwords to secure SHA-256 with salts for enhanced security</p>
+        </div>
+
+        <!-- Back Navigation -->
+        <div style="margin-bottom: 1.5rem;">
+            <a href="../../backend/dashboard.html" style="color: #2563eb; text-decoration: none; font-weight: 600;">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            <h5 style="margin: 0 0 0.5rem 0; color: #1e40af;">
+                <i class="fas fa-info-circle"></i> What is Re-salting?
+            </h5>
+            <p style="margin: 0; color: #1e3a8a; font-size: 0.875rem;">
+                Re-salting adds a random salt to existing password hashes, converting weak MD5 hashes to secure SHA-256 with salt. 
+                This protects against rainbow table attacks while preserving user passwords. The user doesn't need to change their password.
+            </p>
+        </div>
+
+        <!-- Auto-Resalt Control Panel -->
+        <div class="control-card">
+            <h3 style="margin-bottom: 1rem;">
+                <i class="fas fa-cogs"></i> Auto-Resalt Configuration
+            </h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+                <div style="flex: 1; min-width: 250px;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #0f172a;">
+                        Resalt Interval:
+                    </label>
+                    <select id="resaltInterval" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <option value="60">1 minute</option>
+                        <option value="300" selected>5 minutes</option>
+                        <option value="600">10 minutes</option>
+                        <option value="1800">30 minutes</option>
+                        <option value="3600">1 hour</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn-resalt" onclick="toggleAutoResalt(true)" id="btnEnableResalt">
+                        <i class="fas fa-play"></i> Enable Auto-Resalt
+                    </button>
+                    <button class="btn-resalt" onclick="toggleAutoResalt(false)" id="btnDisableResalt" style="background: #dc2626; display: none;">
+                        <i class="fas fa-stop"></i> Disable
+                    </button>
+                    <button class="btn-resalt" onclick="manualResalt()" style="background: #2563eb;">
+                        <i class="fas fa-sync"></i> Resalt Now
+                    </button>
+                </div>
+            </div>
+            <div id="resaltStatus" style="padding: 1rem; background: #f9fafb; border-radius: 8px; font-size: 0.875rem; display: none;"></div>
+        </div>
+
+        <!-- Warning Box -->
+        <div class="warning-box">
+            <h5 style="margin: 0 0 0.5rem 0; color: #92400e;">
+                <i class="fas fa-exclamation-triangle"></i> Important Notes
+            </h5>
+            <ul style="margin: 0; padding-left: 1.5rem; color: #78350f; font-size: 0.875rem;">
+                <li>Re-salting adds salt to existing password hashes</li>
+                <li>User passwords remain unchanged - only hash security is upgraded</li>
+                <li>Auto-resalt periodically regenerates salts to enhance security</li>
+            </ul>
+        </div>
+
+        <!-- Users Table -->
+        <div class="control-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0;">
+                    <i class="fas fa-users"></i> Users Eligible for Re-salting
+                </h3>
+                <button class="btn-resalt" onclick="loadResaltUsers()" style="background: #2563eb;">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+            <div style="overflow-x: auto; max-height: 600px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <table class="data-table">
+                    <thead style="position: sticky; top: 0; background: #f9fafb; z-index: 10;">
+                        <tr>
+                            <th>Status</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Algorithm</th>
+                            <th>Salt Length</th>
+                            <th>Security Score</th>
+                            <th>Breach Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resaltTableBody">
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 2rem; color: #64748b;">
+                                Click "Refresh" to load users
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        // Check resalt status on load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkResaltStatus();
+            loadResaltUsers();
+        });
+
+        async function checkResaltStatus() {
+            try {
+                const response = await fetch(API_BASE + '/resalt/status');
+                const data = await response.json();
+                
+                const statusDiv = document.getElementById('resaltStatus');
+                const btnEnable = document.getElementById('btnEnableResalt');
+                const btnDisable = document.getElementById('btnDisableResalt');
+                
+                if (data.enabled) {
+                    btnEnable.style.display = 'none';
+                    btnDisable.style.display = 'inline-block';
+                    statusDiv.style.display = 'block';
+                    statusDiv.innerHTML = `
+                        <span class="status-badge status-active">
+                            <i class="fas fa-check-circle"></i> Auto-Resalt ACTIVE
+                        </span>
+                        <span style="margin-left: 1rem; color: #64748b;">
+                            Interval: ${data.interval} seconds | Next resalt in: ${data.next_resalt || 'calculating...'}
+                        </span>
+                    `;
+                } else {
+                    btnEnable.style.display = 'inline-block';
+                    btnDisable.style.display = 'none';
+                    statusDiv.style.display = 'block';
+                    statusDiv.innerHTML = `
+                        <span class="status-badge status-inactive">
+                            <i class="fas fa-times-circle"></i> Auto-Resalt INACTIVE
+                        </span>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error checking resalt status:', error);
+            }
+        }
+
+        async function toggleAutoResalt(enable) {
+            const interval = document.getElementById('resaltInterval').value;
+            
+            try {
+                const response = await fetch(API_BASE + '/resalt/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: enable, interval: parseInt(interval) })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert(data.message);
+                    checkResaltStatus();
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function manualResalt() {
+            if (!confirm('Manually trigger re-salting for all eligible users?')) return;
+            
+            try {
+                const response = await fetch(API_BASE + '/resalt/manual', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert(`✅ Re-salt completed!\n${data.resalted_count} users re-salted.`);
+                    loadResaltUsers();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function loadResaltUsers() {
+            const tbody = document.getElementById('resaltTableBody');
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+            
+            try {
+                const response = await fetch(API_BASE + '/resalt/users');
+                const data = await response.json();
+                
+                if (!data.success || !data.users || data.users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #64748b;">No users eligible for re-salting</td></tr>';
+                    return;
+                }
+                
+                let html = '';
+                data.users.forEach(user => {
+                    const canResalt = user.algorithm === 'MD5' || user.resalt_count === 0;
+                    const status = canResalt ? 'Eligible' : 'Re-salted';
+                    const statusColor = canResalt ? '#dc2626' : '#10b981';
+                    
+                    html += `
+                        <tr>
+                            <td>
+                                <span class="status-badge" style="background: ${canResalt ? '#fee2e2' : '#d1fae5'}; color: ${statusColor};">
+                                    ${status}
+                                </span>
+                            </td>
+                            <td>${user.name}</td>
+                            <td>${user.email}</td>
+                            <td>${user.algorithm}</td>
+                            <td>${user.salt ? user.salt.substring(0, 16) + '...' : 'None'}</td>
+                            <td>
+                                <span style="font-weight: 700; color: ${user.security_score > 70 ? '#10b981' : '#dc2626'};">
+                                    ${user.security_score}/100
+                                </span>
+                            </td>
+                            <td>
+                                <span style="color: ${user.breach_status === 'BREACHED' ? '#dc2626' : '#10b981'}; font-weight: 600;">
+                                    ${user.breach_status || 'SAFE'}
+                                </span>
+                            </td>
+                            <td>
+                                ${canResalt ? `
+                                    <button class="btn-action" style="background: #f59e0b; color: white;" onclick="resaltUser(${user.id})">
+                                        <i class="fas fa-shield-alt"></i> Re-salt
+                                    </button>
+                                ` : `
+                                    <span style="color: #10b981; font-size: 0.8rem;">
+                                        <i class="fas fa-check"></i> Protected
+                                    </span>
+                                `}
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                tbody.innerHTML = html;
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #dc2626;">Error: ${error.message}</td></tr>`;
+            }
+        }
+
+        async function resaltUser(userId) {
+            if (!confirm('Re-salt this user\'s password hash?')) return;
+            
+            try {
+                const response = await fetch(API_BASE + `/resalt/user/${userId}`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('✅ User re-salted successfully!');
+                    loadResaltUsers();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Auto-refresh status every 30 seconds
+        setInterval(checkResaltStatus, 30000);
+    </script>
+</body>
+</html>

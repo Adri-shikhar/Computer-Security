@@ -48,7 +48,7 @@
             box-shadow: var(--shadow-sm);
         }
 
-        
+
         .sidebar-header {
             padding: 1.5rem;
             border-bottom: 1px solid var(--border-subtle);
@@ -360,40 +360,27 @@
         </nav>
 
         <nav class="nav-section">
-            <div class="nav-section-title">Security Tools</div>
+            <div class="nav-section-title">Dashboard Features</div>
             
-            <a href="#" class="nav-item" onclick="toggleSubNav('hashSub', event)">
-                <i class="fas fa-hashtag"></i> Hash Tools
-                <i class="fas fa-chevron-down nav-toggle" id="hashToggle"></i>
-            </a>
-            <div class="sub-nav" id="hashSub">
-                <a href="features/hash-tools/breach-checker/breach-checker.html" class="sub-nav-item">
-                    <i class="fas fa-user-secret"></i> Password Breach Checker
-                </a>
-                <a href="features/hash-tools/algorithm-comparison/algorithm-comparison.html" class="sub-nav-item">
-                    <i class="fas fa-balance-scale"></i> Algorithm Comparison
-                </a>
-                <a href="features/hash-tools/file-hash/file-hash.html" class="sub-nav-item">
-                    <i class="fas fa-fingerprint"></i> Hash Generator
-                </a>
-                <a href="features/hash-tools/hash-verification/hash-verification.html" class="sub-nav-item">
-                    <i class="fas fa-check-double"></i> Hash Verification
-                </a>
-            </div>
-
-            <a href="features/encryption/encryption.html" class="nav-item">
-                <i class="fas fa-lock"></i> Encryption Tools
+            <a href="dashboard-features/duplicate-checker/duplicate-checker.html" class="nav-item">
+                <i class="fas fa-copy"></i> Duplicate Password Checker
             </a>
 
-            <a href="#" class="nav-item" onclick="toggleSubNav('utilitySub', event)">
-                <i class="fas fa-tools"></i> Utility Tools
-                <i class="fas fa-chevron-down nav-toggle" id="utilityToggle"></i>
+            <a href="dashboard-features/breach-checker/breach-checker.html" class="nav-item">
+                <i class="fas fa-user-lock"></i> Breach Checker
             </a>
-            <div class="sub-nav" id="utilitySub">
-                <a href="features/password-generator/password-generator.html" class="sub-nav-item">
-                    <i class="fas fa-key"></i> Password Generator
-                </a>
-            </div>
+
+            <a href="dashboard-features/resalt-management/resalt-management.html" class="nav-item">
+                <i class="fas fa-shield-alt"></i> Re-salt Management
+            </a>
+
+            <a href="dashboard-features/security-analytics/security-analytics.html" class="nav-item">
+                <i class="fas fa-chart-line"></i> Security Analytics
+            </a>
+
+            <a href="dashboard-features/password-generator/password-generator.html" class="nav-item">
+                <i class="fas fa-key"></i> Password Generator
+            </a>
         </nav>
     </aside>
 
@@ -457,7 +444,7 @@
                                 </div>
                                 
                                 <small style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.5rem;">
-                                    <i class="fas fa-lightbulb"></i> Use our <a href="features/password-generator/password-generator.html" style="color: var(--primary); font-weight: 600;">Password Generator</a> for secure passwords
+                                    <i class="fas fa-lightbulb"></i> Use our <a href="dashboard-features/password-generator/password-generator.html" style="color: var(--primary); font-weight: 600;">Password Generator</a> for secure passwords
                                 </small>
                             </div>
                             <div class="d-flex gap-2" style="display: flex; gap: 0.5rem;">
@@ -578,40 +565,13 @@
                             <p>View all registered users</p>
                         </div>
                     </a>
-                    <a href="features/hash-tools/breach-checker/breach-checker.html" class="quick-card">
-                        <div class="quick-icon" style="background: #fecaca; color: #dc2626;">
-                            <i class="fas fa-user-secret"></i>
-                        </div>
-                        <div>
-                            <h5>Password Breach Checker</h5>
-                            <p>Check password security</p>
-                        </div>
-                    </a>
-                    <a href="features/password-generator/password-generator.html" class="quick-card">
+                    <a href="dashboard-features/password-generator/password-generator.html" class="quick-card">
                         <div class="quick-icon" style="background: #dbeafe; color: var(--primary);">
                             <i class="fas fa-key"></i>
                         </div>
                         <div>
                             <h5>Password Generator</h5>
                             <p>Generate secure passwords</p>
-                        </div>
-                    </a>
-                    <a href="features/encryption/encryption.html" class="quick-card">
-                        <div class="quick-icon" style="background: #e9d5ff; color: #9333ea;">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <div>
-                            <h5>Encryption Tools</h5>
-                            <p>AES & RSA encryption</p>
-                        </div>
-                    </a>
-                    <a href="features/hash-tools/algorithm-comparison/algorithm-comparison.html" class="quick-card">
-                        <div class="quick-icon" style="background: #ccfbf1; color: #0891b2;">
-                            <i class="fas fa-balance-scale"></i>
-                        </div>
-                        <div>
-                            <h5>Hash Comparison</h5>
-                            <p>Compare hash algorithms</p>
                         </div>
                     </a>
                 </div>

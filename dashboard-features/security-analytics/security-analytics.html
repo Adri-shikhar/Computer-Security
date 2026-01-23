@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Analytics - Dashboard Feature</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../shared/css/style.css">
+    <link rel="stylesheet" href="../../shared/css/nav-styles.css">
+    <style>
+        body { background: #f8fafc; }
+        .feature-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .feature-header {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+        .feature-header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1;
+        }
+        .stat-label {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin: 0.5rem 0 0 0;
+        }
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        .data-table th {
+            background: #f9fafb;
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 2px solid #e5e7eb;
+            font-weight: 600;
+        }
+        .data-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .data-table tr:hover {
+            background: #f9fafb;
+        }
+        .btn-refresh {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-refresh:hover {
+            background: #1e40af;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="feature-container">
+        <!-- Header -->
+        <div class="feature-header">
+            <h1>
+                <i class="fas fa-chart-line"></i>
+                Security Analytics Dashboard
+            </h1>
+            <p>Comprehensive security metrics and analysis for all registered users</p>
+        </div>
+
+        <!-- Back Navigation -->
+        <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <a href="../../backend/dashboard.html" style="color: #2563eb; text-decoration: none; font-weight: 600;">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <button class="btn-refresh" onclick="loadAnalytics()">
+                <i class="fas fa-sync"></i> Refresh Data
+            </button>
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #dbeafe; color: #2563eb;">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="stat-value" id="totalUsers">0</h3>
+                <p class="stat-label">Total Users</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #d1fae5; color: #059669;">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="stat-value" style="color: #059669;" id="secureUsers">0</h3>
+                <p class="stat-label">Secure Passwords (≥70)</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fef3c7; color: #d97706;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="stat-value" style="color: #d97706;" id="weakUsers">0</h3>
+                <p class="stat-label">Weak Passwords (<50)</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fee2e2; color: #dc2626;">
+                    <i class="fas fa-user-lock"></i>
+                </div>
+                <h3 class="stat-value" style="color: #dc2626;" id="breachedUsers">0</h3>
+                <p class="stat-label">Breached Passwords</p>
+            </div>
+        </div>
+
+        <!-- Algorithm Distribution -->
+        <div class="chart-card">
+            <h3 style="margin-bottom: 1.5rem;">
+                <i class="fas fa-chart-pie"></i> Hash Algorithm Distribution
+            </h3>
+            <div id="algorithmChart" style="min-height: 200px;">
+                <div style="text-align: center; padding: 3rem; color: #64748b;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
+                    <p style="margin-top: 1rem;">Loading data...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Score Distribution -->
+        <div class="chart-card">
+            <h3 style="margin-bottom: 1.5rem;">
+                <i class="fas fa-chart-bar"></i> Security Score Distribution
+            </h3>
+            <div id="scoreDistribution" style="min-height: 150px;"></div>
+        </div>
+
+        <!-- Recent Users Table -->
+        <div class="chart-card">
+            <h3 style="margin-bottom: 1.5rem;">
+                <i class="fas fa-users"></i> Recent User Registrations
+            </h3>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Algorithm</th>
+                            <th>Security Score</th>
+                            <th>Breach Status</th>
+                            <th>Registered</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentUsersTable">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">
+                                Loading users...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAnalytics();
+        });
+
+        async function loadAnalytics() {
+            try {
+                const response = await fetch(API_BASE + '/users');
+                const data = await response.json();
+                
+                if (!data.success || !data.users) {
+                    throw new Error('Failed to load user data');
+                }
+                
+                const users = data.users;
+                
+                // Update statistics
+                document.getElementById('totalUsers').textContent = users.length;
+                
+                const secureCount = users.filter(u => (u.security_score || u.securityScore || 0) >= 70).length;
+                document.getElementById('secureUsers').textContent = secureCount;
+                
+                const weakCount = users.filter(u => (u.security_score || u.securityScore || 0) < 50).length;
+                document.getElementById('weakUsers').textContent = weakCount;
+                
+                const breachedCount = users.filter(u => (u.breach_status || u.breachStatus) === 'BREACHED').length;
+                document.getElementById('breachedUsers').textContent = breachedCount;
+                
+                // Algorithm distribution
+                const algorithms = {};
+                users.forEach(user => {
+                    const algo = user.algorithm || 'Unknown';
+                    algorithms[algo] = (algorithms[algo] || 0) + 1;
+                });
+                
+                displayAlgorithmChart(algorithms);
+                displayScoreDistribution(users);
+                displayRecentUsers(users);
+                
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                document.getElementById('algorithmChart').innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #dc2626;">
+                        <i class="fas fa-exclamation-circle"></i> Error loading data: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function displayAlgorithmChart(algorithms) {
+            const chartDiv = document.getElementById('algorithmChart');
+            const total = Object.values(algorithms).reduce((a, b) => a + b, 0);
+            
+            let html = '<div style="display: flex; flex-wrap: wrap; gap: 1.5rem;">';
+            
+            const colors = {
+                'Argon2': '#10b981',
+                'bcrypt': '#3b82f6',
+                'MD5': '#dc2626',
+                'PBKDF2': '#8b5cf6'
+            };
+            
+            for (const [algo, count] of Object.entries(algorithms)) {
+                const percentage = ((count / total) * 100).toFixed(1);
+                const color = colors[algo] || '#64748b';
+                
+                html += `
+                    <div style="flex: 1; min-width: 200px; background: ${color}15; border-left: 4px solid ${color}; padding: 1rem; border-radius: 8px;">
+                        <div style="font-size: 2rem; font-weight: 700; color: ${color};">${count}</div>
+                        <div style="color: #0f172a; font-weight: 600; margin: 0.25rem 0;">${algo}</div>
+                        <div style="color: #64748b; font-size: 0.875rem;">${percentage}% of total</div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            chartDiv.innerHTML = html;
+        }
+
+        function displayScoreDistribution(users) {
+            const scoreDiv = document.getElementById('scoreDistribution');
+            
+            const ranges = {
+                'Critical (0-30)': { count: 0, color: '#dc2626' },
+                'Weak (31-50)': { count: 0, color: '#f59e0b' },
+                'Moderate (51-70)': { count: 0, color: '#3b82f6' },
+                'Strong (71-100)': { count: 0, color: '#10b981' }
+            };
+            
+            users.forEach(user => {
+                const score = user.security_score || user.securityScore || 0;
+                if (score <= 30) ranges['Critical (0-30)'].count++;
+                else if (score <= 50) ranges['Weak (31-50)'].count++;
+                else if (score <= 70) ranges['Moderate (51-70)'].count++;
+                else ranges['Strong (71-100)'].count++;
+            });
+            
+            let html = '<div style="display: grid; gap: 1rem;">';
+            
+            for (const [range, data] of Object.entries(ranges)) {
+                const percentage = users.length > 0 ? ((data.count / users.length) * 100).toFixed(1) : 0;
+                
+                html += `
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="font-weight: 600; color: #0f172a;">${range}</span>
+                            <span style="font-weight: 700; color: ${data.color};">${data.count} (${percentage}%)</span>
+                        </div>
+                        <div style="height: 12px; background: #e5e7eb; border-radius: 6px; overflow: hidden;">
+                            <div style="height: 100%; width: ${percentage}%; background: ${data.color}; transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            scoreDiv.innerHTML = html;
+        }
+
+        function displayRecentUsers(users) {
+            const tbody = document.getElementById('recentUsersTable');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">No users registered yet</td></tr>';
+                return;
+            }
+            
+            // Show last 10 users
+            const recentUsers = users.slice(-10).reverse();
+            
+            let html = '';
+            recentUsers.forEach(user => {
+                const score = user.security_score || user.securityScore || 0;
+                const scoreColor = score >= 70 ? '#10b981' : score >= 50 ? '#f59e0b' : '#dc2626';
+                const breachStatus = user.breach_status || user.breachStatus || 'SAFE';
+                const breachColor = breachStatus === 'BREACHED' ? '#dc2626' : '#10b981';
+                
+                html += `
+                    <tr>
+                        <td>${user.name}</td>
+                        <td>${user.email}</td>
+                        <td>
+                            <span style="background: #f1f5f9; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+                                ${user.algorithm}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="font-weight: 700; color: ${scoreColor};">
+                                ${score}/100
+                            </span>
+                        </td>
+                        <td>
+                            <span style="color: ${breachColor}; font-weight: 600; font-size: 0.875rem;">
+                                ${breachStatus}
+                            </span>
+                        </td>
+                        <td style="color: #64748b; font-size: 0.875rem;">
+                            ${new Date(user.created_at || user.createdAt).toLocaleDateString()}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
