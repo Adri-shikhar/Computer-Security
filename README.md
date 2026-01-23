@@ -1,783 +1,844 @@
 # 🔐 Security Operations Center (SOC) Platform
+## Complete Technical Documentation & Project Guide
 
-A comprehensive web-based security toolkit featuring hash analysis, encryption tools, and **advanced password re-salting capabilities** for cybersecurity professionals, students, and enthusiasts.
-
-![Platform](https://img.shields.io/badge/Platform-Web-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Status](https://img.shields.io/badge/Status-Active-success)
-![Python](https://img.shields.io/badge/Python-3.12-blue)
-![Flask](https://img.shields.io/badge/Flask-2.3+-green)
+A full-stack web application for secure user registration, password management, cryptographic hashing, and real-time security analytics. Built with Python Flask backend and modern JavaScript/HTML/CSS frontend.
 
 ---
 
-## 📋 Table of Contents
+## 📑 Table of Contents
 
-- [Features](#features)
-- [How to Run the Backend](#how-to-run-the-backend)
-- [Quick Start](#quick-start)
-- [Hash Algorithms](#hash-algorithms)
-- [NEW: Password Re-Salt Management](#password-re-salt-management)
-- [Tools Overview](#tools-overview)
-- [Backend Dashboard](#backend-dashboard)
-- [Security Features](#security-features)
-- [Technical Details](#technical-details)
-- [Viva Preparation](#viva-preparation)
-- [Browser Compatibility](#browser-compatibility)
-
----
-
-## 🔐 Hash Algorithms
-
-This platform uses **MD5 hashing** for initial password storage and provides re-salting capabilities:
-
-### **For Password Storage (Registration):**
-- **MD5** - Fast hashing algorithm (automatic, for demonstration)
-- **Upgradable via Re-salt** - Can upgrade to SHA-256 + 32-char salt
-
-### **For General Hashing (Tools & File Verification):**
-- MD5, SHA-1, SHA-256, SHA-512 (Available in hash tools)
-
-See [VIVA_PREPARATION_GUIDE.md](VIVA_PREPARATION_GUIDE.md) for technical details.
+1. [Project Overview](#1-project-overview)
+2. [Architecture & Technology Stack](#2-architecture--technology-stack)
+3. [Password Hashing - Deep Dive](#3-password-hashing---deep-dive)
+4. [Database Schema & Data Flow](#4-database-schema--data-flow)
+5. [API Endpoints Reference](#5-api-endpoints-reference)
+6. [Security Features & Audit Tools](#6-security-features--audit-tools)
+7. [Mathematical & Cryptographic Logic](#7-mathematical--cryptographic-logic)
+8. [Frontend Components](#8-frontend-components)
+9. [How to Run the Project](#9-how-to-run-the-project)
+10. [Project Structure](#10-project-structure)
+11. [Security Best Practices](#11-security-best-practices)
 
 ---
 
-## 🚀 How to Run the Backend
+## 1. Project Overview
 
-### **Step 1: Navigate to Backend Directory**
-```bash
-cd d:\Computer-Security\backend
-```
+### What is this project?
 
-### **Step 2: Activate Virtual Environment & Start Server**
-```bash
-..\\.venv\Scripts\python.exe app.py
-```
+A **Security Operations Center (SOC) Platform** that demonstrates:
+- Secure user registration with cryptographic password hashing
+- Multiple hashing algorithms (MD5, SHA-1, SHA-256, SHA-512, bcrypt, Argon2id)
+- Password security analysis and scoring
+- Duplicate password detection
+- Breached password identification
+- Salt generation and re-salting capabilities
+- Admin dashboard for security monitoring
 
-### **Step 3: Access the Application**
-- **Main Page (Registration):** http://127.0.0.1:5000
-- **Admin Dashboard:** http://127.0.0.1:5000/dashboard
+### Key Features
 
-### **Quick Terminal Command (One-Line)**
-```powershell
-cd d:\Computer-Security\backend; ..\\.venv\Scripts\python.exe app.py
-```
-
-### **Server Status**
-When running successfully, you'll see:
-```
-🔐 Security Operations Center - Flask Backend
-==================================================
-✅ Database initialized successfully!
-🚀 Starting server on http://localhost:5000
- * Running on http://127.0.0.1:5000
- * Debug mode: on
-```
-
-### **Stop the Server**
-Press `Ctrl+C` in the terminal
+| Feature | Description |
+|---------|-------------|
+| **User Registration** | Register users with secure password hashing |
+| **Multi-Hash Support** | MD5, SHA-1, SHA-256, SHA-512, bcrypt, Argon2id |
+| **Security Scoring** | Analyze password strength (0-100 score) |
+| **Duplicate Detection** | Find users sharing the same password |
+| **Breach Detection** | Identify commonly breached passwords |
+| **Re-Salt Management** | Upgrade weak hashes with new salts |
+| **Admin Dashboard** | Real-time security monitoring |
+| **Export/Clear** | Download data or clear database |
 
 ---
 
-## ✨ Features
+## 2. Architecture & Technology Stack
 
-### 🎯 Core Platform Features
-- **User Registration** - Automatic MD5 password hashing
-- **Backend Admin Dashboard** - Monitor all registered users
-- **Security Audit Tools** - 4 professional security analysis tools
-- **Password Re-Salt Management** ⭐ **NEW** - Upgrade weak MD5 to strong SHA-256 + salt
-- **8 Hash Analysis Tools** - Professional password and hash tools
-- **Encryption Suite** - AES-256, Triple DES, RC4
+### Backend (Python Flask)
 
-### 🔒 Security Audit Features (Backend Dashboard)
-1. **Find Duplicate Passwords** - Identify users with identical password hashes
-2. **Scan Weak Passwords** - Detect passwords with security score < 50
-3. **Check Breached Passwords** - Query 600M+ breached passwords (HIBP)
-4. **Analyze Hash Distribution** - View algorithm usage and security metrics
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    FLASK BACKEND SERVER                      │
+│                   (app.py - Port 5000)                       │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │   Routes    │  │  Hashing    │  │    Database         │  │
+│  │   (API)     │  │  Functions  │  │    (SQLite)         │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+│         │                │                    │              │
+│         ▼                ▼                    ▼              │
+│  /api/register     Argon2id/bcrypt      users table         │
+│  /api/users        MD5/SHA-256          demo_users table    │
+│  /api/audit/*      Salt Generation      resalt_log table    │
+│  /api/resalt/*                                               │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### ⚡ Password Re-Salt Management ⭐ **NEW FEATURE**
-- **Individual Re-salt** - Upgrade single user from MD5 → SHA-256 + salt
-- **Bulk Re-salt** - Upgrade all weak passwords with one click
-- **Automatic Salt Generation** - 32-character cryptographic salts
-- **Password Preservation** - Original passwords still work after re-salting
-- **Security Score Improvement** - Boost scores from 35 → 85
+### Frontend (HTML/CSS/JavaScript)
 
-#### How Re-Salt Works (Technical):
-1. **Original Registration:** Password "test123" → MD5 hash stored
-2. **Re-salt Process:** MD5 hash + new salt → SHA-256 hash
-3. **Original MD5 preserved** in `hash_md5` column for verification
-4. **Login after re-salt:** Password → MD5 → MD5+salt → SHA-256 → compare
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    FRONTEND (Browser)                        │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │ index.html  │  │ dashboard   │  │  password-generator │  │
+│  │ Registration│  │  .html      │  │  .html              │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+│         │                │                    │              │
+│         ▼                ▼                    ▼              │
+│   User Input       Admin Panel          Utility Tools        │
+│   Form Submit      Data Tables          Crypto Functions     │
+│   API Calls        Audit Tools                               │
+└─────────────────────────────────────────────────────────────┘
+```
 
-**Result:** Users keep their passwords, but hash security improves dramatically!
+### Technology Stack
+
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Backend** | Python 3.10+ | Server-side logic |
+| **Framework** | Flask 2.3+ | REST API server |
+| **Database** | SQLite | Data persistence |
+| **Hashing** | argon2-cffi, bcrypt | Password hashing |
+| **CORS** | flask-cors | Cross-origin requests |
+| **Frontend** | HTML5, CSS3, JavaScript | User interface |
+| **Styling** | Bootstrap 5, Font Awesome | UI components |
 
 ---
 
-## 🚀 Quick Start
+## 3. Password Hashing - Deep Dive
 
-### Option 1: Run Backend Server (Recommended)
+### 3.1 What is Password Hashing?
 
-#### Prerequisites
-- Python 3.12+
+Password hashing is a **one-way cryptographic function** that transforms a password into a fixed-length string (hash). It's impossible to reverse the hash back to the original password.
+
+```
+Password: "MySecure123"
+    │
+    ▼ (Hashing Function)
+    │
+Hash: "5f4dcc3b5aa765d61d8327deb882cf99"
+```
+
+### 3.2 Hashing Algorithms Explained
+
+#### MD5 (Message Digest 5)
+
+```python
+import hashlib
+password = "hello"
+hash = hashlib.md5(password.encode()).hexdigest()
+# Result: "5d41402abc4b2a76b9719d911017c592"
+```
+
+- **Output**: 128-bit (32 hex characters)
+- **Speed**: Very fast
+- **Security**: ❌ NOT SECURE (collision attacks possible)
+- **Use Case**: Educational purposes only
+
+#### SHA-1 (Secure Hash Algorithm 1)
+
+```python
+hash = hashlib.sha1(password.encode()).hexdigest()
+# Result: "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d"
+```
+
+- **Output**: 160-bit (40 hex characters)
+- **Speed**: Fast
+- **Security**: ❌ NOT SECURE (collision attacks)
+- **Use Case**: Legacy systems only
+
+#### SHA-256 (Secure Hash Algorithm 256)
+
+```python
+hash = hashlib.sha256(password.encode()).hexdigest()
+# Result: "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+```
+
+- **Output**: 256-bit (64 hex characters)
+- **Speed**: Fast
+- **Security**: ✅ Secure for data integrity
+- **Use Case**: File checksums, digital signatures
+
+#### SHA-512 (Secure Hash Algorithm 512)
+
+```python
+hash = hashlib.sha512(password.encode()).hexdigest()
+# Result: 128 hex characters
+```
+
+- **Output**: 512-bit (128 hex characters)
+- **Speed**: Fast
+- **Security**: ✅ Secure for data integrity
+- **Use Case**: High-security checksums
+
+#### bcrypt
+
+```python
+import bcrypt
+password = "hello".encode()
+salt = bcrypt.gensalt(rounds=12)
+hash = bcrypt.hashpw(password, salt)
+# Result: "$2b$12$..."
+```
+
+- **Output**: 60 characters (includes salt)
+- **Speed**: Slow (intentional - configurable work factor)
+- **Security**: ✅✅ SECURE for passwords
+- **Features**: Built-in salt, adaptive work factor
+- **Use Case**: Password storage
+
+#### Argon2id (Winner of Password Hashing Competition 2015)
+
+```python
+from argon2 import PasswordHasher
+ph = PasswordHasher(
+    time_cost=2,        # Number of iterations
+    memory_cost=65536,  # Memory usage (64MB)
+    parallelism=1,      # Number of threads
+    hash_len=32,        # Output length
+    salt_len=16         # Salt length
+)
+hash = ph.hash("hello")
+# Result: "$argon2id$v=19$m=65536,t=2,p=1$..."
+```
+
+- **Output**: Variable length (includes parameters + salt)
+- **Speed**: Configurable (memory-hard)
+- **Security**: ✅✅✅ MOST SECURE for passwords
+- **Features**: Memory-hard, resists GPU/ASIC attacks
+- **Use Case**: Modern password storage
+
+### 3.3 Salt - Why It's Critical
+
+#### What is Salt?
+
+A **salt** is a random string added to a password before hashing to ensure unique hashes.
+
+```
+Without Salt:
+  "password" → MD5 → "5f4dcc3b5aa765d61d8327deb882cf99"
+  "password" → MD5 → "5f4dcc3b5aa765d61d8327deb882cf99" (Same!)
+
+With Salt:
+  "password" + "a1b2c3d4" → MD5 → "e7d3e769f7b8a2c1d4e5f6a7b8c9d0e1"
+  "password" + "x9y8z7w6" → MD5 → "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d" (Different!)
+```
+
+#### Salt Generation in This Project
+
+```python
+import secrets
+
+def generate_salt(length=32):
+    """Generate cryptographically secure random salt"""
+    return secrets.token_hex(length // 2)  # 16 bytes = 32 hex chars
+```
+
+#### Why Salt Prevents Attacks
+
+1. **Rainbow Table Attack**: Pre-computed hash tables become useless
+2. **Dictionary Attack**: Same password → different hashes
+3. **Duplicate Detection**: Can't identify users with same password (if salted properly)
+
+### 3.4 Hashing Flow in This Project
+
+#### Registration Flow
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    REGISTRATION FLOW                          │
+├──────────────────────────────────────────────────────────────┤
+│                                                               │
+│   User Input                                                  │
+│   ┌─────────────────┐                                         │
+│   │ Password: "abc" │                                         │
+│   └────────┬────────┘                                         │
+│            │                                                  │
+│            ▼                                                  │
+│   ┌─────────────────────────────────────────────────────┐     │
+│   │            HASHING PROCESS (Backend)                │     │
+│   │                                                     │     │
+│   │   Step 1: Generate Salt                             │     │
+│   │   salt = secrets.token_hex(16)                      │     │
+│   │   salt = "a1b2c3d4e5f6g7h8"                         │     │
+│   │                                                     │     │
+│   │   Step 2: Hash with Algorithm                       │     │
+│   │   MD5:    hash = md5("abc")                         │     │
+│   │           = "900150983cd24fb0d6963f7d28e17f72"      │     │
+│   │                                                     │     │
+│   │   Argon2: hash = argon2id("abc", salt, params)      │     │
+│   │           = "$argon2id$v=19$m=65536,t=2,p=1$..."    │     │
+│   │                                                     │     │
+│   │   Step 3: Calculate Security Score                  │     │
+│   │   score = evaluate_password_strength("abc")         │     │
+│   │   score = 15 (very weak)                            │     │
+│   │                                                     │     │
+│   │   Step 4: Check Breach Status                       │     │
+│   │   if password in common_passwords:                  │     │
+│   │       status = "BREACHED"                           │     │
+│   │   elif score < 50:                                  │     │
+│   │       status = "WEAK"                               │     │
+│   │   else:                                             │     │
+│   │       status = "SECURE"                             │     │
+│   └─────────────────────────────────────────────────────┘     │
+│            │                                                  │
+│            ▼                                                  │
+│   ┌─────────────────────────────────────────────────────┐     │
+│   │            DATABASE STORAGE                         │     │
+│   │                                                     │     │
+│   │   INSERT INTO users (                               │     │
+│   │       name, email, algorithm, salt,                 │     │
+│   │       password_hash, security_score, breach_status  │     │
+│   │   ) VALUES (                                        │     │
+│   │       "John", "john@email.com", "MD5",              │     │
+│   │       "a1b2c3d4e5f6g7h8",                           │     │
+│   │       "900150983cd24fb0d6963f7d28e17f72",           │     │
+│   │       15, "WEAK"                                    │     │
+│   │   )                                                 │     │
+│   └─────────────────────────────────────────────────────┘     │
+│                                                               │
+└──────────────────────────────────────────────────────────────┘
+```
+
+#### Login Verification Flow
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    LOGIN VERIFICATION FLOW                    │
+├──────────────────────────────────────────────────────────────┤
+│                                                               │
+│   User Input: password = "abc"                                │
+│                                                               │
+│   Step 1: Retrieve stored hash and salt from database         │
+│   SELECT salt, password_hash, algorithm FROM users            │
+│   WHERE email = 'john@email.com'                              │
+│                                                               │
+│   Step 2: Hash submitted password with same algorithm         │
+│   submitted_hash = hash_function(password, stored_salt)       │
+│                                                               │
+│   Step 3: Compare hashes                                      │
+│   if submitted_hash == stored_hash:                           │
+│       return "Login Successful" ✅                            │
+│   else:                                                       │
+│       return "Invalid Password" ❌                            │
+│                                                               │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 4. Database Schema & Data Flow
+
+### 4.1 Database Tables
+
+#### Users Table (Main Storage)
+
+```sql
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    algorithm TEXT DEFAULT 'Multi-Hash',
+    salt TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    hash_md5 TEXT,           -- MD5 hash for reference
+    hash_sha1 TEXT,          -- SHA-1 hash for reference
+    hash_sha256 TEXT,        -- SHA-256 hash for reference
+    hash_sha512 TEXT,        -- SHA-512 hash for reference
+    security_score INTEGER DEFAULT 0,
+    breach_status TEXT DEFAULT 'UNKNOWN',
+    resalt_count INTEGER DEFAULT 0,
+    last_resalt TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Demo Users Table (For Demonstration)
+
+```sql
+CREATE TABLE demo_users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    algorithm TEXT DEFAULT 'Multi-Hash',
+    salt TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    -- ... similar structure
+);
+```
+
+#### Resalt Log Table (Audit Trail)
+
+```sql
+CREATE TABLE resalt_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    old_salt TEXT,
+    new_salt TEXT,
+    resalted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 4.2 Data Flow Diagram
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Frontend  │────▶│   Flask     │────▶│   SQLite    │
+│   (Browser) │◀────│   Backend   │◀────│   Database  │
+└─────────────┘     └─────────────┘     └─────────────┘
+      │                   │                   │
+      │ HTTP Requests     │ Python Logic      │ SQL Queries
+      │ (JSON)            │ Hashing           │ CRUD Operations
+      │                   │ Validation        │
+      ▼                   ▼                   ▼
+   User Actions      API Processing      Data Storage
+   - Register        - Hash passwords    - users
+   - View Dashboard  - Validate input    - demo_users
+   - Run Audits      - Calculate scores  - resalt_log
+```
+
+---
+
+## 5. API Endpoints Reference
+
+### 5.1 User Management
+
+| Endpoint | Method | Description | Request Body | Response |
+|----------|--------|-------------|--------------|----------|
+| `/api/register` | POST | Register new user | `{name, email, password}` | User object |
+| `/api/users` | GET | Get all users | - | List of users |
+| `/api/users/clear` | DELETE | Delete all users | - | Success message |
+| `/api/demo-users` | GET | Get demo users | - | List of demo users |
+
+### 5.2 Security Audits
+
+| Endpoint | Method | Description | Response |
+|----------|--------|-------------|----------|
+| `/api/audit/duplicate-passwords` | GET | Find duplicate password hashes | Groups of duplicates |
+| `/api/audit/weak-passwords` | GET | Find users with score < 50 | List of weak users |
+| `/api/audit/breached-passwords` | GET | Find breached passwords | List of breached users |
+| `/api/audit/hash-distribution` | GET | Algorithm & score distribution | Statistics |
+
+### 5.3 Re-Salt Operations
+
+| Endpoint | Method | Description | Response |
+|----------|--------|-------------|----------|
+| `/api/resalt` | POST | Trigger manual resalt for all | Count of resalted |
+| `/api/resalt/auto` | POST | Toggle auto-resalt | Status |
+| `/api/resalt/status` | GET | Get auto-resalt status | Enabled/interval |
+| `/api/resalt/user/<id>` | POST | Resalt single user | User details |
+| `/api/resalt/all` | POST | Resalt all weak users | List of resalted |
+| `/api/resalt/users` | GET | Get users needing resalt | User list |
+
+### 5.4 Utility
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/health` | GET | Health check |
+| `/api/stats` | GET | Dashboard statistics |
+| `/api/demo/populate` | POST | Populate demo data |
+
+---
+
+## 6. Security Features & Audit Tools
+
+### 6.1 Duplicate Password Detection
+
+**Logic:**
+
+```python
+# SQL Query to find duplicates
+SELECT password_hash, COUNT(*) as count, 
+       GROUP_CONCAT(name || ' (' || email || ')') as users
+FROM users
+GROUP BY password_hash
+HAVING count > 1
+ORDER BY count DESC
+```
+
+**Mathematical Set Operation:**
+
+```
+Let H = {h₁, h₂, ..., hₙ} be the set of all password hashes
+Duplicates D = {h ∈ H : |{i : hᵢ = h}| > 1}
+```
+
+**Why This Matters:**
+- If two users have the same hash, they have the same password
+- Compromising one account compromises all with same password
+- Indicates poor password policies
+
+### 6.2 Weak Password Detection
+
+**Logic:**
+
+```python
+# Security score thresholds
+WEAK_THRESHOLD = 50
+SECURE_THRESHOLD = 70
+
+# Filter weak users
+SELECT * FROM users WHERE security_score < 50
+```
+
+**Security Score Calculation:**
+
+```
+Score = f(length, uppercase, lowercase, digits, symbols, entropy)
+
+Example:
+- "password"     → Score: 20 (common, no variety)
+- "Pass123"      → Score: 45 (short, predictable)
+- "MyP@ss2024!"  → Score: 75 (good variety)
+- "Tr0ub4dor&3!" → Score: 95 (excellent)
+```
+
+### 6.3 Breach Detection
+
+**Logic:**
+
+```python
+# Common breached passwords list
+common_passwords = ['123456', 'password', 'qwerty', 'abc123', ...]
+
+# Check during registration
+if password.lower() in common_passwords:
+    breach_status = 'BREACHED'
+```
+
+**How It Works:**
+1. Compare password against known breach databases
+2. Check hash against Have I Been Pwned (HIBP) API (if integrated)
+3. Flag users with commonly breached passwords
+
+### 6.4 Re-Salt Management
+
+**Purpose:**
+Upgrade weak (unsalted or MD5) hashes to stronger salted hashes.
+
+**Re-Salt Process:**
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    RE-SALT PROCESS                            │
+├──────────────────────────────────────────────────────────────┤
+│                                                               │
+│   Original State:                                             │
+│   ┌─────────────────────────────────────────────────────┐     │
+│   │ password_hash = MD5("password")                     │     │
+│   │              = "5f4dcc3b5aa765d61d8327deb882cf99"   │     │
+│   │ salt = "" (empty)                                   │     │
+│   │ algorithm = "MD5"                                   │     │
+│   │ security_score = 20                                 │     │
+│   └─────────────────────────────────────────────────────┘     │
+│                          │                                    │
+│                          ▼                                    │
+│   ┌─────────────────────────────────────────────────────┐     │
+│   │ Step 1: Generate new salt                           │     │
+│   │ new_salt = secrets.token_hex(16)                    │     │
+│   │         = "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"        │     │
+│   └─────────────────────────────────────────────────────┘     │
+│                          │                                    │
+│                          ▼                                    │
+│   ┌─────────────────────────────────────────────────────┐     │
+│   │ Step 2: Create new hash (preserving old MD5)        │     │
+│   │ salted_input = old_hash + new_salt                  │     │
+│   │ new_hash = SHA256(salted_input)                     │     │
+│   │          = "8a7b6c5d4e3f2a1b..."                    │     │
+│   └─────────────────────────────────────────────────────┘     │
+│                          │                                    │
+│                          ▼                                    │
+│   After Re-Salt:                                              │
+│   ┌─────────────────────────────────────────────────────┐     │
+│   │ password_hash = "8a7b6c5d4e3f2a1b..." (new SHA256)  │     │
+│   │ salt = "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"           │     │
+│   │ algorithm = "SHA256"                                │     │
+│   │ security_score = 85                                 │     │
+│   │ hash_md5 = "5f4dcc3b5aa765d61d8327deb882cf99"       │     │
+│   │            (preserved for verification)             │     │
+│   └─────────────────────────────────────────────────────┘     │
+│                                                               │
+│   ✅ User's password unchanged - only hash security upgraded  │
+│                                                               │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 7. Mathematical & Cryptographic Logic
+
+### 7.1 Hash Function Properties
+
+A secure hash function H(x) must satisfy:
+
+| Property | Description | Mathematical Definition |
+|----------|-------------|------------------------|
+| **Deterministic** | Same input → same output | H(x) = H(x) always |
+| **Fast Computation** | Quick to compute | O(n) complexity |
+| **Pre-image Resistance** | Can't reverse hash | Given h, hard to find x where H(x) = h |
+| **Collision Resistance** | Hard to find two inputs with same hash | Hard to find x₁ ≠ x₂ where H(x₁) = H(x₂) |
+| **Avalanche Effect** | Small change → completely different hash | H(x) ≠ H(x + ε) for any small ε |
+
+### 7.2 Password Strength Entropy
+
+**Entropy Formula:**
+
+```
+E = L × log₂(N)
+```
+
+Where:
+- E = entropy (bits)
+- L = password length
+- N = size of character set
+
+**Example Calculations:**
+
+```
+Password: "abc" (3 lowercase letters)
+N = 26 (lowercase only)
+E = 3 × log₂(26) = 3 × 4.7 = 14.1 bits
+
+Password: "Abc123!@" (8 mixed characters)
+N = 26 + 26 + 10 + 32 = 94 (full ASCII)
+E = 8 × log₂(94) = 8 × 6.55 = 52.4 bits
+```
+
+**Security Levels:**
+
+| Entropy | Security Level | Time to Crack (at 10¹² guesses/sec) |
+|---------|----------------|-------------------------------------|
+| < 28 bits | Very Weak | < 1 second |
+| 28-35 bits | Weak | Minutes |
+| 36-59 bits | Reasonable | Days to Years |
+| 60-127 bits | Strong | Millions of years |
+| 128+ bits | Very Strong | Heat death of universe |
+
+### 7.3 Argon2 Memory-Hard Function
+
+**Why Memory-Hard?**
+- GPU/ASIC attacks rely on parallel computation
+- Memory is expensive to parallelize
+- Forces attackers to use similar hardware as defenders
+
+**Argon2 Parameters:**
+
+```python
+PasswordHasher(
+    time_cost=2,        # t: iterations (higher = slower)
+    memory_cost=65536,  # m: memory in KB (64MB)
+    parallelism=1,      # p: threads
+    hash_len=32,        # output length in bytes
+    salt_len=16         # salt length in bytes
+)
+```
+
+**Computational Cost:**
+
+```
+Cost ∝ t × m × p
+```
+
+### 7.4 Duplicate Detection Algorithm
+
+**Algorithm:**
+
+```
+Input: Set of users U = {u₁, u₂, ..., uₙ}
+Output: Groups of users with duplicate passwords
+
+1. Create hash map M = {}
+2. For each user uᵢ in U:
+   a. h = password_hash(uᵢ)
+   b. If h ∈ M:
+      M[h].append(uᵢ)
+   c. Else:
+      M[h] = [uᵢ]
+3. Return {group ∈ M : |group| > 1}
+```
+
+**Complexity:** O(n) where n = number of users
+
+---
+
+## 8. Frontend Components
+
+### 8.1 Registration Page (index.html)
+
+- User input form (name, email, password)
+- Real-time password strength indicator
+- Hash preview before submission
+- API integration with backend
+
+### 8.2 Admin Dashboard (dashboard.html)
+
+- **Stats Cards**: Total users, secure/weak/breached counts
+- **User Table**: All registered users with details
+- **Audit Tools**: 
+  - Find Duplicate Passwords
+  - Scan Weak Passwords
+  - Check Breached Passwords
+- **Actions**: Export Data, Clear Storage
+
+### 8.3 Navigation Structure
+
+```
+MAIN NAVIGATION
+├── Registration
+└── Backend Dashboard
+
+SECURITY TOOLS
+├── Hash Tools (expandable)
+├── Encryption Tools
+└── Utility Tools
+    └── Password Generator
+```
+
+---
+
+## 9. How to Run the Project
+
+### Prerequisites
+
+- Python 3.10 or higher
 - pip (Python package manager)
+- Modern web browser (Chrome, Firefox, Edge)
 
-#### Installation Steps
+### Step-by-Step Setup
+
+**1. Clone/Navigate to Project:**
 
 ```bash
-# 1. Clone the repository
-git clone <your-repo-url>
-cd Computer-Security
+cd d:\Computer-Security
+```
 
-# 2. Create virtual environment
+**2. Create Virtual Environment (Optional but recommended):**
+
+```bash
 python -m venv .venv
+.\.venv\Scripts\activate  # Windows
+```
 
-# 3. Activate virtual environment
-# Windows:
-.venv\Scripts\activate
-# Linux/Mac:
-source .venv/bin/activate
+**3. Install Dependencies:**
 
-# 4. Install dependencies
+```bash
 cd backend
 pip install -r requirements.txt
+```
 
-# 5. Run the Flask server
+**4. Start Backend Server:**
+
+```bash
 python app.py
 ```
 
-#### Access the Application
-
+You should see:
 ```
-🌐 Frontend (User Registration):
-http://localhost:5000/
-
-📊 Backend Dashboard (Admin Panel):
-http://localhost:5000/dashboard
-
-✅ Health Check:
-http://localhost:5000/api/health
+🔐 Security Operations Center - Flask Backend
+==================================================
+🔒 Hashing Algorithm: Argon2id
+🧂 Salt Length: 16 bytes (32 hex chars)
+🔄 Auto-Resalt Interval: 300 seconds
+==================================================
+✅ Database initialized successfully!
+🚀 Starting server on http://localhost:5000
+==================================================
 ```
 
-### Option 2: Frontend Only (No Backend Features)
+**5. Open Frontend:**
 
-1. Open `index.html` in any modern browser
-2. Hash tools and encryption features work offline
-3. **Note:** Registration and dashboard require backend server (Option 1)
+- Open `index.html` in your browser, OR
+- Navigate to `http://localhost:5000`
+
+### Quick Test
+
+1. Register a new user on the landing page
+2. Go to Backend Dashboard
+3. See your registered user in the table
+4. Run "Find Duplicate Passwords" or "Scan Weak Passwords"
 
 ---
 
-## 🔄 Password Re-Salt Management ⭐ NEW
-
-### What is Password Re-Salting?
-
-Password re-salting upgrades weak password hashes to strong, salted hashes without requiring users to manually reset passwords.
-
-### Why is it Important?
-
-Legacy systems often use:
-- ❌ MD5 (vulnerable to rainbow tables)
-- ❌ No salt (same password = same hash)  
-- ❌ Short salts (< 16 chars)
-- ❌ Low security scores
-
-### The Re-Salt Process
+## 10. Project Structure
 
 ```
-BEFORE:                          AFTER RE-SALT:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-User: John Doe                   User: John Doe
-Algorithm: MD5                   Algorithm: SHA-256
-Salt: (none)                     Salt: a7f3d9...b8c (32 chars)
-Hash: 5f4dcc3b...                Hash: ef3a7d92... (64 chars)
-Score: 35/100 ❌                 Score: 85/100 ✅
-                                 Temp Pass: X7k@9pL!mQ2v
-```
-
-### How to Use
-
-**Access Dashboard:**
-```
-http://localhost:5000/dashboard
-```
-
-**Individual Re-salt:**
-1. Click "Refresh Security Status"
-2. Find user with ⚠️ red warning
-3. Click "Re-salt" button
-4. Copy temporary password
-5. Share with user
-
-**Bulk Re-salt:**
-1. Click "Re-salt All Weak Passwords"
-2. Confirm operation
-3. All temp passwords displayed
-4. Click "Copy All"
-5. Distribute to users
-
-### Security Benefits
-- ✅ MD5 → SHA-256 upgrade
-- ✅ 32-char cryptographic salts
-- ✅ Rainbow table protection
-- ✅ Score: 35 → 85
-- ✅ Zero downtime
-
----
-
-## 📊 Backend Dashboard Features
-
-### Access
-```
-URL: http://localhost:5000/dashboard
-```
-
-### Security Audit Tools
-
-**1. Find Duplicate Passwords**
-- Identify shared password hashes
-- Group users by password
-- Risk assessment
-
-**2. Scan Weak Passwords**  
-- Detect score < 50
-- Sort by weakest
-- Actionable recommendations
-
-**3. Check Breached Passwords**
-- Query 600M+ HIBP database
-- Critical alerts
-- k-Anonymity privacy
-
-**4. Analyze Hash Distribution**
-- Algorithm statistics
-- Security level charts
-- Visual metrics
-
-### Re-Salt Management
-- Real-time security monitoring
-- Individual/bulk operations
-- Temporary password generation
-- One-click upgrades
-
----
-
-## 🛠️ Hash Analysis Tools (8 Tools)
-
-### 1️⃣ Password Breach Checker 🔓
-
-**What it does:** Checks if your password has been compromised in data breaches
-
-**How to use:**
-1. Navigate to **Hash Tools** → **Password Breach Checker**
-2. Enter any password in the input field
-3. Click **"Check Password Security"**
-4. See instant results from 600M+ breached passwords
-
-**Privacy Features:**
-- ✅ Password hashed locally (SHA-1)
-- ✅ Only 5 characters sent to API (k-Anonymity)
-- ✅ Your password NEVER leaves your device
-- ✅ Uses Have I Been Pwned API
-
-**Example:**
-```
-Input: password123
-Result: ⚠️ COMPROMISED - Seen 37,000+ times in breaches!
-```
-
----
-
-### 2️⃣ Hash Algorithm Comparison 📊
-
-**What it does:** Compare different hash algorithms side-by-side
-
-**How to use:**
-1. Select **Hash Tools** → **Algorithm Comparison**
-2. Enter text or password to hash
-3. (Optional) Add a salt for extra security
-4. Select algorithms to compare (MD5, SHA-1, SHA-256, SHA-512)
-5. Click **"Generate Hashes"**
-
-**Use cases:**
-- Compare hash lengths and security
-- Understand salt benefits
-- Educational demonstrations
-- Security assessments
-
-**Example:**
-```
-Input: Hello123
-Salt: random_salt_abc
-
-Outputs:
-MD5     → 32 characters  (❌ Insecure)
-SHA-1   → 40 characters  (⚠️ Deprecated)
-SHA-256 → 64 characters  (✅ Good)
-SHA-512 → 128 characters (✅ Strong)
-```
-
----
-
-### 3️⃣ Salt Generator & Hasher 🧂
-
-**What it does:** Generate cryptographic salts and create salted password hashes
-
-**How to use:**
-1. Navigate to **Salt Generator & Hasher**
-2. Click **"Generate Random Salt"** (recommended)
-   - OR manually enter a custom salt
-3. Enter a password
-4. Select hash algorithm (MD5, SHA-1, SHA-256, SHA-512)
-5. Choose salt position (Prepend/Append)
-6. Click **"Generate Salted Hash"**
-
-**Why use salts?**
-- Prevents rainbow table attacks
-- Makes identical passwords produce different hashes
-- Industry best practice for password storage
-
-**Example:**
-```
-Password: myPassword123
-Salt: 7a8b9c0d1e2f3g4h
-Algorithm: SHA-256
-Position: Prepend
-
-Combined: 7a8b9c0d1e2f3g4hmyPassword123
-Hash: e4d909c290d0fb1ca068ffaddf22cbd0...
-```
-
----
-
-### 4️⃣ File Hash Calculator 📁
-
-**What it does:** Calculate cryptographic hashes of files for integrity verification
-
-**How to use:**
-1. Select **File Hash Calculator**
-2. Click **"Choose File"** or drag & drop any file
-3. Select hash algorithms to calculate
-4. View all hashes instantly
-5. (Optional) Paste expected hash to verify file integrity
-
-**Use cases:**
-- Verify downloaded files aren't tampered
-- Check software integrity
-- Detect file modifications
-- Forensic analysis
-
-**Example:**
-```
-File: ubuntu-20.04.iso
-Size: 2.7 GB
-
-MD5:     ca7a6f5c4e9dab1234567890abcdef12
-SHA-256: 4e9dab1234567890abcdef12ca7a6f5c...
-SHA-512: 1234567890abcdef12ca7a6f5c4e9dab...
-
-Verification: ✅ Hash matches official Ubuntu checksum
-```
-
----
-
-### 5️⃣ Hash Type Identifier 🔍
-
-**What it does:** Automatically detect hash algorithm from hash string
-
-**How to use:**
-1. Navigate to **Hash Type Identifier**
-2. Paste any hash string
-3. Click **"Identify Hash Type"**
-4. See detected algorithm and security assessment
-
-**Supported formats:**
-- MD5 (32 characters)
-- SHA-1 (40 characters)
-- SHA-256 (64 characters)
-- SHA-512 (128 characters)
-- BCrypt (60 characters, starts with $2)
-- Argon2 (starts with $argon2)
-
-**Example:**
-```
-Input: 5f4dcc3b5aa765d61d8327deb882cf99
-Result: MD5 (128-bit) - Fast, vulnerable to collisions ❌
-```
-cd d:\Computer-Security\backend; ..\.venv\Scripts\python.exe app.py
----
-
-### 6️⃣ Password Entropy Analyzer 📈
-
-**What it does:** Measure password strength using entropy calculation
-
-**How to use:**
-1. Select **Password Entropy Analyzer**
-2. Enter any password
-3. Click **"Calculate Entropy"**
-4. View detailed strength analysis
-
-**Metrics shown:**
-- Password length
-- Character set size
-- Entropy bits
-- Strength rating (Very Weak → Very Strong)
-- Visual strength meter
-
-**Example:**
-```
-Password: P@ssw0rd!2024
-
-Length: 13 characters
-Character Set: 72 (Mixed case + numbers + symbols)
-Entropy: 79.8 bits
-Strength: STRONG ✅
-```
-
----
-
-### 7️⃣ Password Rotation Detector 🔄
-
-**What it does:** Find predictable patterns in password sequences
-
-**How to use:**
-1. Navigate to **Password Rotation Detector**
-2. Enter password sequence (one per line)
-3. Click **"Detect Patterns"**
-4. See risk assessment and recommendations
-
-**Detects:**
-- Sequential numbers (Password1, Password2, Password3)
-- Month/season patterns (Spring2023, Summer2023)
-- Simple increments
-- Predictable variations
-
-**Example:**
-```
-Input:
-CompanyPass2022
-CompanyPass2023
-CompanyPass2024
-
-Result: ⚠️ HIGH RISK
-- Sequential year pattern detected
-- Highly predictable
-- Recommendation: Use unique passwords
-```
-
----
-
-### 8️⃣ Hash Verification ✅
-
-**What it does:** Verify if a password matches a known hash
-
-**How to use:**
-1. Select **Hash Verification**
-2. Enter the password to test
-3. (Optional) Add salt if used
-4. Paste the target hash
-5. Select hash algorithm
-6. Click **"Verify Hash"**
-
-**Use cases:**
-- Password recovery testing
-- Hash validation
-- Database verification
-- Authentication testing
-
-**Example:**
-```
-Password: admin123
-Salt: abc123
-Target Hash: 8e07e1f2d3c4b5a6...
-Algorithm: SHA-256
-
-Result: ✅ PASSWORD MATCHES!
-```
-
----
-
-## 🔒 Encryption Tools
-
-### AES-256 Encryption
-
-**What it does:** Encrypt/decrypt text using industry-standard AES-256
-
-**How to use:**
-
-#### Encrypting:
-1. Navigate to **Encryption** page
-2. Select **AES-256** algorithm
-3. Enter a strong password
-4. Type or paste text to encrypt
-5. Click **"Encrypt"**
-6. Copy encrypted output
-
-#### Decrypting:
-1. Select **AES-256** algorithm
-2. Enter the SAME password used for encryption
-3. Paste encrypted text
-4. Click **"Decrypt"**
-5. View original text
-
-**Security Tips:**
-- ✅ Use strong, unique passwords
-- ✅ Store passwords securely
-- ✅ Never share encryption keys
-- ⚠️ Losing password = data lost forever
-
-**Example:**
-```
-Plain Text: "Hello World"
-Password: MyStrongP@ss2024!
-Algorithm: AES-256
-
-Encrypted: U2FsdGVkX1+2K7J3... (base64)
-Decrypted: "Hello World"
-```
-
----
-
-## 🛡️ Security Features
-
-### Privacy-First Design
-- **No Server Required** - All processing happens in your browser
-- **Offline Capable** - Works without internet (except breach checker)
-- **No Data Collection** - Nothing sent to external servers
-- **Open Source** - Inspect the code yourself
-
-### k-Anonymity Model (Breach Checker)
-```
-Your Password: "example123"
-           ↓
-Local SHA-1 Hash: 3c9909afec25354d551dae21590bb26e38d53f2173
-           ↓
-Send to API: 3c990 (first 5 chars only)
-           ↓
-API Returns: ~500 hash suffixes
-           ↓
-Local Match: Check if your hash is in the list
-```
-
-### Cryptographic Standards
-- SHA-1, SHA-256, SHA-512 (Web Crypto API)
-- AES-256, Triple DES (CryptoJS library)
-- Cryptographically secure random salts
-
----
-
-## 🔧 Technical Details
-
-### Architecture
-```
-Computer-Security/
-├── index.html              # Landing page & registration
+d:\Computer-Security\
+│
+├── index.html                      # Main landing/registration page
+├── README.md                       # This documentation
+│
 ├── backend/
-│   └── dashboard.html      # Backend admin panel
-├── features/
-│   ├── encryption/         # Encryption tools
-│   │   ├── encryption.html
-│   │   ├── encryption.css
-│   │   └── encryption.js
-│   └── hash-tools/         # Hash analysis tools
-│       ├── hash-tools.html
-│       ├── hash-tools.css
-│       └── hash-tools.js
-└── shared/
-    ├── css/
-    │   ├── style.css       # Global styles
-    │   └── nav-styles.css  # Navigation styles
-    └── js/
-        ├── script.js       # Global scripts
-        └── api-client.js   # API utilities
-```
-
-### Dependencies
-- **Bootstrap 5.3** - UI framework
-- **Font Awesome 6.4** - Icons
-- **CryptoJS 4.1** - Encryption library
-- **Web Crypto API** - Native browser cryptography
-
-### Browser Requirements
-- ✅ Chrome 90+
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Edge 90+
-- ⚠️ Internet Explorer NOT supported
-
----
-
-## 💡 Best Practices
-
-### Password Security
-1. **Length Matters** - Minimum 12 characters
-2. **Mix Characters** - Upper, lower, numbers, symbols
-3. **Unique Passwords** - Never reuse across sites
-4. **Check Breaches** - Regularly verify with our tool
-5. **Use Password Manager** - Don't memorize complex passwords
-
-### Hash Usage
-1. **Always Salt** - Never store plain hashes
-2. **Use SHA-256+** - Avoid MD5 and SHA-1
-3. **Verify Files** - Check downloads against official hashes
-4. **Regular Audits** - Periodically check password strength
-
-### Encryption Tips
-1. **Strong Keys** - Use 16+ character passwords
-2. **Secure Storage** - Store keys separately from data
-3. **Backup Keys** - Keep secure backup of encryption passwords
-4. **Test Decryption** - Verify you can decrypt before deleting originals
-
----
-
-## 🎓 Educational Use
-
-Perfect for:
-- **Cybersecurity Students** - Learn hash algorithms
-- **IT Professionals** - Quick security checks
-- **Developers** - Understand encryption concepts
-- **Security Auditors** - Test password policies
-- **Teachers** - Demonstrate security principles
-
----
-
-## 📱 Mobile Support
-
-All tools work on mobile devices:
-- ✅ Responsive design
-- ✅ Touch-friendly interface
-- ✅ Hamburger menu on small screens
-- ✅ All features fully functional
-
----
-
-## 🐛 Troubleshooting
-
-### Password Breach Checker Not Working
-- **Problem:** "Could not connect to breach database"
-- **Solution:** Check internet connection, HIBP API requires network access
-
-### Encryption/Decryption Fails
-- **Problem:** Decryption returns gibberish
-- **Solution:** Verify you're using the exact same password and algorithm
-
-### File Hash Calculator Slow
-- **Problem:** Large files take time to hash
-- **Solution:** Normal behavior, hashing 1GB+ files takes several seconds
-
-### Browser Compatibility Issues
-- **Problem:** Features not working
-- **Solution:** Update to latest browser version, disable ad blockers
-
----
-
-## 📄 License
-
-MIT License - Free for personal and commercial use
-
----
-
-## 🤝 Contributing
-
-Contributions welcome! Areas for improvement:
-- Additional hash algorithms (BLAKE2, BLAKE3, Argon2)
-- Two-factor authentication (2FA)
-- Email notifications for re-salt operations
-- More encryption methods
-- UI/UX enhancements
-- Security audits
-- Documentation improvements
-
----
-
-## 🎓 Viva Preparation
-
-### Complete Documentation
-
-For comprehensive viva preparation including:
-- Detailed technical implementation
-- Security concepts explained
-- Sample viva questions with answers
-- Demonstration flow guide
-- Architecture diagrams
-- Code walkthroughs
-
-**See:** [VIVA_PREPARATION_GUIDE.md](VIVA_PREPARATION_GUIDE.md)
-
-### Key Features to Demonstrate
-
-1. **User Registration** (MD5 auto-hash)
-2. **Backend Dashboard** (User monitoring)
-3. **Security Audit Tools** (4 professional tools)
-4. **Password Re-Salt** ⭐ (Individual + Bulk upgrade)
-5. **Hash Analysis Tools** (8 educational tools)
-6. **Breach Checking** (HIBP integration with k-Anonymity)
-
-### Quick Demo Flow (10 minutes)
-
-```
-1. Register 5 users with varying password strengths
-2. Open dashboard → Show all users with MD5
-3. Run 4 audit tools → Identify vulnerabilities
-4. Use re-salt feature:
-   - Individual re-salt for 1 user
-   - Bulk re-salt for remaining users
-5. Show security improvement: MD5 → SHA-256, Score 35 → 85
-6. Demonstrate hash analysis tools
-```
-
-### Technical Questions Prepared
-
-- What is password hashing vs encryption?
-- Why is MD5 considered weak?
-- What is a salt and why use it?
-- Explain rainbow table attacks
-- How does k-Anonymity protect privacy?
-- Walk through the re-salt algorithm
-- What is the difference between MD5, SHA-256, and Argon2?
-
-**Full Q&A available in:** [VIVA_PREPARATION_GUIDE.md](VIVA_PREPARATION_GUIDE.md)
-
----
-
-## 📚 Project Structure
-
-```
-Computer-Security/
-├── index.html                  # User registration page (MD5 hashing)
-├── backend/
-│   ├── app.py                  # Flask REST API server
-│   ├── database.db             # SQLite database
-│   ├── dashboard.html          # Admin dashboard with re-salt
-│   └── requirements.txt        # Python dependencies
-├── features/
-│   ├── encryption/             # AES-256, Triple DES, RC4
-│   ├── hash-tools/             # 8 professional hash tools
-│   └── password-generator/     # Strong password generator
+│   ├── app.py                      # Flask server (1382 lines)
+│   ├── dashboard.html              # Admin dashboard
+│   ├── database.db                 # SQLite database
+│   ├── requirements.txt            # Python dependencies
+│   └── result-login.html           # Login result page
+│
+├── dashboard-features/
+│   ├── password-generator/
+│   │   ├── password-generator.html
+│   │   ├── password-generator.css
+│   │   └── password-generator.js
+│   ├── breach-checker/
+│   ├── duplicate-checker/
+│   ├── resalt-management/
+│   └── security-analytics/
+│
 ├── shared/
-│   ├── css/                    # Global styles
-│   └── js/                     # API client, utilities
-├── README.md                   # This file
-└── VIVA_PREPARATION_GUIDE.md   # Comprehensive viva documentation
+│   ├── css/
+│   │   ├── style.css               # Main styles
+│   │   ├── nav-styles.css          # Navigation styles
+│   │   └── ux-enhancements.css     # UX improvements
+│   └── js/
+│       ├── api-client.js           # Backend API client
+│       ├── script.js               # Main JS logic
+│       ├── ux-helper.js            # UX utilities
+│       └── live-demo-service.js    # Demo data service
+│
+└── features/
+    ├── hash-tools/
+    └── login-verifier/
 ```
 
 ---
 
-## ⚠️ Disclaimer
+## 11. Security Best Practices
 
-This tool is for **educational and professional purposes**. While it uses industry-standard cryptographic libraries:
-- Not intended to replace professional security tools
-- Always follow your organization's security policies
-- Test thoroughly before production use
-- Keep encryption passwords secure
+### What This Project Does Right ✅
+
+1. **Server-side hashing** - Never hash passwords on frontend only
+2. **Strong algorithms** - Argon2id, bcrypt for password storage
+3. **Unique salts** - Each password has its own random salt
+4. **No plain passwords** - Never stored or logged
+5. **CORS enabled** - Controlled cross-origin access
+6. **Input validation** - All inputs sanitized
+7. **Audit capabilities** - Detect weak/duplicate/breached passwords
+
+### Production Recommendations 📋
+
+1. Use HTTPS in production
+2. Implement rate limiting
+3. Add CSRF protection
+4. Use environment variables for secrets
+5. Implement proper session management
+6. Regular security audits
+7. Log security events
+8. Implement account lockout after failed attempts
 
 ---
 
-## 🌟 Credits
+## Summary
 
-- **Have I Been Pwned** - Troy Hunt's breach database
-- **CryptoJS** - Encryption library
-- **Bootstrap** - UI framework
-- **Font Awesome** - Icon library
+This project demonstrates:
+
+- **Cryptographic password hashing** with multiple algorithms
+- **Salt generation and management** for enhanced security
+- **Security auditing** to detect vulnerabilities
+- **Full-stack architecture** with Flask backend and JS frontend
+- **Real-time security analytics** for administrators
+
+The mathematical foundation ensures passwords are protected using industry-standard cryptographic functions, while the audit tools help administrators identify and remediate security issues.
 
 ---
 
-**Made with ❤️ for the cybersecurity community**
-
-*Last Updated: January 2025*
+**Created by:** Security Operations Center Platform  
+**Technologies:** Python Flask, SQLite, JavaScript, HTML/CSS, Argon2id, bcrypt  
+**License:** MIT
